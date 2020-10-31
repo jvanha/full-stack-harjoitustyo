@@ -21,7 +21,7 @@ const Piece = ({ piece, selectPiece }) => {
     }
   }
   return (
-    <div style={{...testPieceStyle, borderColor, backgroundColor: piece.color}}
+    <div style={{...testPieceStyle, borderColor, backgroundColor: piece.color, color: piece.color==='black' ? 'white' : 'black'}}
           onClick={() => handleSelect}>
       {piece.type}
     </div>
