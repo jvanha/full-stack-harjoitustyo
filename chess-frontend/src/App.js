@@ -10,6 +10,7 @@ squares[18] = [18, { type: 'K', color: 'black'}]
 squares[14] = [14, { type: 'P', color: 'black'}]
 console.log(squares)
 
+const initBoard = []
 function App() {
   const [ board, setBoard ] = useState(squares)
   const [ showAttack, setShowAttack ] = useState(false)
