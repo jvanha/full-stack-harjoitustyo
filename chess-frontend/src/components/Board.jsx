@@ -1,7 +1,7 @@
 import React from 'react'
 import { useEffect } from 'react'
 import { useState } from 'react'
-import { legitMoves } from '../utilFunctions'
+import { attackedSquares, legitMoves } from '../utilFunctions'
 import Piece from './Piece'
 
 const boardStyle = {
@@ -17,17 +17,18 @@ const squareStyle = {
   height: '12.5%',
   width: '12.5%'
 }
-const MySquare = ({ content, handleSelection, selectedSquare, validMoves }) => {
-  //console.log('square', content)
+const MySquare = ({ content, handleSelection, selectedSquare, validMoves, attackedSquares }) => {
   const index = content[0]
+  //console.log('attacked squares',attackedSquares)
   
   let color = ((index + Math.floor(index/8))%2)===0 ? 'white' : 'black'
   if (content === selectedSquare)
     color = 'green'
   if (validMoves && validMoves.includes(content[0])) {
-    console.log('CHECK',content[0], validMoves)
-    console.log('CHECK',content[0] in validMoves)
     color = 'red'
+  }
+  if (attackedSquares && attackedSquares.includes(content[0])) {
+    color = 'purple'
   }
   return (
     <div style={{ ...squareStyle, backgroundColor: color}} onClick={() => handleSelection(content)}>
@@ -37,12 +38,12 @@ const MySquare = ({ content, handleSelection, selectedSquare, validMoves }) => {
 }
 
 
-const Board = ({ board, movePiece }) => {
+const Board = ({ board, movePiece, attackedSquares }) => {
   const [ selectedSquare, setSelectedSquare ] = useState(null)
   const [ validMoves, setValidMoves ] = useState([])
   
-  console.log('selected', selectedSquare)
-  console.log(board)
+  //console.log('selected', selectedSquare)
+  //console.log(board)
   
   useEffect(() => {
     setValidMoves(legitMoves(selectedSquare, board))
@@ -50,9 +51,9 @@ const Board = ({ board, movePiece }) => {
   
   const handleSelection = (square) => {
     const id = square[0]
-    console.log('select id',id)
+    //console.log('select id',id)
     if (!selectedSquare && board[id][1]) {
-      console.log('new')
+      //console.log('new')
       setSelectedSquare(square)
     } 
     else if (selectedSquare && selectedSquare[0] === id) setSelectedSquare(null)
@@ -72,6 +73,7 @@ const Board = ({ board, movePiece }) => {
           selectedSquare={selectedSquare}
           validMoves={validMoves}
           handleSelection={handleSelection}
+          attackedSquares={attackedSquares}
         />   
       ))}
     </div>
