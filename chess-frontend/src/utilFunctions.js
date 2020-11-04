@@ -47,14 +47,14 @@ const legidRookMoves = (squareId, pieceColor, board) => {
   let squares = []
   if (squareId%8 > 0) {
     let x = squareId - 1 
-    while (x >= 0 && x%8 != 7 && squareNotOccupied(x)) {
+    while (x >= 0 && x%8 !== 7 && squareNotOccupied(x)) {
       squares.push(x)
       x -= 1
     }
   }
   if (squareId%8 < 7) {
     let x = squareId + 1 
-    while (x >= 0 && x%8 != 0 && squareNotOccupied(x)) {
+    while (x >= 0 && x%8 !== 0 && squareNotOccupied(x)) {
       squares.push(x)
       x += 1
     }
