@@ -10,6 +10,9 @@ squares[50] = [50, { type: 'P', color: 'white'}]
 squares[18] = [18, { type: 'K', color: 'black'}]
 squares[14] = [14, { type: 'P', color: 'black'}]
 squares[30] = [30, { type: 'R', color: 'black'}]
+squares[45] = [45, { type: 'B', color: 'white'}]
+squares[47] = [47, { type: 'Q', color: 'white'}]
+squares[3]  = [3, { type: 'N', color: 'black'}]
 //console.log(squares)
 
 const initBoard = []
