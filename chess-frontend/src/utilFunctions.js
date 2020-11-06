@@ -216,3 +216,7 @@ export const getAttackedSquares = (board, color) => {
   console.log(board.filter(square => (square[1] && square[1].color===color)))
   return board.filter(square => (square[1] && square[1].color===color)).map(square => controlledSquares(square,board)).flat()
 }
+
+export const isInCheck = (color) => {
+  
+}
