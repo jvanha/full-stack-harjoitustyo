@@ -20,6 +20,7 @@ const initBoard = []
 function App() {
   const [ board, setBoard ] = useState(squares)
   const [ attackedSquares, setAttackedSquares ] = useState(null)
+  const [ playerToMove, setPlayerToMove ] = useState('white')
   const movePiece = (from, to) => {
     const squareFrom = board[from]
     const newBoard = board.map(square => {
