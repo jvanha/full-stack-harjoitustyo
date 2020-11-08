@@ -8,13 +8,16 @@ for (i=0; i<64; i++) {
 }
 squares[56] = [56, { type: 'R', color: 'white'}]
 squares[50] = [50, { type: 'P', color: 'white'}]
-squares[18] = [18, { type: 'K', color: 'black'}]
+squares[4] = [4, { type: 'K', color: 'black'}]
 squares[14] = [14, { type: 'P', color: 'black'}]
-squares[30] = [30, { type: 'R', color: 'black'}]
+squares[33] = [33, { type: 'P', color: 'black'}]
+squares[0] = [0, { type: 'R', color: 'black'}]
+squares[7] = [7, { type: 'R', color: 'black'}]
 squares[45] = [45, { type: 'B', color: 'white'}]
 squares[47] = [47, { type: 'Q', color: 'white'}]
 squares[60] = [60, { type: 'K', color: 'white'}]
 squares[3]  = [3, { type: 'N', color: 'black'}]
+squares[63] = [63, { type: 'R', color: 'white'}]
 //console.log(squares)
 
 const initBoard = []
@@ -29,24 +32,67 @@ function App() {
   const [ enPassant, setEnpassant ] = useState(null)
   console.log('castle rights App')
   console.log(longCastleWhite, shortCastleWhite, longCastleBlack,shortCastleBlack)
+  console.log('enPassant App', enPassant)
   const movePiece = (from, to) => {
     const squareFrom = board[from]
     const color = squareFrom[1].color
     const type = squareFrom[1].type
-
+    //console.log('squareFrom',squareFrom)
     const newBoard = board.map(square => {
       if (square[0] === to) return [to, squareFrom[1]]
       if (square[0] === from) return [from, null]
       return square
     })
+    //console.log('newBoard',newBoard)
     if (!isInCheck(color, newBoard))
       if (type === 'K') {
         if (color === 'white') {
           setLongCastleWhite(false)
           setShortCastleWhite(false)
+          if (longCastleWhite && to === 58) {
+            setBoard(newBoard.map(square => {
+              if (square[0] === 59) return [59, { type: 'R', color: 'white'}]
+              if (square[0] === 56) return [56, null]
+              return square
+            }))
+            setPlayerToMove(playerToMove === 'white' ? 'black' : 'white')
+            setEnpassant(null)
+            return 
+          }
+          else if (shortCastleWhite && to === 62) {
+            setBoard(newBoard.map(square => {
+              if (square[0] === 61) return [61, { type: 'R', color: 'white'}]
+              if (square[0] === 63) return [63, null]
+              return square
+            }))
+            setPlayerToMove(playerToMove === 'white' ? 'black' : 'white')
+            setEnpassant(null)
+            return
+          }
+          
         } else {
           setLongCastleBlack(false)
           setShortCastleBlack(false)
+          if (longCastleBlack && to === 2) {
+            setBoard(newBoard.map(square => {
+              if (square[0] === 3) return [3, { type: 'R', color: 'black'}]
+              if (square[0] === 0) return [0, null]
+              return square
+            }))
+            setPlayerToMove(playerToMove === 'white' ? 'black' : 'white')
+            setEnpassant(null)
+            return 
+          }
+          else if (shortCastleBlack && to === 6) {
+            setBoard(newBoard.map(square => {
+              if (square[0] === 5) return [5, { type: 'R', color: 'black'}]
+              if (square[0] === 7) return [7, null]
+              return square
+            }))
+            setPlayerToMove(playerToMove === 'white' ? 'black' : 'white')
+            setEnpassant(null)
+            return
+          }
         }
       }
       else if (type === 'R') {
@@ -57,6 +103,15 @@ function App() {
           if (squareFrom[0] === 0) setLongCastleBlack(false)
           if (squareFrom[0] === 7) setShortCastleBlack(false)
         }
+      }
+      if (type === 'P') {
+        console.log('App to', to)
+        if ((color === 'white' && from - to === 16))
+          setEnpassant(to + 8)
+        if ((color === 'black' && to - from === 16))
+          setEnpassant(to -8)
+      } else {
+        setEnpassant(null)
       }
       setBoard(newBoard)
       setPlayerToMove(playerToMove === 'white' ? 'black' : 'white')
@@ -70,7 +125,7 @@ function App() {
   }  
   return (
     <div>
-      {board && isCheckMated('black',board) && <div>black checkmated</div>}
+      {board && isCheckMated('black',board, enPassant) && <div>black checkmated</div>}
       <Board 
         board={board} 
         movePiece={movePiece}
@@ -80,6 +135,7 @@ function App() {
         longCastleWhite={longCastleWhite}
         shortCastleBlack={shortCastleBlack}
         shortCastleWhite={shortCastleWhite}
+        enPassant={enPassant}
       />
       {!attackedSquares && <button onClick={() => handleShow('black')}>show black's attack</button>}
       {!attackedSquares && <button onClick={() => handleShow('white')}>show white's attack</button>}

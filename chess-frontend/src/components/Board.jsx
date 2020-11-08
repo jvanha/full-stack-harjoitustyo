@@ -38,7 +38,7 @@ const MySquare = ({ content, handleSelection, selectedSquare, validMoves, attack
 }
 
 
-const Board = ({ board, movePiece, attackedSquares, playerToMove, ...props}) => {
+const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, ...props}) => {
   const [ selectedSquare, setSelectedSquare ] = useState(null)
   const [ validMoves, setValidMoves ] = useState([])
   
@@ -49,10 +49,10 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, ...props}) => 
     //console.log(playerToMove,'++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
     if (playerToMove === 'white') {
       //console.log('castle rights',props.longCastleWhite, props.shortCastleWhite)
-      setValidMoves(legitMoves(selectedSquare, board, props.longCastleWhite, props.shortCastleWhite))
+      setValidMoves(legitMoves(selectedSquare, board, props.longCastleWhite, props.shortCastleWhite, enPassant))
     }
     else {
-      setValidMoves(legitMoves(selectedSquare, board, props.longCastleBlack, props.shortCastleBlack))
+      setValidMoves(legitMoves(selectedSquare, board, props.longCastleBlack, props.shortCastleBlack, enPassant))
     }
     
   },[selectedSquare, board])
