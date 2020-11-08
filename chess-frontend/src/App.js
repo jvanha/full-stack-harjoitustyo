@@ -26,6 +26,7 @@ function App() {
   const [ shortCastleWhite, setShortCastleWhite ] = useState(true)
   const [ longCastleBlack, setLongCastleBlack ] = useState(true)
   const [ shortCastleBlack, setShortCastleBlack ] = useState(true)
+  const [ enPassant, setEnpassant ] = useState(null)
   console.log('castle rights App')
   console.log(longCastleWhite, shortCastleWhite, longCastleBlack,shortCastleBlack)
   const movePiece = (from, to) => {
