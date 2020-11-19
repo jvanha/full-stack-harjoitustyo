@@ -19,9 +19,8 @@ const squareStyle = {
 }
 const MySquare = ({ content, handleSelection, selectedSquare, validMoves, attackedSquares }) => {
   const index = content[0]
-  //console.log('attacked squares',attackedSquares)
-  
   let color = ((index + Math.floor(index/8))%2)===0 ? '#f58a42' : '#52170d'
+  
   if (content === selectedSquare)
     color = 'green'
   if (validMoves && validMoves.includes(content[0])) {
@@ -41,14 +40,9 @@ const MySquare = ({ content, handleSelection, selectedSquare, validMoves, attack
 const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, ...props}) => {
   const [ selectedSquare, setSelectedSquare ] = useState(null)
   const [ validMoves, setValidMoves ] = useState([])
-  
-  //console.log('selected', selectedSquare)
-  //console.log(board)
-  
+
   useEffect(() => {
-    //console.log(playerToMove,'++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
     if (playerToMove === 'white') {
-      //console.log('castle rights',props.longCastleWhite, props.shortCastleWhite)
       setValidMoves(legitMoves(selectedSquare, board, props.longCastleWhite, props.shortCastleWhite, enPassant))
     }
     else {
@@ -59,9 +53,7 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, ...
   
   const handleSelection = (square) => {
     const id = square[0]
-    //console.log('select id',id)
     if (!selectedSquare && board[id][1] && board[id][1].color=== playerToMove) {
-      //console.log('new')
       setSelectedSquare(square)
     } 
     else if (selectedSquare && selectedSquare[0] === id) setSelectedSquare(null)

@@ -10,12 +10,10 @@ const testPieceStyle = {
   borderStyle: 'solid'
 }
 const Piece = ({ piece, selectPiece }) => {
-  //console.log(piece)
   const [ selected, setSelected ] = useState(false)
   const borderColor = selected ? 'red' : 'blue' 
   const handleSelect = () => {
     if (piece) {
-      //console.log('perkel')
       setSelected(!selected)
       selectPiece()
     }

@@ -30,20 +30,15 @@ function App() {
   const [ longCastleBlack, setLongCastleBlack ] = useState(true)
   const [ shortCastleBlack, setShortCastleBlack ] = useState(true)
   const [ enPassant, setEnpassant ] = useState(null)
-  console.log('castle rights App')
-  console.log(longCastleWhite, shortCastleWhite, longCastleBlack,shortCastleBlack)
-  console.log('enPassant App', enPassant)
   const movePiece = (from, to) => {
     const squareFrom = board[from]
     const color = squareFrom[1].color
     const type = squareFrom[1].type
-    //console.log('squareFrom',squareFrom)
     const newBoard = board.map(square => {
       if (square[0] === to) return [to, squareFrom[1]]
       if (square[0] === from) return [from, null]
       return square
     })
-    //console.log('newBoard',newBoard)
     if (!isInCheck(color, newBoard))
       if (type === 'K') {
         if (color === 'white') {
