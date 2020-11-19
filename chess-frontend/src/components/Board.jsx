@@ -18,6 +18,7 @@ const squareStyle = {
   width: '12.5%'
 }
 const MySquare = ({ content, handleSelection, selectedSquare, validMoves, attackedSquares }) => {
+  const [ droppable, setDroppable ] = useState(false)
   const index = content[0]
   let color = ((index + Math.floor(index/8))%2)===0 ? '#f58a42' : '#52170d'
   
@@ -29,9 +30,15 @@ const MySquare = ({ content, handleSelection, selectedSquare, validMoves, attack
   if (attackedSquares && attackedSquares.includes(content[0])) {
     color = 'purple'
   }
+
+  
   return (
-    <div style={{ ...squareStyle, backgroundColor: color}} onClick={() => handleSelection(content)}>
-      {content[1] && <Piece piece={content[1]} selectPiece={() => console.log('...')}/>}
+    <div
+      id={index}
+      style={{ ...squareStyle, backgroundColor: color}} 
+      onClick={() => handleSelection(content)}
+    >
+      {content[1] && <Piece piece={content[1]} selectPiece={() => handleSelection(content)}/>}
     </div>
   )
 }
@@ -63,6 +70,14 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, ...
     }
       
   }
+  const handleDrop = (event, element) => {
+    console.log('handle Drop')
+    const id = event.dataTransfer.getData('id')
+    if (validMoves && validMoves.includes(element[0])) {
+      movePiece(id, element[0])
+      
+    }
+  }
   
   return (
     <div style={boardStyle}>
@@ -74,6 +89,7 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, ...
           validMoves={validMoves}
           handleSelection={handleSelection}
           attackedSquares={attackedSquares}
+          onDrop={(event, element) => handleDrop(event, element)}
         />   
       ))}
     </div>

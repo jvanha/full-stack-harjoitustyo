@@ -9,18 +9,25 @@ const testPieceStyle = {
   borderColor: 'blue',
   borderStyle: 'solid'
 }
-const Piece = ({ piece, selectPiece }) => {
+const Piece = ({ piece, selectPiece, id }) => {
   const [ selected, setSelected ] = useState(false)
   const borderColor = selected ? 'red' : 'blue' 
-  const handleSelect = () => {
+  const handleSelect = (event) => {
+    event.dataTransfer.setData('id', id)
     if (piece) {
       setSelected(!selected)
       selectPiece()
+      console.log('DRAGGED')
+      console.log(event.dataTransfer.getData('id'))
     }
   }
   return (
-    <div style={{...testPieceStyle, borderColor, backgroundColor: piece.color, color: piece.color==='black' ? 'white' : 'black'}}
-          onClick={() => handleSelect}>
+    <div 
+      style={{...testPieceStyle, borderColor, backgroundColor: piece.color, color: piece.color==='black' ? 'white' : 'black'}}
+      draggable='true'
+      onDragStart={(event) => handleSelect(event)}
+      onDragEnd={() => setSelected(false)}
+      onClick={() => handleSelect}>
       {piece.type}
     </div>
   )

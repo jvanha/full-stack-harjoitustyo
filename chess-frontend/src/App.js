@@ -8,6 +8,7 @@ for (i=0; i<64; i++) {
 }
 squares[56] = [56, { type: 'R', color: 'white'}]
 squares[50] = [50, { type: 'P', color: 'white'}]
+squares[31] = [31, { type: 'P', color: 'white'}]
 squares[4] = [4, { type: 'K', color: 'black'}]
 squares[14] = [14, { type: 'P', color: 'black'}]
 squares[33] = [33, { type: 'P', color: 'black'}]
@@ -18,7 +19,7 @@ squares[47] = [47, { type: 'Q', color: 'white'}]
 squares[60] = [60, { type: 'K', color: 'white'}]
 squares[3]  = [3, { type: 'N', color: 'black'}]
 squares[63] = [63, { type: 'R', color: 'white'}]
-//console.log(squares)
+
 
 const initBoard = []
 function App() {
@@ -35,8 +36,14 @@ function App() {
     const color = squareFrom[1].color
     const type = squareFrom[1].type
     const newBoard = board.map(square => {
-      if (square[0] === to) return [to, squareFrom[1]]
-      if (square[0] === from) return [from, null]
+      if (square[0] === to) {
+        if (type === 'P' && (square[0] < 8 || square[0] > 55))
+          return [to, { type: 'Q', color }] 
+        return [to, squareFrom[1]]
+      }
+      else if (square[0] === from) return [from, null]
+      else if (to === enPassant && square[0] === Math.floor(from/8)*8 + to%8)
+       return [square[0], null]
       return square
     })
     if (!isInCheck(color, newBoard))
