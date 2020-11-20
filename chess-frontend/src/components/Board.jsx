@@ -17,8 +17,7 @@ const squareStyle = {
   height: '12.5%',
   width: '12.5%'
 }
-const MySquare = ({ content, handleSelection, selectedSquare, validMoves, attackedSquares }) => {
-  const [ droppable, setDroppable ] = useState(false)
+const MySquare = ({ content, handleSelection, selectedSquare, validMoves, attackedSquares, handleDragOver }) => {
   const index = content[0]
   let color = ((index + Math.floor(index/8))%2)===0 ? '#f58a42' : '#52170d'
   
@@ -31,12 +30,12 @@ const MySquare = ({ content, handleSelection, selectedSquare, validMoves, attack
     color = 'purple'
   }
 
-  
   return (
     <div
       id={index}
       style={{ ...squareStyle, backgroundColor: color}} 
       onClick={() => handleSelection(content)}
+      onDragEnter={handleDragOver}
     >
       {content[1] && <Piece piece={content[1]} selectPiece={() => handleSelection(content)}/>}
     </div>
@@ -47,6 +46,7 @@ const MySquare = ({ content, handleSelection, selectedSquare, validMoves, attack
 const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, ...props}) => {
   const [ selectedSquare, setSelectedSquare ] = useState(null)
   const [ validMoves, setValidMoves ] = useState([])
+  const [ squareDraggedOver, setSquareDraggedOver ] = useState(null)
 
   useEffect(() => {
     if (playerToMove === 'white') {
@@ -59,36 +59,38 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, ...
   },[selectedSquare, board])
   
   const handleSelection = (square) => {
+    console.log('selectedSquare',selectedSquare)
+    console.log('squareDraggedOver',squareDraggedOver)
+    console.log(square)
     const id = square[0]
-    if (!selectedSquare && board[id][1] && board[id][1].color=== playerToMove) {
+    if (selectedSquare && validMoves.includes(squareDraggedOver)) {
+      movePiece(selectedSquare[0], squareDraggedOver)
+      setSelectedSquare(null)
+    }
+    else if (!selectedSquare && board[id][1] && board[id][1].color=== playerToMove) {
       setSelectedSquare(square)
     } 
     else if (selectedSquare && selectedSquare[0] === id) setSelectedSquare(null)
-    else if (selectedSquare && validMoves.includes(id)){
+    else if (selectedSquare && validMoves.includes(id)) {
       movePiece(selectedSquare[0], id)
       setSelectedSquare(null)
-    }
+    } 
       
   }
-  const handleDrop = (event, element) => {
-    console.log('handle Drop')
-    if (validMoves && validMoves.includes(element[0])) {
-      movePiece(id, element[0])
-      
-    }
-  }
+  
   
   return (
     <div style={boardStyle}>
       {board.map(element => (
-        <MySquare 
+        <MySquare
+          draggable='false'
           key={element[0]}
           content={element}
           selectedSquare={selectedSquare}
           validMoves={validMoves}
           handleSelection={handleSelection}
           attackedSquares={attackedSquares}
-          onDrop={(event, element) => handleDrop(event, element)}
+          handleDragOver={() => setSquareDraggedOver(element[0])}
         />   
       ))}
     </div>
