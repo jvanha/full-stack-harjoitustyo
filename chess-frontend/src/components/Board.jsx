@@ -72,7 +72,6 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, ...
   }
   const handleDrop = (event, element) => {
     console.log('handle Drop')
-    const id = event.dataTransfer.getData('id')
     if (validMoves && validMoves.includes(element[0])) {
       movePiece(id, element[0])
       

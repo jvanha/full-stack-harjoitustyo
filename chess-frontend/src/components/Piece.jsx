@@ -13,7 +13,7 @@ const Piece = ({ piece, selectPiece, id }) => {
   const [ selected, setSelected ] = useState(false)
   const borderColor = selected ? 'red' : 'blue' 
   const handleSelect = (event) => {
-    event.dataTransfer.setData('id', id)
+    dataTran
     if (piece) {
       setSelected(!selected)
       selectPiece()
