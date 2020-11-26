@@ -53,7 +53,6 @@ const resolvers = {
       subscribe: withFilter(() => pubsub.asyncIterator('MOVE_MADE'), (payload, variables) => {
         return payload.opponentId === variables.playerId
       })
-    //  subscribe: () => pubsub.asyncIterator(['MOVE_MADE'])
     }
   }
 }
