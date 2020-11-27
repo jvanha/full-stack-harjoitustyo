@@ -59,9 +59,6 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, ...
   },[selectedSquare, board])
   
   const handleSelection = (square) => {
-    console.log('selectedSquare',selectedSquare)
-    console.log('squareDraggedOver',squareDraggedOver)
-    console.log(square)
     const id = square[0]
     if (selectedSquare && validMoves.includes(squareDraggedOver)) {
       movePiece(selectedSquare[0], squareDraggedOver)

@@ -25,13 +25,9 @@ const Piece = ({ piece, selectPiece, id }) => {
         setSelected(!selected)
         selectPiece()
       }, 0)
-      
-      console.log('DRAGGED')
-      console.log(event.dataTransfer.getData('id'))
     }
   }
   const handleDragEnd = () => {
-    console.log('drag ended')
     setDragging(false)
     setSelected(false)
     selectPiece()
