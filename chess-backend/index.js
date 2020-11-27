@@ -61,7 +61,9 @@ const typeDefs = gql`
   }
   type Subscription {
     moveMade(playerId: String): Move
+    userLoggedIn: User
   }
+
 `
 
 const resolvers = {
@@ -79,6 +81,8 @@ const resolvers = {
       if (!user || password != '1234') {
         throw new UserInputError('Bad credentials')
       }
+      
+      pubsub.publish('USER_LOGGED_IN', { userLoggedIn: user})
       const userForToken = {
         username: user.username,
         id:  user._id
@@ -87,21 +91,20 @@ const resolvers = {
     },
     makeAMove: (root, args) => {
       const { opponentId, from, to } = args
-      //const from = args.from
-      //const to = args.to
       const move = { from, to }
-      console.log(move)
-      //const opponentId = args.opponentId
       pubsub.publish('MOVE_MADE', { opponentId, moveMade: move })
       return move
-    }
+    },
   },
   Subscription: {
     moveMade: {
       subscribe: withFilter(() => pubsub.asyncIterator('MOVE_MADE'), (payload, variables) => {
         return payload.opponentId === variables.playerId
       })
-    }
+    },
+    userLoggedIn: {
+      subscribe: () => pubsub.asyncIterator(['USER_LOGGED_IN'])
+    },
   }
 }
 
@@ -113,23 +116,3 @@ const server = new ApolloServer({
 server.listen().then(({ url }) => {
   console.log(`Server ready at ${url}`)
 })
-
-/*
-const { ApolloServer, gql } = require('apollo-server')
-
-const typeDefs = gql`
-
-`
-const resolvers = {
-  
-}
-
-const server = new ApolloServer([
-  typeDefs,
-  resolvers,
-])
-
-server.listen().then(({ url }) => {
-  console.log('Server ready at', url)
-})
-*/

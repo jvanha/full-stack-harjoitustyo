@@ -1,5 +1,8 @@
+import { useApolloClient } from '@apollo/client';
 import React, { useState } from 'react';
 import Board from './components/Board'
+import LoginForm from './components/LoginForm';
+import RegistryForm from './components/RegistryForm'
 import { getAttackedSquares, isCheckMated, isInCheck } from './utilFunctions'
 let squares = Array(64)//[...Array(64).keys()] 
 let i
@@ -23,6 +26,7 @@ squares[63] = [63, { type: 'R', color: 'white'}]
 
 const initBoard = []
 function App() {
+  const [ token, setToken ] = useState(null)
   const [ board, setBoard ] = useState(squares)
   const [ attackedSquares, setAttackedSquares ] = useState(null)
   const [ playerToMove, setPlayerToMove ] = useState('white')
@@ -31,6 +35,8 @@ function App() {
   const [ longCastleBlack, setLongCastleBlack ] = useState(true)
   const [ shortCastleBlack, setShortCastleBlack ] = useState(true)
   const [ enPassant, setEnpassant ] = useState(null)
+  const client = useApolloClient()
+
   const movePiece = (from, to) => {
     const squareFrom = board[from]
     const color = squareFrom[1].color
@@ -118,15 +124,28 @@ function App() {
       setBoard(newBoard)
       setPlayerToMove(playerToMove === 'white' ? 'black' : 'white')
   }
+  
   const handleShow = (color) => {
     if (attackedSquares == null) {
       setAttackedSquares(getAttackedSquares(board, color))
     } else {
       setAttackedSquares(null)
     }
-  }  
+  }
+  
+  const logout = () => {
+    console.log('logout')
+    localStorage.clear()
+    setToken(null)
+    client.resetStore()
+  } 
   return (
     <div>
+      
+      {token 
+        ? <div style={{ margin: 10 }}><button onClick={logout}>Logout</button></div>
+        : <div><RegistryForm /><LoginForm setToken={setToken}/></div>
+      }
       {board && isCheckMated('black',board, enPassant) && <div>black checkmated</div>}
       <Board 
         board={board} 
