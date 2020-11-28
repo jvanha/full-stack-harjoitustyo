@@ -68,6 +68,7 @@ const typeDefs = gql`
 
 const resolvers = {
   Query: {
+    allUsers: () => User.find([]),
     hah: () => 'hah'
   },
   Mutation: {
