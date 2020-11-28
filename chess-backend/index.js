@@ -4,6 +4,9 @@ const pubsub = new PubSub()
 const jwt = require('jsonwebtoken')
 const User = require('./models/user')
 
+let usersLoggedIn = []
+
+
 const JWT_SECRET = 'suusialas'
 const MONGODB_URI = 'mongodb+srv://fullstack:poalkj@cluster0.j1rcu.mongodb.net/chess?retryWrites=true&w=majority'
 console.log('connecting to', MONGODB_URI)
@@ -43,6 +46,7 @@ const typeDefs = gql`
 
   type Query {
     hah: String!
+    allUsers: [User]
   }
 
   type Mutation {
@@ -53,6 +57,7 @@ const typeDefs = gql`
       username: String!
       password: String!
     ): Token
+    logout: User
     makeAMove(
       opponentId: String!
       from: Int!
@@ -62,13 +67,15 @@ const typeDefs = gql`
   type Subscription {
     moveMade(playerId: String): Move
     userLoggedIn: User
+    userLoggedOut: User
   }
 
 `
 
 const resolvers = {
   Query: {
-    allUsers: () => User.find([]),
+    allUsers: () => usersLoggedIn,
+    
     hah: () => 'hah'
   },
   Mutation: {
@@ -82,13 +89,23 @@ const resolvers = {
       if (!user || password != '1234') {
         throw new UserInputError('Bad credentials')
       }
-      
-      pubsub.publish('USER_LOGGED_IN', { userLoggedIn: user})
+      usersLoggedIn = [...usersLoggedIn, user]
+      console.log(usersLoggedIn)
+      const userForPublish = {
+        username: user.username,
+        id_: user._id
+      }
+      pubsub.publish('USER_LOGGED_IN', { userLoggedIn: userForPublish})
       const userForToken = {
         username: user.username,
         id:  user._id
       }
       return { value: jwt.sign(userForToken, JWT_SECRET)}
+    },
+    logout: async (root, args, context) => {
+      const currentUser = context.currentUser
+      usersLoggedIn = userLoggedIn.filter(user => user.id !== currentUser.id)
+      pubsub.publish('USER_LOGGED_OUT', { userLoggedIn: currentUser})
     },
     makeAMove: (root, args) => {
       const { opponentId, from, to } = args
@@ -106,14 +123,28 @@ const resolvers = {
     userLoggedIn: {
       subscribe: () => pubsub.asyncIterator(['USER_LOGGED_IN'])
     },
+    userLoggedOut: {
+      subscribe: () => pubsub.asyncIterator(['USER_LOGGED_OUT'])
+    }
   }
 }
 
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  context: async ({ req }) => {
+    const auth = req ? req.headers.authorization : null
+    if (auth && auth.toLowerCase().startsWith('bearer ')) {
+      const decodedToken = jwt.verify(
+        auth.substring(7), JWT_SECRET
+      )
+      const currentUser = await User.findById(decodedToken.id)
+      return { currentUser }
+    }
+  }
 })
 
-server.listen().then(({ url }) => {
-  console.log(`Server ready at ${url}`)
+server.listen().then(({ url, subscriptionsUrl }) => {
+  console.log(`Server ready at`, url)
+  console.log('Subscriptions ready at', subscriptionsUrl)
 })

@@ -1,6 +1,6 @@
 import { useMutation } from '@apollo/client'
 import React, { useState } from 'react'
-import { CREATE_USER } from '../queries'
+import { CREATE_USER } from '../graphql/mutations'
 
 const RegistryForm = () => {
   const [username, setUsername] = useState('')

@@ -1,8 +1,10 @@
-import { useApolloClient } from '@apollo/client';
+import { useApolloClient, useQuery } from '@apollo/client';
 import React, { useState } from 'react';
 import Board from './components/Board'
 import LoginForm from './components/LoginForm';
 import RegistryForm from './components/RegistryForm'
+import Users from './components/Users';
+import { ALL_USERS } from './graphql/queries';
 import { getAttackedSquares, isCheckMated, isInCheck } from './utilFunctions'
 let squares = Array(64)//[...Array(64).keys()] 
 let i
@@ -36,6 +38,8 @@ function App() {
   const [ shortCastleBlack, setShortCastleBlack ] = useState(true)
   const [ enPassant, setEnpassant ] = useState(null)
   const client = useApolloClient()
+
+  const result = useQuery(ALL_USERS)
 
   const movePiece = (from, to) => {
     const squareFrom = board[from]
@@ -138,7 +142,11 @@ function App() {
     localStorage.clear()
     setToken(null)
     client.resetStore()
-  } 
+  }
+  let users
+  if (!result.loading && result.data && result.data.allUsers) {
+    users = result.data.allUsers
+  }
   return (
     <div>
       
@@ -162,8 +170,9 @@ function App() {
       {!attackedSquares && <button onClick={() => handleShow('white')}>show white's attack</button>}
       {attackedSquares && <button onClick={() => handleShow('')}>hide attack</button>}
       <button onClick={() => isInCheck('black', board)}>is black in check</button>
+      {users ? <Users users={result.data.allUsers}/> : null}
     </div>
   );
 }
-
+//<Users users={result.data.allUsers}/>
 export default App;
