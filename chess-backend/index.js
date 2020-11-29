@@ -63,11 +63,15 @@ const typeDefs = gql`
       from: Int!
       to: Int!
       ): Move
+    challenge(
+      opponentId: String!
+    ): ID
   }
   type Subscription {
     moveMade(playerId: String): Move
     userLoggedIn: User
     userLoggedOut: User
+    challengeIssued(playerId: String): User
   }
 
 `
@@ -89,11 +93,12 @@ const resolvers = {
       if (!user || password != '1234') {
         throw new UserInputError('Bad credentials')
       }
-      usersLoggedIn = [...usersLoggedIn, user]
+      if (!usersLoggedIn.map(user => user.id).includes(user.id))
+        usersLoggedIn = [...usersLoggedIn, user]
       console.log(usersLoggedIn)
       const userForPublish = {
         username: user.username,
-        id_: user._id
+        id: user._id
       }
       pubsub.publish('USER_LOGGED_IN', { userLoggedIn: userForPublish})
       const userForToken = {
@@ -104,9 +109,23 @@ const resolvers = {
     },
     logout: async (root, args, context) => {
       const currentUser = context.currentUser
-      usersLoggedIn = userLoggedIn.filter(user => user.id !== currentUser.id)
-      pubsub.publish('USER_LOGGED_OUT', { userLoggedIn: currentUser})
+      console.log(currentUser,'logged out')
+      usersLoggedIn = usersLoggedIn.filter(user => user.id !== currentUser.id)
+      usersLoggedIn.filter(user => user.id !== currentUser.id)
+      const user = {
+        username: currentUser.username,
+        id: currentUser._id
+      }
+      pubsub.publish('USER_LOGGED_OUT', { userLoggedOut: user})
+      return user
     },
+
+    challenge: async (root, args) => {
+      const opponentId = args.opponentId
+      pubsub.publish('CHALLENGE_ISSUED', { opponentId })
+      return opponentId
+    },
+
     makeAMove: (root, args) => {
       const { opponentId, from, to } = args
       const move = { from, to }
@@ -118,6 +137,11 @@ const resolvers = {
     moveMade: {
       subscribe: withFilter(() => pubsub.asyncIterator('MOVE_MADE'), (payload, variables) => {
         return payload.opponentId === variables.playerId
+      })
+    },
+    challengeIssued: {
+      subscribe: withFilter(() => pubsub.asyncIterator('CHALLENGE_ISSUED'), (payload, variables) => {
+        return payload.opponentId = variables.playerId
       })
     },
     userLoggedIn: {
@@ -134,6 +158,7 @@ const server = new ApolloServer({
   resolvers,
   context: async ({ req }) => {
     const auth = req ? req.headers.authorization : null
+
     if (auth && auth.toLowerCase().startsWith('bearer ')) {
       const decodedToken = jwt.verify(
         auth.substring(7), JWT_SECRET

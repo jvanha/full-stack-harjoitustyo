@@ -1,10 +1,12 @@
-import { useApolloClient, useQuery } from '@apollo/client';
-import React, { useState } from 'react';
+import { useApolloClient, useMutation, useQuery, useSubscription } from '@apollo/client';
+import React, { useEffect, useState } from 'react';
 import Board from './components/Board'
 import LoginForm from './components/LoginForm';
 import RegistryForm from './components/RegistryForm'
 import Users from './components/Users';
+import { LOGOUT } from './graphql/mutations';
 import { ALL_USERS } from './graphql/queries';
+import { USER_LOGGED_IN, USER_LOGGED_OUT} from './graphql/subscriptions';
 import { getAttackedSquares, isCheckMated, isInCheck } from './utilFunctions'
 let squares = Array(64)//[...Array(64).keys()] 
 let i
@@ -37,9 +39,43 @@ function App() {
   const [ longCastleBlack, setLongCastleBlack ] = useState(true)
   const [ shortCastleBlack, setShortCastleBlack ] = useState(true)
   const [ enPassant, setEnpassant ] = useState(null)
+  const [ users, setUsers ] = useState([])
   const client = useApolloClient()
 
   const result = useQuery(ALL_USERS)
+  const [ logout, logoutResult ] = useMutation(LOGOUT)
+  
+  useSubscription(USER_LOGGED_IN, {
+    onSubscriptionData: ({ subscriptionData}) => {
+      console.log('subscriptionData',subscriptionData)
+      const user = subscriptionData.data.userLoggedIn
+      if (!users.map(user => user.id).includes(user.id))
+        setUsers(users.concat(user))
+    }
+  })
+
+  useSubscription(USER_LOGGED_OUT, {
+    onSubscriptionData: ({ subscriptionData}) => {
+      console.log('subscriptionData',subscriptionData)
+      setUsers(users.filter(user => user.id !== subscriptionData.data.userLoggedOut.id))
+    }
+  })
+  
+  useEffect(() => {
+    if (!result.loading && result.data && result.data.allUsers) {
+      setUsers(result.data.allUsers)
+    }
+  }, [result])
+
+  useEffect(() => {
+    console.log('logoutResult',logoutResult)
+    if (logoutResult.called && !logoutResult.loading) {
+      localStorage.clear()
+      setToken(null)
+      client.resetStore()
+    }
+    
+  }, [logoutResult.data])
 
   const movePiece = (from, to) => {
     const squareFrom = board[from]
@@ -117,7 +153,6 @@ function App() {
         }
       }
       if (type === 'P') {
-        console.log('App to', to)
         if ((color === 'white' && from - to === 16))
           setEnpassant(to + 8)
         if ((color === 'black' && to - from === 16))
@@ -136,17 +171,7 @@ function App() {
       setAttackedSquares(null)
     }
   }
-  
-  const logout = () => {
-    console.log('logout')
-    localStorage.clear()
-    setToken(null)
-    client.resetStore()
-  }
-  let users
-  if (!result.loading && result.data && result.data.allUsers) {
-    users = result.data.allUsers
-  }
+ 
   return (
     <div>
       
@@ -170,7 +195,7 @@ function App() {
       {!attackedSquares && <button onClick={() => handleShow('white')}>show white's attack</button>}
       {attackedSquares && <button onClick={() => handleShow('')}>hide attack</button>}
       <button onClick={() => isInCheck('black', board)}>is black in check</button>
-      {users ? <Users users={result.data.allUsers}/> : null}
+      {users ? <Users users={users}/> : null}
     </div>
   );
 }

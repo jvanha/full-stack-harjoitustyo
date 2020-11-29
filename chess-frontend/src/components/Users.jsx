@@ -1,11 +1,27 @@
-import React from 'react'
+import { useSubscription } from '@apollo/client'
+import React, { useState } from 'react'
 
-const Users = ({ users }) => {
+const User = ({ user }) => {
+  const [ challenged, setChallenged ] = useState(false)
+  const handleChallence = () => {
+    setChallenged(true)
+  }
   return (
     <div>
-      <ul>
-        {users.map(user => <li>{user.username}</li>)}
-      </ul>
+      {user.username}
+      {challenged 
+        ? <span style={{ margin: 5, color: 'green'}}>waiting</span>
+        : <button onClick={handleChallence}>challence</button>
+      }
+    </div>
+  )
+}
+const Users = ({ users }) => {
+  return (
+    <div style={{ margin: 10}}>
+      {users.map(user => 
+        <User key={user.id} user={user} />
+      )}
     </div>
   )
 }
