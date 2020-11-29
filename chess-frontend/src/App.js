@@ -174,5 +174,5 @@ function App() {
     </div>
   );
 }
-//<Users users={result.data.allUsers}/>
+
 export default App;
