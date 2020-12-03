@@ -28,7 +28,26 @@ squares[3]  = [3, { type: 'N', color: 'black'}]
 squares[63] = [63, { type: 'R', color: 'white'}]
 
 
-const initBoard = []
+let initBoard = Array(64)
+for (i=0; i<64; i++) {
+  squares[i] = [i, null]
+}
+initBoard[0] = [0, { type: 'R', color: 'black'}]
+initBoard[1] 
+initBoard[2]
+initBoard[3]
+initBoard[4]
+initBoard[5]
+initBoard[6]
+initBoard[7]
+initBoard[8]
+initBoard[9]
+initBoard[11]
+initBoard[12]
+initBoard[13]
+initBoard[14]
+initBoard[15]
+initBoard[16]
 function App() {
   const [ token, setToken ] = useState(null)
   const [ board, setBoard ] = useState(squares)
