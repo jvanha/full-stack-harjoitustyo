@@ -1,17 +1,20 @@
-import { useApolloClient, useMutation, useQuery, useSubscription } from '@apollo/client';
+import { useApolloClient, useLazyQuery, useMutation, useQuery, useSubscription } from '@apollo/client';
 import React, { useEffect, useState } from 'react';
 import Board from './components/Board'
 import LoginForm from './components/LoginForm';
 import RegistryForm from './components/RegistryForm'
 import Users from './components/Users';
 import { LOGOUT } from './graphql/mutations';
-import { ALL_USERS } from './graphql/queries';
-import { USER_LOGGED_IN, USER_LOGGED_OUT} from './graphql/subscriptions';
+import { ALL_USERS, ME } from './graphql/queries';
+import { CHALLENGE_ISSUED, USER_LOGGED_IN, USER_LOGGED_OUT} from './graphql/subscriptions';
 import { getAttackedSquares, isCheckMated, isInCheck } from './utilFunctions'
-let squares = Array(64)//[...Array(64).keys()] 
+let squares = Array(64)//[...Array(64).keys()]
+let initBoard = Array(64)
+
 let i
 for (i=0; i<64; i++) {
   squares[i] = [i, null]
+  initBoard[i] = [i, null]
 }
 squares[56] = [56, { type: 'R', color: 'white'}]
 squares[50] = [50, { type: 'P', color: 'white'}]
@@ -28,29 +31,47 @@ squares[3]  = [3, { type: 'N', color: 'black'}]
 squares[63] = [63, { type: 'R', color: 'white'}]
 
 
-let initBoard = Array(64)
+
 for (i=0; i<64; i++) {
   squares[i] = [i, null]
 }
 initBoard[0] = [0, { type: 'R', color: 'black'}]
-initBoard[1] 
-initBoard[2]
-initBoard[3]
-initBoard[4]
-initBoard[5]
-initBoard[6]
-initBoard[7]
-initBoard[8]
-initBoard[9]
-initBoard[11]
-initBoard[12]
-initBoard[13]
-initBoard[14]
-initBoard[15]
-initBoard[16]
+initBoard[1] = [1, { type: 'N', color: 'black'}]
+initBoard[2] = [2, { type: 'B', color: 'black'}]
+initBoard[3] = [3, { type: 'Q', color: 'black'}]
+initBoard[4] = [4, { type: 'K', color: 'black'}]
+initBoard[5] = [5, { type: 'B', color: 'black'}]
+initBoard[6] = [6, { type: 'N', color: 'black'}]
+initBoard[7] = [7, { type: 'R', color: 'black'}]
+initBoard[8] = [8, { type: 'P', color: 'black'}]
+initBoard[9] = [9, { type: 'P', color: 'black'}]
+initBoard[10] = [10, { type: 'P', color: 'black'}]
+initBoard[11] = [11, { type: 'P', color: 'black'}]
+initBoard[12] = [12, { type: 'P', color: 'black'}]
+initBoard[13] = [13, { type: 'P', color: 'black'}]
+initBoard[14] = [14, { type: 'P', color: 'black'}]
+initBoard[15] = [15, { type: 'P', color: 'black'}]
+
+initBoard[48] = [48, { type: 'P', color: 'white'}]
+initBoard[49] = [49, { type: 'P', color: 'white'}]
+initBoard[50] = [50, { type: 'P', color: 'white'}]
+initBoard[51] = [51, { type: 'P', color: 'white'}]
+initBoard[52] = [52, { type: 'P', color: 'white'}]
+initBoard[53] = [53, { type: 'P', color: 'white'}]
+initBoard[54] = [54, { type: 'P', color: 'white'}]
+initBoard[55] = [55, { type: 'P', color: 'white'}]
+initBoard[56] = [56, { type: 'R', color: 'white'}]
+initBoard[57] = [57, { type: 'N', color: 'white'}]
+initBoard[58] = [58, { type: 'B', color: 'white'}]
+initBoard[59] = [59, { type: 'Q', color: 'white'}]
+initBoard[60] = [60, { type: 'K', color: 'white'}]
+initBoard[61] = [61, { type: 'B', color: 'white'}]
+initBoard[62] = [62, { type: 'N', color: 'white'}]
+initBoard[63] = [63, { type: 'R', color: 'white'}]
+
 function App() {
   const [ token, setToken ] = useState(null)
-  const [ board, setBoard ] = useState(squares)
+  const [ board, setBoard ] = useState(initBoard)
   const [ attackedSquares, setAttackedSquares ] = useState(null)
   const [ playerToMove, setPlayerToMove ] = useState('white')
   const [ longCastleWhite, setLongCastleWhite ] = useState(true)
@@ -59,8 +80,10 @@ function App() {
   const [ shortCastleBlack, setShortCastleBlack ] = useState(true)
   const [ enPassant, setEnpassant ] = useState(null)
   const [ users, setUsers ] = useState([])
+  const [ user, setUser ] = useState(null)
   const client = useApolloClient()
 
+  const [getUser, meResult] = useLazyQuery(ME) 
   const result = useQuery(ALL_USERS)
   const [ logout, logoutResult ] = useMutation(LOGOUT)
   
@@ -79,6 +102,29 @@ function App() {
       setUsers(users.filter(user => user.id !== subscriptionData.data.userLoggedOut.id))
     }
   })
+  console.log('meResult',meResult)
+  useSubscription(CHALLENGE_ISSUED, {
+    variables: { playerId: user ? user.id : ''},
+    onSubscriptionData: ({ subscriptionData }) => {
+      console.log('CHALLENGE ISSUED',subscriptionData)
+    }
+  })
+  useEffect(() => {
+    getUser()
+  },[token])
+
+  useEffect(() => {
+    console.log('meResult changed', meResult.data)
+    if (meResult.data && meResult.data.me) {
+      setUser(meResult.data.me)
+      console.log('user', user)
+    }
+  }, [meResult])
+
+  
+  
+   
+   
   
   useEffect(() => {
     if (!result.loading && result.data && result.data.allUsers) {

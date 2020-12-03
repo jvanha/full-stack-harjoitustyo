@@ -45,7 +45,7 @@ const typeDefs = gql`
   }
 
   type Query {
-    hah: String!
+    me: User
     allUsers: [User]
   }
 
@@ -65,13 +65,13 @@ const typeDefs = gql`
       ): Move
     challenge(
       opponentId: String!
-    ): ID
+    ): String!
   }
   type Subscription {
     moveMade(playerId: String): Move
     userLoggedIn: User
     userLoggedOut: User
-    challengeIssued(playerId: String): User
+    challengeIssued(playerId: String!): ID
   }
 
 `
@@ -80,7 +80,10 @@ const resolvers = {
   Query: {
     allUsers: () => usersLoggedIn,
     
-    hah: () => 'hah'
+    me: (root, args, context) => {
+      console.log('context.currentUser',context.currentUser)
+      return context.currentUser
+    }
   },
   Mutation: {
     createUser: (root, args) => {
@@ -141,11 +144,16 @@ const resolvers = {
     },
     challengeIssued: {
       subscribe: withFilter(() => pubsub.asyncIterator('CHALLENGE_ISSUED'), (payload, variables) => {
-        return payload.opponentId = variables.playerId
+        console.log('payload.opponentId',payload.opponentId)
+        console.log('variables.playerId',variables.playerId)
+        return payload.opponentId === variables.playerId
       })
     },
     userLoggedIn: {
-      subscribe: () => pubsub.asyncIterator(['USER_LOGGED_IN'])
+      subscribe: () => {
+        console.log('userLoggedIn')
+        return pubsub.asyncIterator(['USER_LOGGED_IN'])
+      }
     },
     userLoggedOut: {
       subscribe: () => pubsub.asyncIterator(['USER_LOGGED_OUT'])
@@ -164,7 +172,14 @@ const server = new ApolloServer({
         auth.substring(7), JWT_SECRET
       )
       const currentUser = await User.findById(decodedToken.id)
-      return { currentUser }
+      console.log('currentUser',currentUser)
+      return { 
+        currentUser: {
+          username: currentUser.username,
+          id: currentUser._id
+      
+        }
+      }
     }
   }
 })

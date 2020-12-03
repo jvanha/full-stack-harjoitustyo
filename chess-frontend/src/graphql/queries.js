@@ -7,4 +7,13 @@ export const ALL_USERS = gql`
       id
     }
   }
+`
+
+export const ME = gql`
+  query me{ 
+    me {
+      username
+      id
+    }
+  }
 ` 

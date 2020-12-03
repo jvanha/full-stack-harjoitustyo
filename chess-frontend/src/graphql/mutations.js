@@ -23,3 +23,8 @@ export const LOGOUT = gql`
     }
   }
 `
+export const CHALLENGE = gql`
+  mutation challenge($opponentId: String!) {
+    challenge(opponentId: $opponentId)
+  }
+`
