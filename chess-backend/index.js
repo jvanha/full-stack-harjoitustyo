@@ -71,7 +71,7 @@ const typeDefs = gql`
     moveMade(playerId: String): Move
     userLoggedIn: User
     userLoggedOut: User
-    challengeIssued(playerId: String!): ID
+    challengeIssued(playerId: String!): ID!
   }
 
 `
