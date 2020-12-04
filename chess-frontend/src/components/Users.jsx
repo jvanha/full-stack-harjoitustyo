@@ -1,10 +1,9 @@
-import { useMutation, useSubscription } from '@apollo/client'
+import { useMutation } from '@apollo/client'
 import React, { useEffect, useState } from 'react'
 import { CHALLENGE } from '../graphql/mutations'
 
 const User = ({ user }) => {
   const [ challenge, result ] = useMutation(CHALLENGE) 
-  
   const [ challenged, setChallenged ] = useState(false)
   useEffect(() => {
     if (result.called && !result.loading) {
@@ -12,12 +11,17 @@ const User = ({ user }) => {
     }
     
   }, [result.data])
+  const handleChallence = () => {
+    console.log('handleChallenge', user.id)
+    console.log(user)
+    challenge({ variables: user})
+  }
   return (
     <div>
       {user.username}
       {challenged 
         ? <span style={{ margin: 5, color: 'green'}}>waiting</span>
-        : <button onClick={() => challenge({ variables: { opponentId: user.id }})}>challence</button>
+        : <button onClick={handleChallence}>challence</button>
       }
     </div>
   )

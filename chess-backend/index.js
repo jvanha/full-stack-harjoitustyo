@@ -26,7 +26,7 @@ const typeDefs = gql`
   }
 
   type Token {
-    value: String!
+    value: String
   }
 
   type Piece {
@@ -64,14 +64,15 @@ const typeDefs = gql`
       to: Int!
       ): Move
     challenge(
-      opponentId: String!
-    ): String!
+      username: String!
+      id: String!
+    ): User!
   }
   type Subscription {
     moveMade(playerId: String): Move
     userLoggedIn: User
     userLoggedOut: User
-    challengeIssued(playerId: String!): ID!
+    challengeIssued(playerId: String!): User
   }
 
 `
@@ -115,18 +116,19 @@ const resolvers = {
       console.log(currentUser,'logged out')
       usersLoggedIn = usersLoggedIn.filter(user => user.id !== currentUser.id)
       usersLoggedIn.filter(user => user.id !== currentUser.id)
-      const user = {
-        username: currentUser.username,
-        id: currentUser._id
-      }
-      pubsub.publish('USER_LOGGED_OUT', { userLoggedOut: user})
-      return user
+      //const user = {
+      //  username: currentUser.username,
+      //  id: currentUser._id
+      //}
+      pubsub.publish('USER_LOGGED_OUT', { userLoggedOut: currentUser})
+      return currentUser
     },
 
     challenge: async (root, args) => {
-      const opponentId = args.opponentId
-      pubsub.publish('CHALLENGE_ISSUED', { opponentId })
-      return opponentId
+      //console.log('challenge resolver', opponentId)
+      console.log('args',args)
+      pubsub.publish('CHALLENGE_ISSUED', { challengeIssued: args })
+      return args
     },
 
     makeAMove: (root, args) => {
@@ -143,15 +145,14 @@ const resolvers = {
       })
     },
     challengeIssued: {
-      subscribe: withFilter(() => pubsub.asyncIterator('CHALLENGE_ISSUED'), (payload, variables) => {
-        console.log('payload.opponentId',payload.opponentId)
-        console.log('variables.playerId',variables.playerId)
-        return payload.opponentId === variables.playerId
+      subscribe: withFilter(() => pubsub.asyncIterator(['CHALLENGE_ISSUED']), (payload, variables) => {
+        console.log('payload', payload)
+        console.log('variables', variables)
+        return payload.challengeIssued.id === variables.playerId
       })
     },
     userLoggedIn: {
       subscribe: () => {
-        console.log('userLoggedIn')
         return pubsub.asyncIterator(['USER_LOGGED_IN'])
       }
     },
