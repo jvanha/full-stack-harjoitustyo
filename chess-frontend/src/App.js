@@ -83,7 +83,7 @@ function App() {
   const [ user, setUser ] = useState(null)
   const client = useApolloClient()
 
-  const [getUser, meResult] = useLazyQuery(ME) 
+  const [getUser, meResult] = useLazyQuery(ME, { fetchPolicy: 'network-only' }) 
   const result = useQuery(ALL_USERS)
   const [ logout, logoutResult ] = useMutation(LOGOUT)
   
@@ -119,6 +119,7 @@ function App() {
     if (meResult.data && meResult.data.me) {
       setUser(meResult.data.me)
       console.log('user', user)
+      
     }
   }, [meResult])
   
@@ -235,7 +236,6 @@ function App() {
  
   return (
     <div>
-      
       {token 
         ? <div style={{ margin: 10 }}><button onClick={logout}>Logout</button></div>
         : <div><RegistryForm /><LoginForm setToken={setToken}/></div>

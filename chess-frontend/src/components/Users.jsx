@@ -7,12 +7,13 @@ const User = ({ user }) => {
   const [ challenged, setChallenged ] = useState(false)
   useEffect(() => {
     if (result.called && !result.loading) {
+      console.log('challenge result data',result.data)
       setChallenged(true)
     }
     
   }, [result.data])
   const handleChallence = () => {
-    challenge({ variables: user})
+    challenge({ variables: { id: user.id, username: user.username}})
   }
   return (
     <div>

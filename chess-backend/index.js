@@ -72,7 +72,7 @@ const typeDefs = gql`
     moveMade(playerId: String): Move
     userLoggedIn: User
     userLoggedOut: User
-    challengeIssued(playerId: String!): User
+    challengeIssued(playerId: String): User
   }
 
 `
@@ -123,10 +123,11 @@ const resolvers = {
       return currentUser
     },
 
-    challenge: async (root, args) => {
-      //console.log('challenge resolver', opponentId)
-      //console.log('args',args)
-      pubsub.publish('CHALLENGE_ISSUED', { challengeIssued: args })
+    challenge: (root, args) => {
+      console.log('challenge resolver')
+      console.log('args',args)
+      const payload = { challengeIssued: args }
+      pubsub.publish('CHALLENGE_ISSUED', payload)
       return args
     },
 
@@ -145,6 +146,7 @@ const resolvers = {
     },
     challengeIssued: {
       subscribe: withFilter(() => pubsub.asyncIterator(['CHALLENGE_ISSUED']), (payload, variables) => {
+        console.log('challenge issued')
         console.log('payload', payload)
         console.log('variables', variables)
         return payload.challengeIssued.id === variables.playerId

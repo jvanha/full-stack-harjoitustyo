@@ -6,7 +6,11 @@ import { LOGIN } from '../graphql/mutations'
 const LoginForm = ({ setToken }) => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [login, result] = useMutation(LOGIN)
+  const [login, result] = useMutation(LOGIN, {
+    onError: (error) => {
+      console.log(error.graphQLErrors[0].message)
+    }
+  })
   
   useEffect(() => {
     if (result.data) {
