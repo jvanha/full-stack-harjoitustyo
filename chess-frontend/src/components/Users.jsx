@@ -12,8 +12,6 @@ const User = ({ user }) => {
     
   }, [result.data])
   const handleChallence = () => {
-    console.log('handleChallenge', user.id)
-    console.log(user)
     challenge({ variables: user})
   }
   return (

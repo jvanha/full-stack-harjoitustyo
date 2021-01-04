@@ -76,12 +76,11 @@ const typeDefs = gql`
   }
 
 `
-
 const resolvers = {
   Query: {
     allUsers: () => usersLoggedIn,
     
-    me: (root, args, context) => {
+    me: async (root, args, context) => {
       console.log('context.currentUser',context.currentUser)
       return context.currentUser
     }
@@ -126,7 +125,7 @@ const resolvers = {
 
     challenge: async (root, args) => {
       //console.log('challenge resolver', opponentId)
-      console.log('args',args)
+      //console.log('args',args)
       pubsub.publish('CHALLENGE_ISSUED', { challengeIssued: args })
       return args
     },

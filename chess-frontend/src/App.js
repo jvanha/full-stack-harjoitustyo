@@ -107,6 +107,7 @@ function App() {
     variables: { playerId: user ? user.id : ''},
     onSubscriptionData: ({ subscriptionData }) => {
       console.log('CHALLENGE ISSUED',subscriptionData)
+      alert("You have been challenged")
     }
   })
   useEffect(() => {
@@ -120,11 +121,6 @@ function App() {
       console.log('user', user)
     }
   }, [meResult])
-
-  
-  
-   
-   
   
   useEffect(() => {
     if (!result.loading && result.data && result.data.allUsers) {
