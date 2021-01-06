@@ -62,8 +62,12 @@ const typeDefs = gql`
       opponentId: String!
       from: Int!
       to: Int!
-      ): Move
+    ): Move
     challenge(
+      username: String!
+      id: String!
+    ): User!
+    acceptChallenge(
       username: String!
       id: String!
     ): User!
@@ -73,6 +77,7 @@ const typeDefs = gql`
     userLoggedIn: User
     userLoggedOut: User
     challengeIssued(playerId: String): User
+    challengeAccepted(playerId: String): [User]
   }
 
 `
@@ -122,15 +127,21 @@ const resolvers = {
       pubsub.publish('USER_LOGGED_OUT', { userLoggedOut: currentUser})
       return currentUser
     },
-
-    challenge: (root, args) => {
+    challenge: (root, args, context) => {
       console.log('challenge resolver')
       console.log('args',args)
-      const payload = { challengeIssued: args }
+      console.log('return', context.currentUser)
+      const payload = { challengeIssued: [args, context.currentUser]}
       pubsub.publish('CHALLENGE_ISSUED', payload)
       return args
     },
-
+    acceptChallenge: (root, args) => {
+      console.log('acceptChallenge resolver')
+      console.log('args', args)
+      const payload = { challengeAccepted: args}
+      pubsub.publish('CHALLENGE_ACCEPTED', payload)
+      return args
+    },
     makeAMove: (root, args) => {
       const { opponentId, from, to } = args
       const move = { from, to }
@@ -145,11 +156,21 @@ const resolvers = {
       })
     },
     challengeIssued: {
+      // TÄMÄ EI TOIMI
       subscribe: withFilter(() => pubsub.asyncIterator(['CHALLENGE_ISSUED']), (payload, variables) => {
         console.log('challenge issued')
         console.log('payload', payload)
         console.log('variables', variables)
-        return payload.challengeIssued.id === variables.playerId
+        console.log(payload.challengeIssued[0].id === variables.playerId)
+        return payload.challengeIssued[0].id === variables.playerId
+      })
+    },
+    challengeAccepted: {
+      subscribe: withFilter(() => pubsub.asyncIterator(['CHALLENGE_ACCEPTED']), (payload, variables) => {
+        console.log('challenge accepted')
+        console.log('payload', payload)
+        console.log('variables', variables)
+        return payload.challengeAccepted.id === variables.playerId
       })
     },
     userLoggedIn: {
@@ -178,8 +199,7 @@ const server = new ApolloServer({
       return { 
         currentUser: {
           username: currentUser.username,
-          id: currentUser._id
-      
+          id: currentUser._id.toString()
         }
       }
     }

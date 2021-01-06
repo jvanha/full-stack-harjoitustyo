@@ -24,3 +24,11 @@ export const CHALLENGE_ISSUED = gql`
     }
   }
 `
+export const CHALLENGE_ACCEPTED = gql`
+  subscription challengeAccepted($playerId: String!){
+    challengeAccepted(playerId: $playerId) {
+      username
+      id
+    }
+  }
+`

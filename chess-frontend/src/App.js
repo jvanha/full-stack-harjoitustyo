@@ -4,9 +4,9 @@ import Board from './components/Board'
 import LoginForm from './components/LoginForm';
 import RegistryForm from './components/RegistryForm'
 import Users from './components/Users';
-import { LOGOUT } from './graphql/mutations';
+import { LOGOUT, ACCEPT_CHALLENGE } from './graphql/mutations';
 import { ALL_USERS, ME } from './graphql/queries';
-import { CHALLENGE_ISSUED, USER_LOGGED_IN, USER_LOGGED_OUT} from './graphql/subscriptions';
+import { CHALLENGE_ACCEPTED, CHALLENGE_ISSUED, USER_LOGGED_IN, USER_LOGGED_OUT} from './graphql/subscriptions';
 import { getAttackedSquares, isCheckMated, isInCheck } from './utilFunctions'
 let squares = Array(64)//[...Array(64).keys()]
 let initBoard = Array(64)
@@ -86,7 +86,9 @@ function App() {
   const [getUser, meResult] = useLazyQuery(ME, { fetchPolicy: 'network-only' }) 
   const result = useQuery(ALL_USERS)
   const [ logout, logoutResult ] = useMutation(LOGOUT)
-  
+  const [ acceptChallenge, acceptChallengeResult ] = useMutation(ACCEPT_CHALLENGE)
+  console.log('user',user)
+
   useSubscription(USER_LOGGED_IN, {
     onSubscriptionData: ({ subscriptionData}) => {
       console.log('subscriptionData',subscriptionData)
@@ -103,13 +105,32 @@ function App() {
     }
   })
   console.log('meResult',meResult)
+
   useSubscription(CHALLENGE_ISSUED, {
     variables: { playerId: user ? user.id : ''},
     onSubscriptionData: ({ subscriptionData }) => {
       console.log('CHALLENGE ISSUED',subscriptionData)
-      alert("You have been challenged")
+      //const {username, id, ...rest} = subscriptionData.data.challengeIssued.args
+      if (window.confirm(`You have been challenged by\nAccept the challenge?`)) {
+        //acceptChallenge({ variables: { username, id}})
+        console.log('Moro')
+      }
     }
   })
+  useSubscription(CHALLENGE_ACCEPTED, {
+    variables: { playerId: user ? user.id : ''},
+    onSubscriptionData: ({ subscriptionData }) => {
+      console.log('CHALLENGE ISSUED',subscriptionData)
+      alert("Your challenge has been accepted")
+    }
+  })
+
+  useEffect(() => {
+    localStorage.clear()
+    setToken(null)
+    client.resetStore()
+  }, [])
+
   useEffect(() => {
     getUser()
   },[token])
@@ -117,7 +138,10 @@ function App() {
   useEffect(() => {
     console.log('meResult changed', meResult.data)
     if (meResult.data && meResult.data.me) {
-      setUser(meResult.data.me)
+      console.log('meResult.data.me',meResult.data.me)
+      const itsme = meResult.data.me
+      console.log({ id: itsme.id, username: itsme.username })
+      setUser({ id: itsme.id, username: itsme.username })
       console.log('user', user)
       
     }
@@ -138,6 +162,13 @@ function App() {
     }
     
   }, [logoutResult.data])
+
+  useEffect(() => {
+    if (acceptChallengeResult.called && !acceptChallengeResult.loading) {
+      setBoard(initBoard)
+      console.log('Game on!')
+    }
+  }, [acceptChallengeResult])
 
   const movePiece = (from, to) => {
     const squareFrom = board[from]
