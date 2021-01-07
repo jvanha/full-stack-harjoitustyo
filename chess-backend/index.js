@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 const pubsub = new PubSub()
 const jwt = require('jsonwebtoken')
 const User = require('./models/user')
+const { argsToArgsConfig } = require('graphql/type/definition')
 
 let usersLoggedIn = []
 
@@ -131,7 +132,11 @@ const resolvers = {
       console.log('challenge resolver')
       console.log('args',args)
       console.log('return', context.currentUser)
-      const payload = { challengeIssued: [args, context.currentUser]}
+      const payload = {
+        challengeIssued: {
+          challenger: context.currentUser,
+          challenged: args,
+        }}
       pubsub.publish('CHALLENGE_ISSUED', payload)
       return args
     },
