@@ -19,16 +19,20 @@ export const USER_LOGGED_OUT = gql`
 export const CHALLENGE_ISSUED = gql`
   subscription challengeIssued($playerId: String!){
     challengeIssued(playerId: $playerId) {
-      username
-      id
+      challenger {
+        username
+        id
+      }
     }
   }
 `
 export const CHALLENGE_ACCEPTED = gql`
   subscription challengeAccepted($playerId: String!){
     challengeAccepted(playerId: $playerId) {
-      username
-      id
+      challenged {
+        username
+        id
+      }
     }
   }
 `

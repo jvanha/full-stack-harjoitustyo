@@ -81,6 +81,8 @@ function App() {
   const [ enPassant, setEnpassant ] = useState(null)
   const [ users, setUsers ] = useState([])
   const [ user, setUser ] = useState(null)
+  const [ opponent, setOpponent ] = useState(null)
+  const [ myColor, setMyColor ] = useState(null)
   const client = useApolloClient()
 
   const [getUser, meResult] = useLazyQuery(ME, { fetchPolicy: 'network-only' }) 
@@ -110,18 +112,21 @@ function App() {
     variables: { playerId: user ? user.id : ''},
     onSubscriptionData: ({ subscriptionData }) => {
       console.log('CHALLENGE ISSUED',subscriptionData)
-      //const {username, id, ...rest} = subscriptionData.data.challengeIssued.args
-      if (window.confirm(`You have been challenged by\nAccept the challenge?`)) {
-        //acceptChallenge({ variables: { username, id}})
-        console.log('Moro')
+      const challenger = subscriptionData.data.challengeIssued.challenger
+      if (window.confirm(`You have been challenged by ${challenger.username} Accept the challenge?`)) {
+        console.log('challenger', challenger)
+        acceptChallenge({ variables: { username: challenger.username, id: challenger.id }})
       }
     }
   })
   useSubscription(CHALLENGE_ACCEPTED, {
     variables: { playerId: user ? user.id : ''},
     onSubscriptionData: ({ subscriptionData }) => {
-      console.log('CHALLENGE ISSUED',subscriptionData)
+      console.log('CHALLENGE ACCEPTED',subscriptionData)
       alert("Your challenge has been accepted")
+      setOpponent(subscriptionData.data.challengeAccepted.challenged)
+      setBoard(initBoard)
+      setMyColor('black')
     }
   })
 
@@ -165,12 +170,16 @@ function App() {
 
   useEffect(() => {
     if (acceptChallengeResult.called && !acceptChallengeResult.loading) {
+      //POTENTTIAALISESTI VÄÄRIN
+      setOpponent(acceptChallengeResult.data.acceptChallenge)
       setBoard(initBoard)
+      setMyColor('white')
       console.log('Game on!')
     }
   }, [acceptChallengeResult])
 
   const movePiece = (from, to) => {
+    console.log('playerToMove != myColor', playerToMove != myColor)
     const squareFrom = board[from]
     const color = squareFrom[1].color
     const type = squareFrom[1].type
@@ -248,8 +257,10 @@ function App() {
       if (type === 'P') {
         if ((color === 'white' && from - to === 16))
           setEnpassant(to + 8)
-        if ((color === 'black' && to - from === 16))
+        else if ((color === 'black' && to - from === 16))
           setEnpassant(to -8)
+         else 
+          setEnpassant(null)
       } else {
         setEnpassant(null)
       }
@@ -264,7 +275,7 @@ function App() {
       setAttackedSquares(null)
     }
   }
- 
+  console.log('enPassant',enPassant)
   return (
     <div>
       {token 

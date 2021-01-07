@@ -25,6 +25,10 @@ const typeDefs = gql`
     username: String!
     id: ID!
   }
+  type Opponents {
+    challenger: User!
+    challenged: User! 
+  }
 
   type Token {
     value: String
@@ -77,8 +81,8 @@ const typeDefs = gql`
     moveMade(playerId: String): Move
     userLoggedIn: User
     userLoggedOut: User
-    challengeIssued(playerId: String): User
-    challengeAccepted(playerId: String): [User]
+    challengeIssued(playerId: String): Opponents
+    challengeAccepted(playerId: String): Opponents
   }
 
 `
@@ -140,10 +144,15 @@ const resolvers = {
       pubsub.publish('CHALLENGE_ISSUED', payload)
       return args
     },
-    acceptChallenge: (root, args) => {
+    acceptChallenge: (root, args, context) => {
       console.log('acceptChallenge resolver')
+      console.log('context.currentUser',context.currentUser)
       console.log('args', args)
-      const payload = { challengeAccepted: args}
+      const payload = { 
+        challengeAccepted: {
+          challenger: args,
+          challenged: context.currentUser
+        }}
       pubsub.publish('CHALLENGE_ACCEPTED', payload)
       return args
     },
@@ -161,13 +170,12 @@ const resolvers = {
       })
     },
     challengeIssued: {
-      // TÄMÄ EI TOIMI
       subscribe: withFilter(() => pubsub.asyncIterator(['CHALLENGE_ISSUED']), (payload, variables) => {
         console.log('challenge issued')
         console.log('payload', payload)
         console.log('variables', variables)
-        console.log(payload.challengeIssued[0].id === variables.playerId)
-        return payload.challengeIssued[0].id === variables.playerId
+        console.log(payload.challengeIssued.challenged.id === variables.playerId)
+        return payload.challengeIssued.challenged.id === variables.playerId
       })
     },
     challengeAccepted: {
@@ -175,7 +183,7 @@ const resolvers = {
         console.log('challenge accepted')
         console.log('payload', payload)
         console.log('variables', variables)
-        return payload.challengeAccepted.id === variables.playerId
+        return payload.challengeAccepted.challenger.id === variables.playerId
       })
     },
     userLoggedIn: {

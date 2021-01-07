@@ -31,6 +31,7 @@ export const CHALLENGE = gql`
     }
   }
 `
+
 export const ACCEPT_CHALLENGE = gql`
   mutation acceptChallenge($id: String! $username: String!) {
     acceptChallenge(id: $id username: $username) {
@@ -39,5 +40,7 @@ export const ACCEPT_CHALLENGE = gql`
     }
   }
 `
+
+
 
 
