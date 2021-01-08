@@ -275,7 +275,7 @@ function App() {
       setAttackedSquares(null)
     }
   }
-  console.log('enPassant',enPassant)
+  
   return (
     <div>
       {token 
