@@ -4,9 +4,9 @@ import Board from './components/Board'
 import LoginForm from './components/LoginForm';
 import RegistryForm from './components/RegistryForm'
 import Users from './components/Users';
-import { LOGOUT, ACCEPT_CHALLENGE } from './graphql/mutations';
+import { LOGOUT, ACCEPT_CHALLENGE, MAKE_A_MOVE } from './graphql/mutations';
 import { ALL_USERS, ME } from './graphql/queries';
-import { CHALLENGE_ACCEPTED, CHALLENGE_ISSUED, USER_LOGGED_IN, USER_LOGGED_OUT} from './graphql/subscriptions';
+import { CHALLENGE_ACCEPTED, CHALLENGE_ISSUED, MOVE_MADE, USER_LOGGED_IN, USER_LOGGED_OUT} from './graphql/subscriptions';
 import { getAttackedSquares, isCheckMated, isInCheck } from './utilFunctions'
 let squares = Array(64)//[...Array(64).keys()]
 let initBoard = Array(64)
@@ -89,6 +89,7 @@ function App() {
   const result = useQuery(ALL_USERS)
   const [ logout, logoutResult ] = useMutation(LOGOUT)
   const [ acceptChallenge, acceptChallengeResult ] = useMutation(ACCEPT_CHALLENGE)
+  const [ makeAMove, makeAMoveResult ] = useMutation(MAKE_A_MOVE)
   console.log('user',user)
 
   useSubscription(USER_LOGGED_IN, {
@@ -129,7 +130,14 @@ function App() {
       setMyColor('black')
     }
   })
-
+  useSubscription(MOVE_MADE, {
+    variables: { opponentId: opponent ? opponent.id : ''},
+    onSubscriptionData: ({ subscriptionData }) => {
+      console.log('MOVE MADE', subscriptionData)
+      const move = subscriptionData.data.moveMade.move
+      movePiece(move.from, move.to)
+    } 
+  })
   useEffect(() => {
     localStorage.clear()
     setToken(null)
@@ -171,15 +179,23 @@ function App() {
   useEffect(() => {
     if (acceptChallengeResult.called && !acceptChallengeResult.loading) {
       //POTENTTIAALISESTI VÄÄRIN
+      console.log('acceptChallengeResult',acceptChallengeResult)
       setOpponent(acceptChallengeResult.data.acceptChallenge)
       setBoard(initBoard)
       setMyColor('white')
       console.log('Game on!')
     }
-  }, [acceptChallengeResult])
+  }, [acceptChallengeResult.data])
 
   const movePiece = (from, to) => {
-    console.log('playerToMove != myColor', playerToMove != myColor)
+    console.log('playerToMove != myColor', playerToMove !== myColor)
+    console.log('opponent', opponent)
+    if (opponent && playerToMove === myColor) {
+      //if (playerToMove !== myColor) return
+      console.log('Trying to make a move')
+      console.log({ variables: { userId: user.id, from, to}})
+      makeAMove({ variables: { userId: user.id, from, to}})
+    }
     const squareFrom = board[from]
     const color = squareFrom[1].color
     const type = squareFrom[1].type
@@ -278,6 +294,7 @@ function App() {
   
   return (
     <div>
+      {opponent && <div> opponent {opponent.username} {opponent.id}</div>}
       {token 
         ? <div style={{ margin: 10 }}><button onClick={logout}>Logout</button></div>
         : <div><RegistryForm /><LoginForm setToken={setToken}/></div>

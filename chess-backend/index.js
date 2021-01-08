@@ -53,6 +53,11 @@ const typeDefs = gql`
     me: User
     allUsers: [User]
   }
+  
+  type MoveUnit {
+    userId: String
+    move: Move!
+  }
 
   type Mutation {
     createUser(
@@ -64,7 +69,7 @@ const typeDefs = gql`
     ): Token
     logout: User
     makeAMove(
-      opponentId: String!
+      userId: String!
       from: Int!
       to: Int!
     ): Move
@@ -78,7 +83,7 @@ const typeDefs = gql`
     ): User!
   }
   type Subscription {
-    moveMade(playerId: String): Move
+    moveMade(opponentId: String): MoveUnit
     userLoggedIn: User
     userLoggedOut: User
     challengeIssued(playerId: String): Opponents
@@ -157,16 +162,24 @@ const resolvers = {
       return args
     },
     makeAMove: (root, args) => {
-      const { opponentId, from, to } = args
+      const { userId, from, to } = args
       const move = { from, to }
-      pubsub.publish('MOVE_MADE', { opponentId, moveMade: move })
+      const payload = {
+        moveMade: { userId, move }
+      }
+      console.log('makeAMove resolver')
+      console.log('payload', payload)
+      pubsub.publish('MOVE_MADE', payload)
       return move
     },
   },
   Subscription: {
     moveMade: {
-      subscribe: withFilter(() => pubsub.asyncIterator('MOVE_MADE'), (payload, variables) => {
-        return payload.opponentId === variables.playerId
+      subscribe: withFilter(() => pubsub.asyncIterator(['MOVE_MADE']), (payload, variables) => {
+        console.log('move made')
+        console.log('payload', payload)
+        console.log('variables', variables)
+        return payload.moveMade.userId === variables.opponentId
       })
     },
     challengeIssued: {

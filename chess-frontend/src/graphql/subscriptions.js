@@ -36,3 +36,13 @@ export const CHALLENGE_ACCEPTED = gql`
     }
   }
 `
+export const MOVE_MADE = gql`
+  subscription moveMade($opponentId: String!) {
+    moveMade(opponentId: $opponentId) {
+      move {
+        from
+        to
+      }
+    }
+  }
+`
