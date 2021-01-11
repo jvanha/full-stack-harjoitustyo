@@ -10,6 +10,13 @@ const boardStyle = {
   display: 'flex',
   flexWrap: 'wrap'
 }
+const boardStyleReversed = {
+  height: 500,
+  width: 500,
+  display: 'flex',
+  flexDirection: 'row-reverse',
+  flexWrap: 'wrap-reverse'
+}
 
 const squareStyle = {
   display: 'flex',
@@ -43,7 +50,7 @@ const MySquare = ({ content, handleSelection, selectedSquare, validMoves, attack
 }
 
 
-const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, ...props}) => {
+const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myColor, ...props}) => {
   const [ selectedSquare, setSelectedSquare ] = useState(null)
   const [ validMoves, setValidMoves ] = useState([])
   const [ squareDraggedOver, setSquareDraggedOver ] = useState(null)
@@ -59,6 +66,7 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, ...
   },[selectedSquare, board])
   
   const handleSelection = (square) => {
+    if (myColor !== playerToMove) return
     const id = square[0]
     if (selectedSquare && validMoves.includes(squareDraggedOver)) {
       movePiece(selectedSquare[0], squareDraggedOver)
@@ -77,7 +85,7 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, ...
   
   
   return (
-    <div style={boardStyle}>
+    <div style={myColor==="black" ? boardStyleReversed : boardStyle}>
       {board.map(element => (
         <MySquare
           draggable='false'

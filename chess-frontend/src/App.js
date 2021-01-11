@@ -197,6 +197,9 @@ function App() {
       console.log({ variables: { userId: user.id, from, to}})
       makeAMove({ variables: { userId: user.id, from, to}})
     }
+    console.log('movePiece board', board)
+    console.log('movePiece from', from)
+    console.log('movePiece to', to)
     const squareFrom = board[from]
     const color = squareFrom[1].color
     const type = squareFrom[1].type
@@ -300,7 +303,8 @@ function App() {
         ? <div style={{ margin: 10 }}><button onClick={logout}>Logout</button></div>
         : <div><RegistryForm /><LoginForm setToken={setToken}/></div>
       }
-      {board && isCheckMated('black',board, enPassant) && <div>black checkmated</div>}
+      {board && isCheckMated('black',board, enPassant) && <div>White won</div>}
+      {board && isCheckMated('white',board, enPassant) && <div>Black won</div>}
       <Board 
         board={board} 
         movePiece={movePiece}
@@ -311,6 +315,7 @@ function App() {
         shortCastleBlack={shortCastleBlack}
         shortCastleWhite={shortCastleWhite}
         enPassant={enPassant}
+        myColor={myColor}
       />
       {!attackedSquares && <button onClick={() => handleShow('black')}>show black's attack</button>}
       {!attackedSquares && <button onClick={() => handleShow('white')}>show white's attack</button>}
