@@ -9,6 +9,7 @@ import { ALL_USERS, ME } from './graphql/queries';
 import { CHALLENGE_ACCEPTED, CHALLENGE_ISSUED, MOVE_MADE, USER_LOGGED_IN, USER_LOGGED_OUT} from './graphql/subscriptions';
 import { getAttackedSquares, isCheckMated, isInCheck } from './utilFunctions'
 let squares = Array(64)//[...Array(64).keys()]
+const emptyBoard = Array(64)
 let initBoard = Array(64)
 
 let i
