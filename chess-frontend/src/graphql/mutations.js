@@ -40,6 +40,9 @@ export const ACCEPT_CHALLENGE = gql`
     }
   }
 `
+export const DECLINE_CHALLENGE = gql`
+  
+`
 export const MAKE_A_MOVE = gql`
   mutation makeAMove($userId: String! $from: Int! $to: Int!) {
     makeAMove(userId: $userId from: $from to: $to) {
