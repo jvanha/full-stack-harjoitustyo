@@ -26,9 +26,29 @@ export const CHALLENGE_ISSUED = gql`
     }
   }
 `
+export const CHALLENGE_CANCELLED = gql`
+  subscription challengeCancelled($playerId: String!){
+    challengeCancelled(playerId: $playerId) {
+      challenger {
+        username
+        id
+      }
+    }
+  }
+`
 export const CHALLENGE_ACCEPTED = gql`
   subscription challengeAccepted($playerId: String!){
     challengeAccepted(playerId: $playerId) {
+      challenged {
+        username
+        id
+      }
+    }
+  }
+`
+export const CHALLENGE_DECLINED = gql`
+  subscription challengeDeclined($playerId: String!){
+    challengeDeclined(playerId: $playerId) {
       challenged {
         username
         id

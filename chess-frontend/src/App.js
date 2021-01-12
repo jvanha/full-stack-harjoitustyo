@@ -4,9 +4,9 @@ import Board from './components/Board'
 import LoginForm from './components/LoginForm';
 import RegistryForm from './components/RegistryForm'
 import Users from './components/Users';
-import { LOGOUT, ACCEPT_CHALLENGE, MAKE_A_MOVE } from './graphql/mutations';
+import { LOGOUT, ACCEPT_CHALLENGE, MAKE_A_MOVE, DECLINE_CHALLENGE } from './graphql/mutations';
 import { ALL_USERS, ME } from './graphql/queries';
-import { CHALLENGE_ACCEPTED, CHALLENGE_ISSUED, MOVE_MADE, USER_LOGGED_IN, USER_LOGGED_OUT} from './graphql/subscriptions';
+import { CHALLENGE_ACCEPTED, CHALLENGE_CANCELLED, CHALLENGE_DECLINED, CHALLENGE_ISSUED, MOVE_MADE, USER_LOGGED_IN, USER_LOGGED_OUT} from './graphql/subscriptions';
 import { getAttackedSquares, isCheckMated, isInCheck } from './utilFunctions'
 let squares = Array(64)//[...Array(64).keys()]
 const emptyBoard = Array(64)
@@ -84,12 +84,14 @@ function App() {
   const [ user, setUser ] = useState(null)
   const [ opponent, setOpponent ] = useState(null)
   const [ myColor, setMyColor ] = useState(null)
+  const [ challengeWaiting, setChallengeWaiting ] = useState(null)
   const client = useApolloClient()
 
   const [getUser, meResult] = useLazyQuery(ME, { fetchPolicy: 'network-only' }) 
   const result = useQuery(ALL_USERS)
   const [ logout, logoutResult ] = useMutation(LOGOUT)
   const [ acceptChallenge, acceptChallengeResult ] = useMutation(ACCEPT_CHALLENGE)
+  const [ declineChallenge, declineChallengeResult ] = useMutation(DECLINE_CHALLENGE)
   const [ makeAMove, makeAMoveResult ] = useMutation(MAKE_A_MOVE)
   console.log('user',user)
 
@@ -115,10 +117,21 @@ function App() {
     onSubscriptionData: ({ subscriptionData }) => {
       console.log('CHALLENGE ISSUED',subscriptionData)
       const challenger = subscriptionData.data.challengeIssued.challenger
-      if (window.confirm(`You have been challenged by ${challenger.username} Accept the challenge?`)) {
+      if (window.confirm(`You have been challenged by ${challenger.username}. Accept the challenge?`)) {
         console.log('challenger', challenger)
         acceptChallenge({ variables: { username: challenger.username, id: challenger.id }})
+      } else {
+        declineChallenge({ variables: { username: challenger.username, id: challenger.id }})
+        console.log('YOU DECLINED THE CHALLENGE')
       }
+    }
+  })
+  useSubscription(CHALLENGE_CANCELLED, {
+    variables: { playerId: user ? user.id : ''},
+    onSubscriptionData: ({ subscriptionData }) => {
+      console.log('CHALLENGE CANCELLED',subscriptionData)
+      const challenger = subscriptionData.data.challengeCancelled.challenger
+      alert(`${challenger.username} has cancelled their challenge`)
     }
   })
   useSubscription(CHALLENGE_ACCEPTED, {
@@ -129,6 +142,14 @@ function App() {
       setOpponent(subscriptionData.data.challengeAccepted.challenged)
       setBoard(initBoard)
       setMyColor('black')
+    }
+  })
+  useSubscription(CHALLENGE_DECLINED, {
+    variables: { playerId: user ? user.id : ''},
+    onSubscriptionData: ({ subscriptionData }) => {
+      console.log('CHALLENGE DECLINED',subscriptionData)
+      alert("Your challenge has been declined")
+      setChallengeWaiting(null)
     }
   })
   useSubscription(MOVE_MADE, {
@@ -321,7 +342,13 @@ function App() {
       {!attackedSquares && <button onClick={() => handleShow('white')}>show white's attack</button>}
       {attackedSquares && <button onClick={() => handleShow('')}>hide attack</button>}
       <button onClick={() => isInCheck('black', board)}>is black in check</button>
-      {users ? <Users users={users}/> : null}
+      {users 
+        ? <Users 
+            users={users}
+            challengeWaiting={challengeWaiting}
+            setChallengeWaiting={setChallengeWaiting}
+          /> 
+        : null}
     </div>
   );
 }
