@@ -213,7 +213,6 @@ function App() {
     console.log('playerToMove != myColor', playerToMove !== myColor)
     console.log('opponent', opponent)
     if (opponent && playerToMove === myColor) {
-      //if (playerToMove !== myColor) return
       console.log('Trying to make a move')
       console.log({ variables: { userId: user.id, from, to}})
       makeAMove({ variables: { userId: user.id, from, to}})
