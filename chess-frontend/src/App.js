@@ -1,5 +1,6 @@
 import { useApolloClient, useLazyQuery, useMutation, useQuery, useSubscription } from '@apollo/client';
 import React, { useEffect, useState } from 'react';
+import { useRef } from 'react';
 import Board from './components/Board'
 import LoginForm from './components/LoginForm';
 import RegistryForm from './components/RegistryForm'
@@ -85,6 +86,9 @@ function App() {
   const [ opponent, setOpponent ] = useState(null)
   const [ myColor, setMyColor ] = useState(null)
   const [ challengeWaiting, setChallengeWaiting ] = useState(null)
+  const [ cancelledChallenge, setCancelledChallenge ] = useState(null)
+  const [ clock, setClock ] = useState(1000) 
+
   const client = useApolloClient()
 
   const [getUser, meResult] = useLazyQuery(ME, { fetchPolicy: 'network-only' }) 
@@ -117,6 +121,7 @@ function App() {
     onSubscriptionData: ({ subscriptionData }) => {
       console.log('CHALLENGE ISSUED',subscriptionData)
       const challenger = subscriptionData.data.challengeIssued.challenger
+      console.log('challenger',challenger)
       if (window.confirm(`You have been challenged by ${challenger.username}. Accept the challenge?`)) {
         console.log('challenger', challenger)
         acceptChallenge({ variables: { username: challenger.username, id: challenger.id }})
@@ -131,17 +136,22 @@ function App() {
     onSubscriptionData: ({ subscriptionData }) => {
       console.log('CHALLENGE CANCELLED',subscriptionData)
       const challenger = subscriptionData.data.challengeCancelled.challenger
+      setCancelledChallenge(challenger.id)
       alert(`${challenger.username} has cancelled their challenge`)
     }
   })
   useSubscription(CHALLENGE_ACCEPTED, {
     variables: { playerId: user ? user.id : ''},
     onSubscriptionData: ({ subscriptionData }) => {
-      console.log('CHALLENGE ACCEPTED',subscriptionData)
-      alert("Your challenge has been accepted")
-      setOpponent(subscriptionData.data.challengeAccepted.challenged)
-      setBoard(initBoard)
-      setMyColor('black')
+      console.log('challengeWaiting',challengeWaiting)
+      console.log('subscriptionData', subscriptionData)
+      if (challengeWaiting === subscriptionData.data.challengeAccepted.challenged.id) {
+        console.log('CHALLENGE ACCEPTED',subscriptionData)
+        alert("Your challenge has been accepted")
+        setOpponent(subscriptionData.data.challengeAccepted.challenged)
+        setBoard(initBoard)
+        setMyColor('black')
+      }
     }
   })
   useSubscription(CHALLENGE_DECLINED, {
@@ -164,6 +174,7 @@ function App() {
     localStorage.clear()
     setToken(null)
     client.resetStore()
+    startClock()
   }, [])
 
   useEffect(() => {
@@ -315,9 +326,16 @@ function App() {
       setAttackedSquares(null)
     }
   }
+
+  const startClock = () => {
+    setInterval(() => {
+      setClock(clock => clock + 1)
+    }, 1000);
+  }
   
   return (
     <div>
+      <div>{clock}</div>
       {opponent && <div> opponent {opponent.username} {opponent.id}</div>}
       {token 
         ? <div style={{ margin: 10 }}><button onClick={logout}>Logout</button></div>
