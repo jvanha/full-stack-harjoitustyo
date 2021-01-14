@@ -2,13 +2,14 @@ import { useApolloClient, useLazyQuery, useMutation, useQuery, useSubscription }
 import React, { useEffect, useState } from 'react';
 import { useRef } from 'react';
 import Board from './components/Board'
+import Clock from './components/Clock';
 import LoginForm from './components/LoginForm';
 import RegistryForm from './components/RegistryForm'
 import Users from './components/Users';
 import { LOGOUT, ACCEPT_CHALLENGE, MAKE_A_MOVE, DECLINE_CHALLENGE } from './graphql/mutations';
 import { ALL_USERS, ME } from './graphql/queries';
 import { CHALLENGE_ACCEPTED, CHALLENGE_CANCELLED, CHALLENGE_DECLINED, CHALLENGE_ISSUED, MOVE_MADE, USER_LOGGED_IN, USER_LOGGED_OUT} from './graphql/subscriptions';
-import { getAttackedSquares, isCheckMated, isInCheck } from './utilFunctions'
+import { getAttackedSquares, isCheckMated, isDrawByLackOfLegitMoves, isInCheck } from './utilFunctions'
 let squares = Array(64)//[...Array(64).keys()]
 const emptyBoard = Array(64)
 let initBoard = Array(64)
@@ -87,8 +88,11 @@ function App() {
   const [ myColor, setMyColor ] = useState(null)
   const [ challengeWaiting, setChallengeWaiting ] = useState(null)
   const [ cancelledChallenge, setCancelledChallenge ] = useState(null)
-  const [ clock, setClock ] = useState(1000) 
-
+  const [ clock, setClock ] = useState(10)
+  const [ clockRunning, setClockRunning] = useState(false)
+  const [ opponentsClock, setOpponentsClock ] = useState(300)
+  const [ opponentsClockRunning, setOpponentsClockRunning] = useState(false)
+  const [ gameOn, setGameOn ] = useState(false)
   const client = useApolloClient()
 
   const [getUser, meResult] = useLazyQuery(ME, { fetchPolicy: 'network-only' }) 
@@ -146,7 +150,8 @@ function App() {
       console.log('challengeWaiting',challengeWaiting)
       console.log('subscriptionData', subscriptionData)
       if (challengeWaiting === subscriptionData.data.challengeAccepted.challenged.id) {
-        console.log('CHALLENGE ACCEPTED',subscriptionData)
+        setOpponentsClockRunning(true)
+        setChallengeWaiting(null)
         alert("Your challenge has been accepted")
         setOpponent(subscriptionData.data.challengeAccepted.challenged)
         setBoard(initBoard)
@@ -168,13 +173,15 @@ function App() {
       console.log('MOVE MADE', subscriptionData)
       const move = subscriptionData.data.moveMade.move
       movePiece(move.from, move.to)
+      setOpponentsClockRunning(false)
+      setOpponentsClock(move.time)
+      setClockRunning(true)
     } 
   })
   useEffect(() => {
     localStorage.clear()
     setToken(null)
     client.resetStore()
-    startClock()
   }, [])
 
   useEffect(() => {
@@ -216,17 +223,57 @@ function App() {
       setOpponent(acceptChallengeResult.data.acceptChallenge)
       setBoard(initBoard)
       setMyColor('white')
+      setClockRunning(true)
       console.log('Game on!')
     }
   }, [acceptChallengeResult.data])
+
+  useEffect(() => {
+    if (clockRunning) {
+      const interval = setInterval(() => {
+        setClock(clock => clock - 1)
+      }, 1000)
+      return () => clearInterval(interval)
+    }
+  }, [clockRunning])
+
+  useEffect(() => {
+    if (opponentsClockRunning) {
+      const interval = setInterval(() => {
+        setOpponentsClock(opponentsClock => opponentsClock - 1)
+      }, 1000)
+      return () => clearInterval(interval)
+    }
+  }, [opponentsClockRunning])
+
+  useEffect(() => {
+    if (clock < 0) {
+      console.log('Time is out')
+      setClockRunning(false)
+      setClock(0)
+    }
+  }, [clock])
+
+  useEffect(() => {
+    if (myColor) {
+      if (isDrawByLackOfLegitMoves(playerToMove, board, enPassant)) {
+        alert('Draw')
+      } else if (isCheckMated(playerToMove, board, enPassant)) {
+        if (playerToMove === myColor) alert('You lost')
+        else alert('You won')
+      }
+    }
+  }, [board])
 
   const movePiece = (from, to) => {
     console.log('playerToMove != myColor', playerToMove !== myColor)
     console.log('opponent', opponent)
     if (opponent && playerToMove === myColor) {
+      setClockRunning(false)
+      setOpponentsClockRunning(true)
       console.log('Trying to make a move')
       console.log({ variables: { userId: user.id, from, to}})
-      makeAMove({ variables: { userId: user.id, from, to}})
+      makeAMove({ variables: { userId: user.id, from, to, time: clock}})
     }
     console.log('movePiece board', board)
     console.log('movePiece from', from)
@@ -315,8 +362,8 @@ function App() {
       } else {
         setEnpassant(null)
       }
-      setBoard(newBoard)
       setPlayerToMove(playerToMove === 'white' ? 'black' : 'white')
+      setBoard(newBoard)
   }
   
   const handleShow = (color) => {
@@ -327,15 +374,10 @@ function App() {
     }
   }
 
-  const startClock = () => {
-    setInterval(() => {
-      setClock(clock => clock + 1)
-    }, 1000);
-  }
   
   return (
     <div>
-      <div>{clock}</div>
+      <button onClick={() => setClockRunning(!clockRunning)}>start clock</button>
       {opponent && <div> opponent {opponent.username} {opponent.id}</div>}
       {token 
         ? <div style={{ margin: 10 }}><button onClick={logout}>Logout</button></div>
@@ -343,6 +385,7 @@ function App() {
       }
       {board && isCheckMated('black',board, enPassant) && <div>White won</div>}
       {board && isCheckMated('white',board, enPassant) && <div>Black won</div>}
+      <Clock time={opponentsClock}/>
       <Board 
         board={board} 
         movePiece={movePiece}
@@ -355,6 +398,7 @@ function App() {
         enPassant={enPassant}
         myColor={myColor}
       />
+      <Clock time={clock}/>
       {!attackedSquares && <button onClick={() => handleShow('black')}>show black's attack</button>}
       {!attackedSquares && <button onClick={() => handleShow('white')}>show white's attack</button>}
       {attackedSquares && <button onClick={() => handleShow('')}>hide attack</button>}

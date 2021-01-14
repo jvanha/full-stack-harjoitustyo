@@ -62,6 +62,7 @@ export const MOVE_MADE = gql`
       move {
         from
         to
+        time
       }
     }
   }

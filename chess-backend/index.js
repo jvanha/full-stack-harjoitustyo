@@ -47,6 +47,7 @@ const typeDefs = gql`
   type Move {
     from: Int!
     to: Int!
+    time: Int!
   }
 
   type Query {
@@ -72,6 +73,7 @@ const typeDefs = gql`
       userId: String!
       from: Int!
       to: Int!
+      time: Int!
     ): Move
     challenge(
       username: String!
@@ -203,8 +205,8 @@ const resolvers = {
       return args
     },
     makeAMove: (root, args) => {
-      const { userId, from, to } = args
-      const move = { from, to }
+      const { userId, from, to, time } = args
+      const move = { from, to, time}
       const payload = {
         moveMade: { userId, move }
       }
