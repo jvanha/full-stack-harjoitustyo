@@ -1,14 +1,14 @@
 import { useApolloClient, useLazyQuery, useMutation, useQuery, useSubscription } from '@apollo/client';
 import React, { useEffect, useState } from 'react';
-import Board from './components/Board'
-import Clock from './components/Clock';
-import LoginForm from './components/LoginForm';
-import RegistryForm from './components/RegistryForm'
-import Users from './components/Users';
-import { LOGOUT, ACCEPT_CHALLENGE, MAKE_A_MOVE, DECLINE_CHALLENGE } from './graphql/mutations';
-import { ALL_USERS, ME } from './graphql/queries';
-import { CHALLENGE_ACCEPTED, CHALLENGE_CANCELLED, CHALLENGE_DECLINED, CHALLENGE_ISSUED, MOVE_MADE, USER_LOGGED_IN, USER_LOGGED_OUT} from './graphql/subscriptions';
-import { getAttackedSquares, isCheckMated, isDrawByLackOfLegitMoves, isInCheck } from './utilFunctions'
+import Board from './Board'
+import Clock from './Clock';
+import LoginForm from './LoginForm';
+import RegistryForm from './RegistryForm'
+import Users from './Users';
+import { LOGOUT, ACCEPT_CHALLENGE, MAKE_A_MOVE, DECLINE_CHALLENGE } from './../graphql/mutations';
+import { ALL_USERS, ME } from './../graphql/queries';
+import { CHALLENGE_ACCEPTED, CHALLENGE_CANCELLED, CHALLENGE_DECLINED, CHALLENGE_ISSUED, MOVE_MADE, USER_LOGGED_IN, USER_LOGGED_OUT} from './../graphql/subscriptions';
+import { getAttackedSquares, isCheckMated, isDrawByLackOfLegitMoves, isInCheck } from './../utilFunctions'
 let squares = Array(64)//[...Array(64).keys()]
 const emptyBoard = Array(64)
 let initBoard = Array(64)
