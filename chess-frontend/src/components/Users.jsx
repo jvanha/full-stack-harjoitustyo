@@ -1,55 +1,45 @@
-import { useMutation } from '@apollo/client'
+import { useApolloClient, useQuery, useSubscription } from '@apollo/client'
 import React, { useEffect, useState } from 'react'
-import { CHALLENGE, CANCEL_CHALLENGE } from '../graphql/mutations'
+import { ALL_USERS } from '../graphql/queries'
+import { USER_LOGGED_IN, USER_LOGGED_OUT } from '../graphql/subscriptions'
+import User from './User'
 
-const User = ({ user, challengeWaiting, setChallengeWaiting }) => {
-  const [ challenge, challengeResult ] = useMutation(CHALLENGE)
-  const [ cancelChallenge, cancelChallengeResult] = useMutation(CANCEL_CHALLENGE)
 
-  useEffect(() => {
-    if (challengeResult.called && !challengeResult.loading) {
-      console.log('challenge result data',challengeResult.data)
-      setChallengeWaiting(user.id)
+const Users = ({ challengeWaiting, setChallengeWaiting}) => {
+  const client = useApolloClient()
+  const result = useQuery(ALL_USERS)
+
+  useSubscription(USER_LOGGED_IN, {
+    onSubscriptionData: ({ subscriptionData}) => {
+      console.log('subscriptionData',subscriptionData)
+      const loggedInUser = subscriptionData.data.userLoggedIn
+      const usersInStorage = client.readQuery({ query: ALL_USERS })
+      if (!usersInStorage.allUsers.map(user => user.id).includes(loggedInUser.id)) {
+        client.writeQuery({
+          query: ALL_USERS,
+          data: { allUsers: usersInStorage.allUsers.concat(loggedInUser)}
+        })
+      }
     }
-    
-  }, [challengeResult.data])
+  })
 
-  useEffect(() => {
-    if (cancelChallengeResult.called && !cancelChallengeResult.loading) {
-      console.log('cancelChallenge result data',cancelChallengeResult.data)
-      setChallengeWaiting(null)
+  useSubscription(USER_LOGGED_OUT, {
+    onSubscriptionData: ({ subscriptionData}) => {
+      console.log('subscriptionData',subscriptionData)
+      const loggedOutUser = subscriptionData.data.userLoggedOut
+      const usersInStorage = client.readQuery({ query: ALL_USERS })
+      client.writeQuery({
+        query: ALL_USERS,
+        data: { allUsers: usersInStorage.allUsers.filter(user => user.id === loggedOutUser.id)}
+      })
     }
-    
-  }, [cancelChallengeResult.data])
+  })
+
+  if (result.loading) return <div>loading users...</div>
   
-  const handleChallence = () => {
-    challenge({ variables: { id: user.id, username: user.username } })
-  }
-
-  const handleCancel = () => {
-    cancelChallenge({ variables: { id: user.id, username: user.username } })
-  }
-
-  return (
-    <div>
-      {user.username}
-      {challengeWaiting === user.id 
-        && 
-        <>
-          <span style={{ margin: 5, color: 'green'}}>waiting</span>
-          <button onClick={handleCancel}>cancel</button>
-        </>
-      }
-      {!challengeWaiting
-        && <button onClick={handleChallence}>challence</button>
-      }
-    </div>
-  )
-}
-const Users = ({ users, challengeWaiting, setChallengeWaiting}) => {
   return (
     <div style={{ margin: 10}}>
-      {users.map(user => 
+      {result.data.allUsers.map(user => 
         <User 
           key={user.id}
           user={user}

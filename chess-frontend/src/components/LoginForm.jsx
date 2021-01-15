@@ -1,9 +1,11 @@
 import { useMutation } from '@apollo/client'
 import React, { useState } from 'react'
 import { useEffect } from 'react'
+import { useHistory } from 'react-router-dom'
 import { LOGIN } from '../graphql/mutations'
 
 const LoginForm = ({ setToken }) => {
+  const history = useHistory()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [login, result] = useMutation(LOGIN, {
@@ -19,6 +21,7 @@ const LoginForm = ({ setToken }) => {
       console.log(token)
       localStorage.setItem('chess-user-token', token)
       setToken(token)
+      history.push('/')
     }
   }, [result.data])
 
@@ -27,6 +30,7 @@ const LoginForm = ({ setToken }) => {
     login({ variables: { username, password }})
     setUsername('')
     setPassword('')
+    
   }
   return (
     <div style={{ margin: 10}}>

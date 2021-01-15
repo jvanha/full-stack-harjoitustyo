@@ -1,3 +1,4 @@
+/*
 import { useApolloClient, useLazyQuery, useMutation, useQuery, useSubscription } from '@apollo/client';
 import React, { useEffect, useState } from 'react';
 import Board from './components/Board'
@@ -414,3 +415,78 @@ function App() {
 }
 
 export default App;
+*/
+
+import { useApolloClient, useMutation } from '@apollo/client'
+import React, { useEffect, useState } from 'react'
+import {
+  BrowserRouter as Router,
+  Link,
+  Route,
+  Switch
+} from 'react-router-dom'
+import Game from './components/Game'
+import LoginForm from './components/LoginForm'
+import RegistryForm from './components/RegistryForm'
+import { LOGOUT } from './graphql/mutations'
+
+const App = () => {
+  const [ token, setToken ] = useState(null)
+  const client = useApolloClient()
+  const linkStyle = {
+    padding: 5
+  }
+  
+  const [ logout, logoutResult ] = useMutation(LOGOUT)
+
+  useEffect(() => {
+    localStorage.clear()
+    setToken(null)
+    client.resetStore()
+  }, [])
+
+  useEffect(() => {
+    console.log('token', token)
+  }, [token])
+
+  useEffect(() => {
+    console.log('logoutResult',logoutResult)
+    if (logoutResult.called && !logoutResult.loading) {
+      localStorage.clear()
+      setToken(null)
+      client.resetStore()
+    }
+    
+  }, [logoutResult.data])
+
+  return (
+    <Router>
+      <div>
+        <Link style={linkStyle} to='/'>home</Link>
+        <Link style={linkStyle} to='/play'>play</Link>
+        {token 
+          ? <button onClick={logout}>Logout</button>
+          : <><Link style={linkStyle} to='/login'>login</Link>
+            <Link style={linkStyle} to='/registry'>sign in</Link></>
+        }
+        
+      </div>
+      <Switch>
+        <Route path='/play'>
+          <Game token={token}/>
+        </Route>
+        <Route path='/login'>
+          <LoginForm setToken={setToken}/>
+        </Route>
+        <Route path='/registry'>
+          <RegistryForm />
+        </Route>
+        <Route path='/'>
+          <div>Tere</div>
+        </Route>
+      </Switch>
+    </Router>
+  )
+}
+
+export default App

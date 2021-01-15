@@ -1,3 +1,4 @@
+
 import { useApolloClient, useLazyQuery, useMutation, useQuery, useSubscription } from '@apollo/client';
 import React, { useEffect, useState } from 'react';
 import Board from './Board'
@@ -71,8 +72,7 @@ initBoard[61] = [61, { type: 'B', color: 'white'}]
 initBoard[62] = [62, { type: 'N', color: 'white'}]
 initBoard[63] = [63, { type: 'R', color: 'white'}]
 
-function App() {
-  const [ token, setToken ] = useState(null)
+const Game = ({ token }) => {
   const [ board, setBoard ] = useState(initBoard)
   const [ attackedSquares, setAttackedSquares ] = useState(null)
   const [ playerToMove, setPlayerToMove ] = useState('white')
@@ -92,31 +92,17 @@ function App() {
   const [ opponentsClock, setOpponentsClock ] = useState(300)
   const [ opponentsClockRunning, setOpponentsClockRunning] = useState(false)
   const [ gameOn, setGameOn ] = useState(false)
-  const client = useApolloClient()
+  
 
   const [getUser, meResult] = useLazyQuery(ME, { fetchPolicy: 'network-only' }) 
-  const result = useQuery(ALL_USERS)
-  const [ logout, logoutResult ] = useMutation(LOGOUT)
+  
+  
   const [ acceptChallenge, acceptChallengeResult ] = useMutation(ACCEPT_CHALLENGE)
   const [ declineChallenge, declineChallengeResult ] = useMutation(DECLINE_CHALLENGE)
   const [ makeAMove, makeAMoveResult ] = useMutation(MAKE_A_MOVE)
   console.log('user',user)
 
-  useSubscription(USER_LOGGED_IN, {
-    onSubscriptionData: ({ subscriptionData}) => {
-      console.log('subscriptionData',subscriptionData)
-      const user = subscriptionData.data.userLoggedIn
-      if (!users.map(user => user.id).includes(user.id))
-        setUsers(users.concat(user))
-    }
-  })
-
-  useSubscription(USER_LOGGED_OUT, {
-    onSubscriptionData: ({ subscriptionData}) => {
-      console.log('subscriptionData',subscriptionData)
-      setUsers(users.filter(user => user.id !== subscriptionData.data.userLoggedOut.id))
-    }
-  })
+  
   console.log('meResult',meResult)
 
   useSubscription(CHALLENGE_ISSUED, {
@@ -177,16 +163,11 @@ function App() {
       setClockRunning(true)
     } 
   })
-  useEffect(() => {
-    localStorage.clear()
-    setToken(null)
-    client.resetStore()
-  }, [])
-
+  
   useEffect(() => {
     getUser()
   },[token])
-
+  
   useEffect(() => {
     console.log('meResult changed', meResult.data)
     if (meResult.data && meResult.data.me) {
@@ -199,21 +180,9 @@ function App() {
     }
   }, [meResult])
   
-  useEffect(() => {
-    if (!result.loading && result.data && result.data.allUsers) {
-      setUsers(result.data.allUsers)
-    }
-  }, [result])
+  
 
-  useEffect(() => {
-    console.log('logoutResult',logoutResult)
-    if (logoutResult.called && !logoutResult.loading) {
-      localStorage.clear()
-      setToken(null)
-      client.resetStore()
-    }
-    
-  }, [logoutResult.data])
+  
 
   useEffect(() => {
     if (acceptChallengeResult.called && !acceptChallengeResult.loading) {
@@ -378,10 +347,6 @@ function App() {
     <div>
       <button onClick={() => setClockRunning(!clockRunning)}>start clock</button>
       {opponent && <div> opponent {opponent.username} {opponent.id}</div>}
-      {token 
-        ? <div style={{ margin: 10 }}><button onClick={logout}>Logout</button></div>
-        : <div><RegistryForm /><LoginForm setToken={setToken}/></div>
-      }
       {board && isCheckMated('black',board, enPassant) && <div>White won</div>}
       {board && isCheckMated('white',board, enPassant) && <div>Black won</div>}
       <Clock time={opponentsClock}/>
@@ -404,7 +369,6 @@ function App() {
       <button onClick={() => isInCheck('black', board)}>is black in check</button>
       {users 
         ? <Users 
-            users={users}
             challengeWaiting={challengeWaiting}
             setChallengeWaiting={setChallengeWaiting}
           /> 
@@ -412,5 +376,7 @@ function App() {
     </div>
   );
 }
+export default Game;
 
-export default App;
+
+
