@@ -101,8 +101,6 @@ const Game = ({ token }) => {
   const [ declineChallenge, declineChallengeResult ] = useMutation(DECLINE_CHALLENGE)
   const [ makeAMove, makeAMoveResult ] = useMutation(MAKE_A_MOVE)
   console.log('user',user)
-
-  
   console.log('meResult',meResult)
 
   useSubscription(CHALLENGE_ISSUED, {
