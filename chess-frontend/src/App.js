@@ -482,7 +482,7 @@ const App = () => {
           <RegistryForm />
         </Route>
         <Route path='/'>
-          <div>Tere</div>
+          <div><img src='Q.png' alt='' /></div>
         </Route>
       </Switch>
     </Router>

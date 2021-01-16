@@ -7,10 +7,23 @@ const testPieceStyle = {
   borderRadius: '50%',
   borderWidth: 3,
   borderColor: 'blue',
-  borderStyle: 'solid'
+  borderStyle: 'solid',
 }
 const draggedPieceStyle = {
 
+}
+const pieceStyle = {
+  display: 'flex',
+  justifyContent: 'center',
+  height: '90%',
+  width: '90%',
+  fontSize: 500/9,
+  backgroundColor:'rgba(0, 0, 0, 0.0)' 
+}
+const imgStyle = {
+  marginTop: 5, 
+  height: '90%',
+  width: '90%',
 }
 const Piece = ({ piece, selectPiece, id }) => {
   const [ selected, setSelected ] = useState(false)
@@ -33,6 +46,7 @@ const Piece = ({ piece, selectPiece, id }) => {
     selectPiece()
 
   }
+  /*
   return (
     <div 
       style={dragging?draggedPieceStyle:{...testPieceStyle, borderColor, backgroundColor: piece.color, color: piece.color==='black' ? 'white' : 'black'}}
@@ -40,10 +54,22 @@ const Piece = ({ piece, selectPiece, id }) => {
       onDragStart={(event) => handleSelect(event)}
       onDragEnd={handleDragEnd}
       >
-      {piece.type}
+      
+      
     </div>
   )
-
+  */
+ 
+  return (
+    <div 
+      style={{...pieceStyle, borderColor}}
+      draggable
+      onDragStart={(event) => handleSelect(event)}
+      onDragEnd={handleDragEnd}
+      >
+      <img style={imgStyle} src='Q.png' alt='' />
+    </div>
+  )
 }
 
 export default Piece
