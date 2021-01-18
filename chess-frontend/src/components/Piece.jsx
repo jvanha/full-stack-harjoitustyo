@@ -29,7 +29,8 @@ const Piece = ({ piece, selectPiece, id }) => {
   const [ selected, setSelected ] = useState(false)
   const [ dragging, setDragging ] = useState(false)
 
-  const borderColor = selected ? 'red' : 'blue' 
+  const borderColor = selected ? 'red' : 'blue'
+  const src = piece.color + piece.type 
   const handleSelect = (event) => {
     if (piece) {
       
