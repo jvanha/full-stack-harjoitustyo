@@ -15,10 +15,8 @@ const draggedPieceStyle = {
 const pieceStyle = {
   display: 'flex',
   justifyContent: 'center',
-  height: '90%',
-  width: '90%',
-  fontSize: 500/9,
-  backgroundColor:'rgba(0, 0, 0, 0.0)' 
+  height: '100%',
+  width: '100%',
 }
 const imgStyle = {
   marginTop: 5, 
@@ -30,7 +28,7 @@ const Piece = ({ piece, selectPiece, id }) => {
   const [ dragging, setDragging ] = useState(false)
 
   const borderColor = selected ? 'red' : 'blue'
-  const src = piece.color + piece.type 
+  const src = piece.color + piece.type + '.png'
   const handleSelect = (event) => {
     if (piece) {
       
@@ -68,7 +66,7 @@ const Piece = ({ piece, selectPiece, id }) => {
       onDragStart={(event) => handleSelect(event)}
       onDragEnd={handleDragEnd}
       >
-      <img style={imgStyle} src='Q.png' alt='' />
+      <img style={imgStyle} src={`${piece.color}${piece.type}.png`} alt='' />
     </div>
   )
 }
