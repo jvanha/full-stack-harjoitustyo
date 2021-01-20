@@ -425,13 +425,17 @@ import {
   Route,
   Switch
 } from 'react-router-dom'
+import { Button } from 'semantic-ui-react'
 import Game from './components/Game'
-import LoginForm from './components/LoginForm'
+import LoginModal from './components/LoginModal'
 import RegistryForm from './components/RegistryForm'
+import RegistryModal from './components/RegistryModal'
 import { LOGOUT } from './graphql/mutations'
 
 const App = () => {
-  const [ token, setToken ] = useState(null)
+  const [loginModalOpen, setLoginModalOpen] = useState(false)
+  const [registryModalOpen, setRegistryModalOpen] = useState(false)
+  const [token, setToken] = useState(null)
   const client = useApolloClient()
   const linkStyle = {
     padding: 5
@@ -466,8 +470,10 @@ const App = () => {
         <Link style={linkStyle} to='/play'>play</Link>
         {token 
           ? <button onClick={logout}>Logout</button>
-          : <><Link style={linkStyle} to='/login'>login</Link>
-            <Link style={linkStyle} to='/registry'>sign in</Link></>
+          : <>
+              <Button onClick={() => setLoginModalOpen(true)}>login</Button>
+              <Button onClick={() => setRegistryModalOpen(true)}>register</Button>
+            </>
         }
         
       </div>
@@ -475,16 +481,19 @@ const App = () => {
         <Route path='/play'>
           <Game token={token}/>
         </Route>
-        <Route path='/login'>
-          <LoginForm setToken={setToken}/>
-        </Route>
-        <Route path='/registry'>
-          <RegistryForm />
-        </Route>
         <Route path='/'>
           <div>Tervetuloo</div>
         </Route>
       </Switch>
+      <LoginModal
+        setToken={setToken}
+        modalOpen={loginModalOpen}
+        close={() => setLoginModalOpen(false)}
+      />
+      <RegistryModal
+        modalOpen={registryModalOpen}
+        close={() => setRegistryModalOpen(false)}
+      />
     </Router>
   )
 }

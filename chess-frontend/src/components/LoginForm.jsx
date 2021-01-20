@@ -3,13 +3,15 @@ import React, { useState } from 'react'
 import { useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
 import { LOGIN } from '../graphql/mutations'
+import { Button, Form, Input} from 'semantic-ui-react'
 
-const LoginForm = ({ setToken }) => {
+const LoginForm = ({ setToken, close }) => {
   const history = useHistory()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [login, result] = useMutation(LOGIN, {
     onError: (error) => {
+      console.log('error')
       console.log(error.graphQLErrors[0].message)
     }
   })
@@ -22,6 +24,7 @@ const LoginForm = ({ setToken }) => {
       localStorage.setItem('chess-user-token', token)
       setToken(token)
       history.push('/')
+      close()
     }
   }, [result.data])
 
@@ -30,28 +33,39 @@ const LoginForm = ({ setToken }) => {
     login({ variables: { username, password }})
     setUsername('')
     setPassword('')
+
     
   }
+ 
   return (
-    <div style={{ margin: 10}}>
-      <form onSubmit={submit}>
-        <div>
-          username
-          <input 
-            value={username}
-            onChange={({ target }) => setUsername(target.value)}
-          />
-        </div>
-        <div>
-          password
-          <input 
-            value={password}
-            onChange={({ target }) => setPassword(target.value)}
-          />
-        </div>
-        <button type='submit'>Login</button>
-    </form>
-    </div>
+    <Form onSubmit={submit}> 
+      <Form.Field
+        control={Input}
+        name='username'
+        label='Username'
+        placeholder='Username'
+        value={username}
+        onChange={(e, { value }) => setUsername(value)}
+      />
+      <Form.Field
+        control={Input}
+        label='Password'
+        placeholder='Password'
+        type='password'
+        value={password}
+        onChange={(e, { value }) => setPassword(value)}
+      />
+      <Form.Group>
+        <Button 
+          type='submit'
+          color='green'
+        >
+          Login
+        </Button>
+      </Form.Group>
+      
+      
+    </Form>
   )
 }
 
