@@ -5,6 +5,7 @@ import App from './App';
 import { WebSocketLink } from '@apollo/client/link/ws'
 import { getMainDefinition } from '@apollo/client/utilities';
 import { setContext } from 'apollo-link-context'
+import 'semantic-ui-css/semantic.min.css'
 
 const authLink = setContext((_, { headers }) => {
   const token = localStorage.getItem('chess-user-token')
