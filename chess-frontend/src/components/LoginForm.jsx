@@ -38,7 +38,7 @@ const LoginForm = ({ setToken, close }) => {
   }
  
   return (
-    <Form onSubmit={submit}> 
+    <Form inverted onSubmit={submit}> 
       <Form.Field
         control={Input}
         name='username'

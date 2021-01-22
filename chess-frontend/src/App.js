@@ -423,16 +423,19 @@ import {
   BrowserRouter as Router,
   Link,
   Route,
-  Switch
+  Switch,
+  useHistory,
+  withRouter
 } from 'react-router-dom'
-import { Button, Sidebar } from 'semantic-ui-react'
+import { Button, Container, Divider, Grid, Header, Icon, Menu, Segment, Sidebar} from 'semantic-ui-react'
 import Game from './components/Game'
 import LoginModal from './components/LoginModal'
-import RegistryForm from './components/RegistryForm'
+import MySideBar from './components/MySideBar'
 import RegistryModal from './components/RegistryModal'
 import { LOGOUT } from './graphql/mutations'
 
 const App = () => {
+  const history = useHistory()
   const [loginModalOpen, setLoginModalOpen] = useState(false)
   const [registryModalOpen, setRegistryModalOpen] = useState(false)
   const [token, setToken] = useState(null)
@@ -464,41 +467,67 @@ const App = () => {
   }, [logoutResult.data])
 
   return (
-    <Router>
-      <Sidebar.Pushable>
+    <Sidebar.Pushable>
+        <Sidebar
+          as={Menu}
+          inverted
+          vertical
+          visible
+          width='thin'
+          
+        >
+          <Menu.Item as='a' onClick={() => history.push('/')}>
+            <Icon name='home'/>
+            Home
+          </Menu.Item>
+          <Menu.Item as='a' onClick={() => history.push('/play')}>
+            <Icon name='chess'/>
+            Play
+          </Menu.Item>
+          <Menu.Item as='a' onClick={() => history.push('/play')}>
+            <Icon name='rule'/>
+            Rules
+          </Menu.Item>
+          <Divider />
+          <div>
+            {token 
+              ? <Button inverted onClick={logout}>Logout</Button>
+              : <Button.Group compact>
+                  <Button inverted onClick={() => setLoginModalOpen(true)}>login</Button>
+                  <Button.Or />
+                  <Button inverted onClick={() => setRegistryModalOpen(true)}>register</Button>
+                </Button.Group>
+            }
+          </div> 
         
-      </Sidebar.Pushable>
-      <div>
-        <Link style={linkStyle} to='/'>home</Link>
-        <Link style={linkStyle} to='/play'>play</Link>
-        {token 
-          ? <button onClick={logout}>Logout</button>
-          : <>
-              <Button onClick={() => setLoginModalOpen(true)}>login</Button>
-              <Button onClick={() => setRegistryModalOpen(true)}>register</Button>
-            </>
-        }
+        </Sidebar>
         
-      </div>
-      <Switch>
-        <Route path='/play'>
-          <Game token={token}/>
-        </Route>
-        <Route path='/'>
-          <div>Tervetuloo</div>
-        </Route>
-      </Switch>
-      <LoginModal
-        setToken={setToken}
-        modalOpen={loginModalOpen}
-        close={() => setLoginModalOpen(false)}
-      />
-      <RegistryModal
-        modalOpen={registryModalOpen}
-        close={() => setRegistryModalOpen(false)}
-      />
-    </Router>
+        <Sidebar.Pusher>
+          <div style={{minHeight: '100vh', backgroundColor: '#0e140c'}}>
+          <Switch>
+            <Route path='/play'>
+              <Game token={token}/>
+            </Route>
+            <Route path='/'>
+              <Segment inverted>
+                <Header>tervetuloo</Header>
+              </Segment>
+            </Route>
+          </Switch>
+          </div>
+        </Sidebar.Pusher>
+        
+        <LoginModal
+            setToken={setToken}
+            modalOpen={loginModalOpen}
+            close={() => setLoginModalOpen(false)}
+          />
+          <RegistryModal
+            modalOpen={registryModalOpen}
+            close={() => setRegistryModalOpen(false)}
+          />  
+    </Sidebar.Pushable>
   )
 }
 
-export default App
+export default withRouter(App)

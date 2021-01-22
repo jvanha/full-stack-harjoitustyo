@@ -342,7 +342,7 @@ const Game = ({ token }) => {
 
   
   return (
-    <div>
+    <div style={{ padding: 30, }}>
       <button onClick={() => setClockRunning(!clockRunning)}>start clock</button>
       {opponent && <div> opponent {opponent.username} {opponent.id}</div>}
       {board && isCheckMated('black',board, enPassant) && <div>White won</div>}
