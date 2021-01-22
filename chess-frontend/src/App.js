@@ -425,7 +425,7 @@ import {
   Route,
   Switch
 } from 'react-router-dom'
-import { Button } from 'semantic-ui-react'
+import { Button, Sidebar } from 'semantic-ui-react'
 import Game from './components/Game'
 import LoginModal from './components/LoginModal'
 import RegistryForm from './components/RegistryForm'
@@ -465,6 +465,9 @@ const App = () => {
 
   return (
     <Router>
+      <Sidebar.Pushable>
+        
+      </Sidebar.Pushable>
       <div>
         <Link style={linkStyle} to='/'>home</Link>
         <Link style={linkStyle} to='/play'>play</Link>
