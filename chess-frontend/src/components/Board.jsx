@@ -8,7 +8,8 @@ const boardStyle = {
   height: 500,
   width: 500,
   display: 'flex',
-  flexWrap: 'wrap'
+  flexWrap: 'wrap',
+  padding: 10
 }
 const boardStyleReversed = {
   height: 500,

@@ -1,15 +1,15 @@
 
-import { useApolloClient, useLazyQuery, useMutation, useQuery, useSubscription } from '@apollo/client';
+import { useLazyQuery, useMutation, useSubscription } from '@apollo/client';
 import React, { useEffect, useState } from 'react';
 import Board from './Board'
 import Clock from './Clock';
-import LoginForm from './LoginForm';
-import RegistryForm from './RegistryForm'
 import Users from './Users';
-import { LOGOUT, ACCEPT_CHALLENGE, MAKE_A_MOVE, DECLINE_CHALLENGE } from './../graphql/mutations';
-import { ALL_USERS, ME } from './../graphql/queries';
+import { ACCEPT_CHALLENGE, MAKE_A_MOVE, DECLINE_CHALLENGE } from './../graphql/mutations';
+import { ME } from './../graphql/queries';
 import { CHALLENGE_ACCEPTED, CHALLENGE_CANCELLED, CHALLENGE_DECLINED, CHALLENGE_ISSUED, MOVE_MADE, USER_LOGGED_IN, USER_LOGGED_OUT} from './../graphql/subscriptions';
 import { getAttackedSquares, isCheckMated, isDrawByLackOfLegitMoves, isInCheck } from './../utilFunctions'
+import { Menu} from 'semantic-ui-react';
+import Chat from './Chat';
 let squares = Array(64)//[...Array(64).keys()]
 const emptyBoard = Array(64)
 let initBoard = Array(64)
@@ -73,6 +73,7 @@ initBoard[62] = [62, { type: 'N', color: 'white'}]
 initBoard[63] = [63, { type: 'R', color: 'white'}]
 
 const Game = ({ token }) => {
+  const [ activeMenuItem, setActiveMenuItem ] = useState("players")
   const [ board, setBoard ] = useState(initBoard)
   const [ attackedSquares, setAttackedSquares ] = useState(null)
   const [ playerToMove, setPlayerToMove ] = useState('white')
@@ -342,35 +343,59 @@ const Game = ({ token }) => {
 
   
   return (
-    <div style={{ padding: 30, }}>
-      <button onClick={() => setClockRunning(!clockRunning)}>start clock</button>
-      {opponent && <div> opponent {opponent.username} {opponent.id}</div>}
-      {board && isCheckMated('black',board, enPassant) && <div>White won</div>}
-      {board && isCheckMated('white',board, enPassant) && <div>Black won</div>}
-      <Clock time={opponentsClock}/>
-      <Board 
-        board={board} 
-        movePiece={movePiece}
-        attackedSquares={attackedSquares}
-        playerToMove={playerToMove}
-        longCastleBlack={longCastleBlack}
-        longCastleWhite={longCastleWhite}
-        shortCastleBlack={shortCastleBlack}
-        shortCastleWhite={shortCastleWhite}
-        enPassant={enPassant}
-        myColor={myColor}
-      />
-      <Clock time={clock}/>
-      {!attackedSquares && <button onClick={() => handleShow('black')}>show black's attack</button>}
-      {!attackedSquares && <button onClick={() => handleShow('white')}>show white's attack</button>}
-      {attackedSquares && <button onClick={() => handleShow('')}>hide attack</button>}
-      <button onClick={() => isInCheck('black', board)}>is black in check</button>
-      {users 
-        ? <Users 
-            challengeWaiting={challengeWaiting}
-            setChallengeWaiting={setChallengeWaiting}
+    <div style={{ padding: 30, display: 'flex', flexDirection: 'horizontal'}}>
+      <div style={{ padding: 30}}>
+        <button onClick={() => setClockRunning(!clockRunning)}>start clock</button>
+        {opponent && <div> opponent {opponent.username} {opponent.id}</div>}
+        {board && isCheckMated('black',board, enPassant) && <div>White won</div>}
+        {board && isCheckMated('white',board, enPassant) && <div>Black won</div>}
+        <Clock time={opponentsClock}/>
+        <Board 
+          board={board} 
+          movePiece={movePiece}
+          attackedSquares={attackedSquares}
+          playerToMove={playerToMove}
+          longCastleBlack={longCastleBlack}
+          longCastleWhite={longCastleWhite}
+          shortCastleBlack={shortCastleBlack}
+          shortCastleWhite={shortCastleWhite}
+          enPassant={enPassant}
+          myColor={myColor}
+        />
+        <Clock time={clock}/>
+        {!attackedSquares && <button onClick={() => handleShow('black')}>show black's attack</button>}
+        {!attackedSquares && <button onClick={() => handleShow('white')}>show white's attack</button>}
+        {attackedSquares && <button onClick={() => handleShow('')}>hide attack</button>}
+        <button onClick={() => isInCheck('black', board)}>is black in check</button>
+      </div>
+      <div style={{ backgroundColor: 'white'}}>
+        <Menu attached='top' inverted>
+          <Menu.Item
+            name='players'
+            active={activeMenuItem === 'players'}
+            onClick={() => setActiveMenuItem('players')}
+          />
+          <Menu.Item
+            name='chat'
+            active={activeMenuItem === 'chat'}
+            onClick={() => setActiveMenuItem('chat')}
+          />
+          <Menu.Item
+            name='moves'
+            active={activeMenuItem === 'moves'}
+            onClick={() => setActiveMenuItem('moves')}
+          />
+        </Menu>
+        {activeMenuItem === 'players' && users
+          && <Users 
+          challengeWaiting={challengeWaiting}
+          setChallengeWaiting={setChallengeWaiting}
           /> 
-        : null}
+        }
+        {activeMenuItem === 'chat' && token
+          && <Chat/>
+        }
+      </div>
     </div>
   );
 }

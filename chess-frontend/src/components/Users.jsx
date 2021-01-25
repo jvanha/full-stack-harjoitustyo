@@ -1,5 +1,6 @@
 import { useApolloClient, useQuery, useSubscription } from '@apollo/client'
 import React, { useEffect, useState } from 'react'
+import { List } from 'semantic-ui-react'
 import { ALL_USERS } from '../graphql/queries'
 import { USER_LOGGED_IN, USER_LOGGED_OUT } from '../graphql/subscriptions'
 import User from './User'
@@ -36,9 +37,12 @@ const Users = ({ challengeWaiting, setChallengeWaiting}) => {
   })
 
   if (result.loading) return <div>loading users...</div>
-  
+  if (result.data.allUsers.length === 0) return <div>No users online</div>
   return (
-    <div style={{ margin: 10}}>
+    <List relaxed celled>
+      <List.Header as='h3'>
+        Users
+      </List.Header>
       {result.data.allUsers.map(user => 
         <User 
           key={user.id}
@@ -47,7 +51,8 @@ const Users = ({ challengeWaiting, setChallengeWaiting}) => {
           setChallengeWaiting={setChallengeWaiting}
         />
       )}
-    </div>
+    </List>
   )
 }
+
 export default Users

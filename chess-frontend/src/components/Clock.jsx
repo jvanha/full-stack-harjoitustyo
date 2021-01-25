@@ -1,4 +1,5 @@
 import React from 'react'
+import { Icon, Label } from 'semantic-ui-react'
 const clockStyle = {
 }
 
@@ -13,9 +14,10 @@ const Clock = ({ time }) => {
   const minutes = trimTime(Math.floor(time/60))
   const seconds = trimTime(time%60)
   return (
-    <div style={clockStyle}>
+    <Label>
+      <Icon name='clock'/>
       {`${minutes}:${seconds}`}
-    </div>
+    </Label>
   )
 }
 

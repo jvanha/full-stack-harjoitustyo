@@ -1,5 +1,6 @@
 import { useMutation } from '@apollo/client'
 import React, { useEffect } from 'react'
+import { Button, List } from 'semantic-ui-react'
 import { CHALLENGE, CANCEL_CHALLENGE } from '../graphql/mutations'
 
 const User = ({ user, challengeWaiting, setChallengeWaiting }) => {
@@ -31,19 +32,30 @@ const User = ({ user, challengeWaiting, setChallengeWaiting }) => {
   }
 
   return (
-    <div>
-      {user.username}
-      {challengeWaiting === user.id 
-        && 
-        <>
-          <span style={{ margin: 5, color: 'green'}}>waiting</span>
-          <button onClick={handleCancel}>cancel</button>
-        </>
-      }
-      {!challengeWaiting
-        && <button onClick={handleChallence}>challence</button>
-      }
-    </div>
+    <List.Item >
+      <List.Content floated='right'>
+        {challengeWaiting === user.id 
+          && 
+          <>
+            <span style={{ margin: 5, color: 'green'}}>waiting</span>
+            <Button compact onClick={handleCancel}>cancel</Button>
+          </>
+        }
+        {!challengeWaiting
+          && <Button compact onClick={handleChallence}>challence</Button>
+        }
+      </List.Content>
+      <List.Content>
+        <List.Header>
+          {user.username}
+        </List.Header>
+        <List.Description>
+          
+        </List.Description>
+      </List.Content>
+      
+      
+    </List.Item>
   )
 }
 export default User

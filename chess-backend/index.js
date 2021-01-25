@@ -29,37 +29,34 @@ const typeDefs = gql`
     challenger: User!
     challenged: User! 
   }
-
   type Token {
     value: String
   }
-
   type Piece {
     pieceType: String!
     color: String!
   }
-
   type Square {
     position: Int!
     piece: Piece
   }
-
+  type Message {
+    writer: User!
+    content: String!
+  }
   type Move {
     from: Int!
     to: Int!
     time: Int!
   }
-
   type Query {
     me: User
     allUsers: [User]
   }
-  
   type MoveUnit {
     userId: String
     move: Move!
   }
-
   type Mutation {
     createUser(
       username: String!
@@ -91,6 +88,9 @@ const typeDefs = gql`
       username: String!
       id: String!
     ): User!
+    addMessage(
+      message: String
+    ): Message!
   }
   type Subscription {
     moveMade(opponentId: String): MoveUnit
@@ -100,6 +100,7 @@ const typeDefs = gql`
     challengeCancelled(playerId: String): Opponents
     challengeAccepted(playerId: String): Opponents
     challengeDeclined(playerId: String): Opponents
+    messageAdded: Message
   }
 
 `
@@ -215,6 +216,14 @@ const resolvers = {
       pubsub.publish('MOVE_MADE', payload)
       return move
     },
+    addMessage: (root, args, context) => {
+      const writer = context.currentUser
+      const content = args.message
+      const payload = {
+        messageAdded: { writer, content }
+      }
+      return { writer, content }
+    }
   },
   Subscription: {
     moveMade: {

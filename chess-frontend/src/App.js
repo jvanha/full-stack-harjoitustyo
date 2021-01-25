@@ -66,7 +66,7 @@ const App = () => {
             Play
           </Menu.Item>
           <Menu.Item as='a' onClick={() => history.push('/play')}>
-            <Icon name='rule'/>
+            <Icon name='chess board'/>
             Rules
           </Menu.Item>
           <Divider />
@@ -112,3 +112,5 @@ const App = () => {
 }
 
 export default withRouter(App)
+
+//backgroundColor: '#0e140c'
