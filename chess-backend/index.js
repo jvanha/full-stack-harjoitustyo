@@ -3,7 +3,8 @@ const mongoose = require('mongoose')
 const pubsub = new PubSub()
 const jwt = require('jsonwebtoken')
 const User = require('./models/user')
-const { argsToArgsConfig } = require('graphql/type/definition')
+const Game = require('./models/game')
+
 
 let usersLoggedIn = []
 
@@ -24,7 +25,7 @@ const typeDefs = gql`
   type User {
     username: String!
     id: ID!
-    registryDate: DATE!
+    registrationDate: String
   }
   type Opponents {
     challenger: User!
@@ -58,41 +59,61 @@ const typeDefs = gql`
     userId: String
     move: Move!
   }
+  type Game {
+    black: String!
+    white: String!
+    winner: String!
+  }
+
   type Mutation {
     createUser(
       username: String!
     ): User
+    
     login(
       username: String!
       password: String!
     ): Token
     logout: User
+    
     makeAMove(
       userId: String!
       from: Int!
       to: Int!
       time: Int!
     ): Move
+    
     challenge(
       username: String!
       id: String!
     ): User!
+    
     acceptChallenge(
       username: String!
       id: String!
     ): User!
+    
     cancelChallenge(
       username: String!
       id: String!
     ): User!
+    
     declineChallenge(
       username: String!
       id: String!
     ): User!
+    
     addMessage(
       message: String
     ): Message!
+
+    createGame(
+      whiteId: String!
+      blackId: String!
+      winner: String!
+    ): Game!
   }
+
   type Subscription {
     moveMade(opponentId: String): MoveUnit
     userLoggedIn: User
@@ -116,8 +137,19 @@ const resolvers = {
   },
   Mutation: {
     createUser: (root, args) => {
-      const user = new User({ ...args })
+      const date = new Date
+      const user = new User({ ...args, registrationDate: date.toDateString() })
       return user.save()
+    },
+    createGame: async (root, args) => {
+      const white = User.findById(args.userId)
+      const black = User.findById(args.opponentId)
+      const game = new Game({ ...args })
+      white.games.append(game)
+      await white.save()
+      black.games.append(game)
+      await black.save()
+      return game.save()
     },
     login: async (root, args) => {
       const { username, password } = args
@@ -139,7 +171,7 @@ const resolvers = {
       }
       return { value: jwt.sign(userForToken, JWT_SECRET)}
     },
-    logout: async (root, args, context) => {
+    logout: (root, args, context) => {
       const currentUser = context.currentUser
       console.log(currentUser,'logged out')
       usersLoggedIn = usersLoggedIn.filter(user => user.id !== currentUser.id)

@@ -46,7 +46,7 @@ const App = () => {
     }
     
   }, [logoutResult.data])
-
+  const date = new Date()
   return (
     <Sidebar.Pushable>
         <Sidebar
@@ -85,16 +85,17 @@ const App = () => {
         
         <Sidebar.Pusher>
           <div style={{minHeight: '100vh', backgroundColor: '#0e140c'}}>
-          <Switch>
-            <Route path='/play'>
-              <Game token={token}/>
-            </Route>
-            <Route path='/'>
-              <Segment inverted>
-                <Header>tervetuloo</Header>
-              </Segment>
-            </Route>
-          </Switch>
+            <div style={{color: 'white'}}>{date.toDateString()}</div>
+            <Switch>
+              <Route path='/play'>
+                <Game token={token}/>
+              </Route>
+              <Route path='/'>
+                <Segment inverted>
+                  <Header>tervetuloo</Header>
+                </Segment>
+              </Route>
+            </Switch>
           </div>
         </Sidebar.Pusher>
         

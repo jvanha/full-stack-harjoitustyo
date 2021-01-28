@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Board from './Board'
 import Clock from './Clock';
 import Users from './Users';
-import { ACCEPT_CHALLENGE, MAKE_A_MOVE, DECLINE_CHALLENGE } from './../graphql/mutations';
+import { ACCEPT_CHALLENGE, MAKE_A_MOVE, DECLINE_CHALLENGE, CREATE_USER, CREATE_GAME } from './../graphql/mutations';
 import { ME } from './../graphql/queries';
 import { CHALLENGE_ACCEPTED, CHALLENGE_CANCELLED, CHALLENGE_DECLINED, CHALLENGE_ISSUED, MOVE_MADE, USER_LOGGED_IN, USER_LOGGED_OUT} from './../graphql/subscriptions';
 import { getAttackedSquares, isCheckMated, isDrawByLackOfLegitMoves, isInCheck } from './../utilFunctions'
@@ -92,7 +92,7 @@ const Game = ({ token }) => {
   const [ clockRunning, setClockRunning] = useState(false)
   const [ opponentsClock, setOpponentsClock ] = useState(300)
   const [ opponentsClockRunning, setOpponentsClockRunning] = useState(false)
-  const [ gameOn, setGameOn ] = useState(false)
+
   
 
   const [getUser, meResult] = useLazyQuery(ME, { fetchPolicy: 'network-only' }) 
@@ -101,6 +101,7 @@ const Game = ({ token }) => {
   const [ acceptChallenge, acceptChallengeResult ] = useMutation(ACCEPT_CHALLENGE)
   const [ declineChallenge, declineChallengeResult ] = useMutation(DECLINE_CHALLENGE)
   const [ makeAMove, makeAMoveResult ] = useMutation(MAKE_A_MOVE)
+  const [ createGame, createGameResult ] = useMutation(CREATE_GAME)
   console.log('user',user)
   console.log('meResult',meResult)
 
@@ -227,7 +228,13 @@ const Game = ({ token }) => {
         alert('Draw')
       } else if (isCheckMated(playerToMove, board, enPassant)) {
         if (playerToMove === myColor) alert('You lost')
-        else alert('You won')
+        else {
+          const whiteId = myColor === 'white' ? user.id : opponent.id
+          const blackId = myColor === 'black' ? user.id : opponent.id
+          const winner = myColor
+          createGame({ variables: { whiteId, blackId, winner } })
+          alert('You won')
+        }
       }
     }
   }, [board])
@@ -331,6 +338,16 @@ const Game = ({ token }) => {
       }
       setPlayerToMove(playerToMove === 'white' ? 'black' : 'white')
       setBoard(newBoard)
+    if (myColor==='white') {
+      if (isCheckMated('black', board, enPassant)) {
+        createGame({
+          variables: {
+            whiteId: user.id,
+            blackId: opponent.id,
+            winner: 'white'
+          }})
+      }
+    }
   }
   
   const handleShow = (color) => {
