@@ -24,6 +24,7 @@ const typeDefs = gql`
   type User {
     username: String!
     id: ID!
+    registryDate: DATE!
   }
   type Opponents {
     challenger: User!
