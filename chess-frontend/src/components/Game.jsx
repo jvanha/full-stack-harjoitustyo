@@ -232,6 +232,7 @@ const Game = ({ token }) => {
           const whiteId = myColor === 'white' ? user.id : opponent.id
           const blackId = myColor === 'black' ? user.id : opponent.id
           const winner = myColor
+          //only the winner creates a new game
           createGame({ variables: { whiteId, blackId, winner } })
           alert('You won')
         }
