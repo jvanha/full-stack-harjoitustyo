@@ -1,11 +1,11 @@
 const mongoose = require('mongoose')
 
 const schema = new mongoose.Schema({
-  black: {
+  blackId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
-  white: {
+  whiteId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },

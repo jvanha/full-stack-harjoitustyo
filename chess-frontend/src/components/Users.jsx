@@ -35,9 +35,11 @@ const Users = ({ challengeWaiting, setChallengeWaiting}) => {
       })
     }
   })
-
+  console.log('Users result',result)
   if (result.loading) return <div>loading users...</div>
-  if (result.data.allUsers.length === 0) return <div>No users online</div>
+  if (!result.data || !result.data.allUsers || result.data.allUsers.length === 0)
+    return <div>No users online</div>
+  
   return (
     <List relaxed celled>
       <List.Header as='h3'>

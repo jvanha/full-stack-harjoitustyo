@@ -7,9 +7,8 @@ const schema = new mongoose.Schema({
     unique: true,
     minlength: 4
   },
-  registrationDate: {
-    type: String
-  },
+  registrationDate: String,
+  passwordHash: String,
   games: [
     {
       type: mongoose.Schema.Types.ObjectId,

@@ -1,10 +1,11 @@
 const { ApolloServer, gql, PubSub, withFilter, UserInputError } = require('apollo-server')
 const mongoose = require('mongoose')
-const pubsub = new PubSub()
 const jwt = require('jsonwebtoken')
 const User = require('./models/user')
 const Game = require('./models/game')
+const bcrypt = require('bcrypt')
 
+const pubsub = new PubSub()
 
 let usersLoggedIn = []
 
@@ -51,23 +52,26 @@ const typeDefs = gql`
     to: Int!
     time: Int!
   }
-  type Query {
-    me: User
-    allUsers: [User]
-  }
   type MoveUnit {
     userId: String
     move: Move!
   }
   type Game {
-    black: String!
-    white: String!
+    blackId: String!
+    whiteId: String!
     winner: String!
   }
+
+  type Query {
+    me: User
+    allUsers: [User]
+  }
+  
 
   type Mutation {
     createUser(
       username: String!
+      password: String!
     ): User
     
     login(
@@ -126,38 +130,53 @@ const typeDefs = gql`
   }
 
 `
+
 const resolvers = {
   Query: {
-    allUsers: () => usersLoggedIn,
-    
+    allUsers: () => {
+      if (!usersLoggedIn) return []
+      return usersLoggedIn
+    },
     me: async (root, args, context) => {
       console.log('context.currentUser',context.currentUser)
       return context.currentUser
     }
   },
   Mutation: {
-    createUser: (root, args) => {
+    createUser: async (root, args) => {
+      const passwordHash = await bcrypt.hash(args.password, 10)
       const date = new Date
-      const user = new User({ ...args, registrationDate: date.toDateString() })
+      const user = new User({
+        username: args.username,
+        passwordHash,
+        registrationDate: date.toDateString()
+      })
       return user.save()
     },
     createGame: async (root, args) => {
-      const white = User.findById(args.userId)
-      const black = User.findById(args.opponentId)
+      console.log('createUser args', args)
+      const white = await User.findById(args.whiteId)
+      const black = await User.findById(args.blackId)
+      //console.log('black', black)
+      //console.log('white', white)
       const game = new Game({ ...args })
-      white.games.append(game)
+      console.log('white.games', white.games)
+      white.games = white.games.concat(game._id)
       await white.save()
-      black.games.append(game)
+      console.log('black.games', black.games)
+      black.games = black.games.concat(game._id)
       await black.save()
+
       return game.save()
     },
     login: async (root, args) => {
       const { username, password } = args
       const user = await User.findOne({ username })
-      if (!user || password != '1234') {
+      if (!user || !await bcrypt.compare(args.password, user.passwordHash)) {
         throw new UserInputError('Bad credentials')
       }
-      if (!usersLoggedIn.map(user => user.id).includes(user.id))
+
+      if (!usersLoggedIn.map(user => user._id).includes(user._id)) //HUOM!
         usersLoggedIn = [...usersLoggedIn, user]
       console.log(usersLoggedIn)
       const userForPublish = {
