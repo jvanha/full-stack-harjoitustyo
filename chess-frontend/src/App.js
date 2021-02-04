@@ -1,4 +1,4 @@
-import { useApolloClient, useMutation } from '@apollo/client'
+import { useApolloClient, useLazyQuery, useMutation } from '@apollo/client'
 import React, { useEffect, useState } from 'react'
 import {
   BrowserRouter as Router,
@@ -13,39 +13,59 @@ import Game from './components/Game'
 import LoginModal from './components/LoginModal'
 import MySideBar from './components/MySideBar'
 import RegistryModal from './components/RegistryModal'
+import UserDetails from './components/UserDetails'
 import { LOGOUT } from './graphql/mutations'
+import { ME } from './graphql/queries'
 
 const App = () => {
   const history = useHistory()
   const [loginModalOpen, setLoginModalOpen] = useState(false)
   const [registryModalOpen, setRegistryModalOpen] = useState(false)
   const [token, setToken] = useState(null)
+  const [user, setUser] = useState(null)
   const client = useApolloClient()
   const linkStyle = {
     padding: 5
   }
   
+  const [getUser, meResult] = useLazyQuery(ME, { fetchPolicy: 'network-only' }) 
   const [ logout, logoutResult ] = useMutation(LOGOUT)
-
+/*
   useEffect(() => {
     localStorage.clear()
     setToken(null)
     client.resetStore()
   }, [])
-
+*/
   useEffect(() => {
-    console.log('token', token)
-  }, [token])
-
+    getUser()
+  },[token])
+  useEffect(() => {
+    getUser()
+  },[])
   useEffect(() => {
     console.log('logoutResult',logoutResult)
     if (logoutResult.called && !logoutResult.loading) {
+      console.log('CLEAR LOCAL STORAGE')
       localStorage.clear()
-      setToken(null)
+      setUser(null)
       client.resetStore()
     }
     
   }, [logoutResult.data])
+
+  useEffect(() => {
+    console.log('meResult changed', meResult.data)
+    if (meResult.data && meResult.data.me) {
+      console.log('meResult.data.me',meResult.data.me)
+      const itsme = meResult.data.me
+      console.log({ id: itsme.id, username: itsme.username })
+      setUser({ id: itsme.id, username: itsme.username })
+      console.log('user', user)
+      
+    }
+  }, [meResult])
+
   const date = new Date()
   return (
     <Sidebar.Pushable>
@@ -65,13 +85,15 @@ const App = () => {
             <Icon name='chess'/>
             Play
           </Menu.Item>
-          <Menu.Item as='a' onClick={() => history.push('/play')}>
-            <Icon name='chess board'/>
-            Rules
-          </Menu.Item>
+          {user && 
+            <Menu.Item as='a' onClick={() => history.push('/home')}>
+              <Icon name='chess board'/>
+              Rules
+            </Menu.Item>
+          }
           <Divider />
           <div>
-            {token 
+            {user
               ? <Button inverted onClick={logout}>Logout</Button>
               : <Button.Group compact>
                   <Button inverted onClick={() => setLoginModalOpen(true)}>login</Button>
@@ -87,8 +109,11 @@ const App = () => {
           <div style={{minHeight: '100vh', backgroundColor: '#0e140c'}}>
             <div style={{color: 'white'}}>{date.toDateString()}</div>
             <Switch>
+              <Route path='/home'>
+                <UserDetails user={user}/>
+              </Route>
               <Route path='/play'>
-                <Game token={token}/>
+                <Game user={user}/>
               </Route>
               <Route path='/'>
                 <Segment inverted>

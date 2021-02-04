@@ -72,7 +72,7 @@ initBoard[61] = [61, { type: 'B', color: 'white'}]
 initBoard[62] = [62, { type: 'N', color: 'white'}]
 initBoard[63] = [63, { type: 'R', color: 'white'}]
 
-const Game = ({ token }) => {
+const Game = ({ user }) => {
   const [ activeMenuItem, setActiveMenuItem ] = useState("players")
   const [ board, setBoard ] = useState(initBoard)
   const [ attackedSquares, setAttackedSquares ] = useState(null)
@@ -82,8 +82,6 @@ const Game = ({ token }) => {
   const [ longCastleBlack, setLongCastleBlack ] = useState(true)
   const [ shortCastleBlack, setShortCastleBlack ] = useState(true)
   const [ enPassant, setEnpassant ] = useState(null)
-  const [ users, setUsers ] = useState([])
-  const [ user, setUser ] = useState(null)
   const [ opponent, setOpponent ] = useState(null)
   const [ myColor, setMyColor ] = useState(null)
   const [ challengeWaiting, setChallengeWaiting ] = useState(null)
@@ -91,19 +89,14 @@ const Game = ({ token }) => {
   const [ clock, setClock ] = useState(10)
   const [ clockRunning, setClockRunning] = useState(false)
   const [ opponentsClock, setOpponentsClock ] = useState(300)
-  const [ opponentsClockRunning, setOpponentsClockRunning] = useState(false)
-
-  
-
-  const [getUser, meResult] = useLazyQuery(ME, { fetchPolicy: 'network-only' }) 
-  
+  const [ opponentsClockRunning, setOpponentsClockRunning] = useState(false) 
   
   const [ acceptChallenge, acceptChallengeResult ] = useMutation(ACCEPT_CHALLENGE)
   const [ declineChallenge, declineChallengeResult ] = useMutation(DECLINE_CHALLENGE)
   const [ makeAMove, makeAMoveResult ] = useMutation(MAKE_A_MOVE)
   const [ createGame, createGameResult ] = useMutation(CREATE_GAME)
   console.log('user',user)
-  console.log('meResult',meResult)
+
 
   useSubscription(CHALLENGE_ISSUED, {
     variables: { playerId: user ? user.id : ''},
@@ -164,21 +157,9 @@ const Game = ({ token }) => {
     } 
   })
   
-  useEffect(() => {
-    getUser()
-  },[token])
   
-  useEffect(() => {
-    console.log('meResult changed', meResult.data)
-    if (meResult.data && meResult.data.me) {
-      console.log('meResult.data.me',meResult.data.me)
-      const itsme = meResult.data.me
-      console.log({ id: itsme.id, username: itsme.username })
-      setUser({ id: itsme.id, username: itsme.username })
-      console.log('user', user)
-      
-    }
-  }, [meResult])
+  
+
   
   
 
@@ -404,13 +385,13 @@ const Game = ({ token }) => {
             onClick={() => setActiveMenuItem('moves')}
           />
         </Menu>
-        {activeMenuItem === 'players' && users
+        {activeMenuItem === 'players'
           && <Users 
           challengeWaiting={challengeWaiting}
           setChallengeWaiting={setChallengeWaiting}
           /> 
         }
-        {activeMenuItem === 'chat' && token
+        {activeMenuItem === 'chat' && user
           && <Chat/>
         }
       </div>
