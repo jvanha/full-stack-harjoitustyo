@@ -3,7 +3,7 @@ import React, { useEffect } from 'react'
 import { Button, List } from 'semantic-ui-react'
 import { CHALLENGE, CANCEL_CHALLENGE } from '../graphql/mutations'
 
-const User = ({ user, challengeWaiting, setChallengeWaiting }) => {
+const User = ({ user, me, challengeWaiting, setChallengeWaiting }) => {
   const [ challenge, challengeResult ] = useMutation(CHALLENGE)
   const [ cancelChallenge, cancelChallengeResult] = useMutation(CANCEL_CHALLENGE)
 
@@ -33,18 +33,21 @@ const User = ({ user, challengeWaiting, setChallengeWaiting }) => {
 
   return (
     <List.Item >
-      <List.Content floated='right'>
-        {challengeWaiting === user.id 
-          && 
-          <>
-            <span style={{ margin: 5, color: 'green'}}>waiting</span>
-            <Button compact onClick={handleCancel}>cancel</Button>
-          </>
-        }
-        {!challengeWaiting
-          && <Button compact onClick={handleChallence}>challence</Button>
-        }
-      </List.Content>
+      {me && me.id !== user.id
+        &&
+        <List.Content floated='right'>
+          {challengeWaiting === user.id 
+            && 
+            <>
+              <span style={{ margin: 5, color: 'green'}}>waiting</span>
+              <Button compact onClick={handleCancel}>cancel</Button>
+            </>
+          }
+          {!challengeWaiting
+            && <Button compact onClick={handleChallence}>challence</Button>
+          }
+        </List.Content>
+      }
       <List.Content>
         <List.Header>
           {user.username}

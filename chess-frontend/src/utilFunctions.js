@@ -271,10 +271,10 @@ export const legitMoves = (square, board, longCastleRight, shortCastleRight, enP
 } 
 
 export const getAttackedSquares = (board, color) => {
-  return board.filter(square => (square[1] && square[1].color===color)).map(square => attackSquares(square,board)).flat()
+  return [...new Set(board.filter(square => (square[1] && square[1].color===color)).map(square => attackSquares(square,board)).flat())]
 }
 export const getAllLegidMoves = (board, color, longCastleRight, shortCastleRight, enPassant) => {
-  return board.filter(square => (square[1] && square[1].color===color)).map(square => legitMoves(square,board,longCastleRight, shortCastleRight, enPassant)).flat()
+  return [...new Set(board.filter(square => (square[1] && square[1].color===color)).map(square => legitMoves(square,board,longCastleRight, shortCastleRight, enPassant)).flat())]
 }
 
 export const isCheckMated = (color, board, enPassant) => {

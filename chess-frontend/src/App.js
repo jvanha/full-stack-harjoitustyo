@@ -1,14 +1,12 @@
 import { useApolloClient, useLazyQuery, useMutation } from '@apollo/client'
 import React, { useEffect, useState } from 'react'
 import {
-  BrowserRouter as Router,
-  Link,
   Route,
   Switch,
   useHistory,
   withRouter
 } from 'react-router-dom'
-import { Button, Container, Divider, Grid, Header, Icon, Menu, Segment, Sidebar} from 'semantic-ui-react'
+import { Button, Divider, Header, Icon, Menu, Segment, Sidebar} from 'semantic-ui-react'
 import Game from './components/Game'
 import LoginModal from './components/LoginModal'
 import MySideBar from './components/MySideBar'

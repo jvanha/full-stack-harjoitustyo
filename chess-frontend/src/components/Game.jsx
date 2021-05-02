@@ -1,12 +1,10 @@
-
-import { useLazyQuery, useMutation, useSubscription } from '@apollo/client';
+import { useMutation, useSubscription } from '@apollo/client';
 import React, { useEffect, useState } from 'react';
 import Board from './Board'
 import Clock from './Clock';
 import Users from './Users';
-import { ACCEPT_CHALLENGE, MAKE_A_MOVE, DECLINE_CHALLENGE, CREATE_USER, CREATE_GAME } from './../graphql/mutations';
-import { ME } from './../graphql/queries';
-import { CHALLENGE_ACCEPTED, CHALLENGE_CANCELLED, CHALLENGE_DECLINED, CHALLENGE_ISSUED, MOVE_MADE, USER_LOGGED_IN, USER_LOGGED_OUT} from './../graphql/subscriptions';
+import { ACCEPT_CHALLENGE, MAKE_A_MOVE, DECLINE_CHALLENGE, CREATE_GAME } from './../graphql/mutations';
+import { CHALLENGE_ACCEPTED, CHALLENGE_CANCELLED, CHALLENGE_DECLINED, CHALLENGE_ISSUED, MOVE_MADE} from './../graphql/subscriptions';
 import { getAttackedSquares, isCheckMated, isDrawByLackOfLegitMoves, isInCheck } from './../utilFunctions'
 import { Menu} from 'semantic-ui-react';
 import Chat from './Chat';
@@ -157,14 +155,6 @@ const Game = ({ user }) => {
     } 
   })
   
-  
-  
-
-  
-  
-
-  
-
   useEffect(() => {
     if (acceptChallengeResult.called && !acceptChallengeResult.loading) {
       //POTENTTIAALISESTI VÄÄRIN
@@ -389,6 +379,7 @@ const Game = ({ user }) => {
           && <Users 
           challengeWaiting={challengeWaiting}
           setChallengeWaiting={setChallengeWaiting}
+          me={user}
           /> 
         }
         {activeMenuItem === 'chat' && user

@@ -1,7 +1,7 @@
 import React from 'react'
 import { useEffect } from 'react'
 import { useState } from 'react'
-import { attackedSquares, legitMoves } from '../utilFunctions'
+import { legitMoves } from '../utilFunctions'
 import Piece from './Piece'
 
 const boardStyle = {

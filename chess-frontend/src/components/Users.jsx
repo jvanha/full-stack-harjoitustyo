@@ -1,12 +1,12 @@
 import { useApolloClient, useQuery, useSubscription } from '@apollo/client'
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { List } from 'semantic-ui-react'
 import { ALL_USERS } from '../graphql/queries'
 import { USER_LOGGED_IN, USER_LOGGED_OUT } from '../graphql/subscriptions'
 import User from './User'
 
 
-const Users = ({ challengeWaiting, setChallengeWaiting}) => {
+const Users = ({ challengeWaiting, setChallengeWaiting, me}) => {
   const client = useApolloClient()
   const result = useQuery(ALL_USERS)
 
@@ -51,6 +51,7 @@ const Users = ({ challengeWaiting, setChallengeWaiting}) => {
           user={user}
           challengeWaiting={challengeWaiting}
           setChallengeWaiting={setChallengeWaiting}
+          me={me}
         />
       )}
     </List>

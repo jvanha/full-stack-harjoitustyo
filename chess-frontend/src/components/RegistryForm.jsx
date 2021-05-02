@@ -5,11 +5,13 @@ import { Button, Form, Input} from 'semantic-ui-react'
 
 const RegistryForm = ({ close }) => {
   const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
   
   const [createUser] = useMutation(CREATE_USER)
   const submit = (event) => {
     event.preventDefault()
-    createUser({ variables: { username }})
+    console.log('registry for password', password)
+    createUser({ variables: { username, password }})
     setUsername('')
     close()
   }
@@ -29,6 +31,8 @@ const RegistryForm = ({ close }) => {
         label='Password'
         placeholder='Password'
         type='password'
+        value={password}
+        onChange={(e, { value }) => setPassword(value)}
       />
       <Form.Group>
         <Button 
