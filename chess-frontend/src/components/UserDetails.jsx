@@ -6,6 +6,7 @@ const UserDetails = ({ user }) => {
     <div style={{ backgroundColor: 'white'}}>
     <Container>
       <Header>{user.username}</Header>
+      <p>{user.id}</p>
     </Container>
     </div>
   ) 
