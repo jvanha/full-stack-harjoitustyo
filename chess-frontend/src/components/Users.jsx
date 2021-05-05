@@ -35,7 +35,7 @@ const Users = ({ challengeWaiting, setChallengeWaiting, me}) => {
       })
     }
   })
-  console.log('Users result',result)
+  //console.log('Users result',result)
   if (result.loading) return <div>loading users...</div>
   if (!result.data || !result.data.allUsers || result.data.allUsers.length === 0)
     return <div>No users online</div>

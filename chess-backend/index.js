@@ -32,6 +32,10 @@ const typeDefs = gql`
     challenger: User!
     challenged: User! 
   }
+  type Challenge {
+    opponents: Opponents!
+    timeControl: Int!
+  }
   type Token {
     value: String
   }
@@ -90,6 +94,7 @@ const typeDefs = gql`
     challenge(
       username: String!
       id: String!
+      timeControl: Int
     ): User!
     
     acceptChallenge(
@@ -122,7 +127,7 @@ const typeDefs = gql`
     moveMade(opponentId: String): MoveUnit
     userLoggedIn: User
     userLoggedOut: User
-    challengeIssued(playerId: String): Opponents
+    challengeIssued(playerId: String): Challenge
     challengeCancelled(playerId: String): Opponents
     challengeAccepted(playerId: String): Opponents
     challengeDeclined(playerId: String): Opponents
@@ -206,15 +211,27 @@ const resolvers = {
       console.log('challenge resolver')
       console.log('context.currentUser', context.currentUser)
       console.log('args',args)
-      console.log()
-      const payload = {
-        challengeIssued: {
-          challenger: context.currentUser,
-          challenged: args,
-        }
+      const currentUser = context.currentUser
+      const challenger = {
+        username: currentUser.username,
+        id: currentUser.id,
+        
       }
+      const { username, id, timeControl } = args;
+        const payload = {
+          challengeIssued: {
+            opponents: { 
+              challenger,
+              challenged: { username, id },
+            },
+            timeControl,
+          }
+        }
+      console.log('payload', payload)
+      console.log()
       pubsub.publish('CHALLENGE_ISSUED', payload)
-      return args
+      console.log('HERE')
+      return { username, id }
     },
     cancelChallenge: (rootm, args, context) => {
       console.log('cancelChallenge resolver')
@@ -291,9 +308,10 @@ const resolvers = {
         console.log('challenge issued')
         console.log('payload', payload)
         console.log('variables', variables)
-        console.log(payload.challengeIssued.challenged.id === variables.playerId)
-        console.log()
-        return payload.challengeIssued.challenged.id === variables.playerId
+        //console.log(payload.challengeIssued.opponents.challenged.id === variables.playerId)
+        //console.log()
+        return true;
+        //return payload.challengeIssued.opponents.challenged.id === variables.playerId
       })
     },
     challengeCancelled: {

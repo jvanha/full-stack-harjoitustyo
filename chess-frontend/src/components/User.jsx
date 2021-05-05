@@ -24,7 +24,7 @@ const User = ({ user, me, challengeWaiting, setChallengeWaiting }) => {
   }, [cancelChallengeResult.data])
   
   const handleChallence = () => {
-    challenge({ variables: { id: user.id, username: user.username } })
+    challenge({ variables: { id: user.id, username: user.username, timeControl: 5 } })
   }
 
   const handleCancel = () => {

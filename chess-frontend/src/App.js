@@ -42,7 +42,7 @@ const App = () => {
   useEffect(() => {
     getUser()
   },[])
-  
+
   useEffect(() => {
     console.log('logoutResult',logoutResult)
     if (logoutResult.called && !logoutResult.loading) {
@@ -77,7 +77,7 @@ const App = () => {
           width='thin'
           
         >
-          <Menu.Item as='a' onClick={() => history.push('/')}>
+          <Menu.Item as='a' onClick={() => history.push('/home')}>
             <Icon name='home'/>
             Home
           </Menu.Item>
@@ -86,7 +86,7 @@ const App = () => {
             Play
           </Menu.Item>
           {user && 
-            <Menu.Item as='a' onClick={() => history.push('/home')}>
+            <Menu.Item as='a' onClick={() => history.push('/rules')}>
               <Icon name='chess board'/>
               Rules
             </Menu.Item>
@@ -109,8 +109,19 @@ const App = () => {
           <div style={{minHeight: '100vh', backgroundColor: '#0e140c'}}>
             <div style={{color: 'white'}}>{date.toDateString()}</div>
             <Switch>
+              <Route path='/rules'>
+                <div style={{ color: 'white' }}>työn alla</div>
+              </Route>
               <Route path='/home'>
-                <UserDetails user={user}/>
+                {user 
+                  ? 
+                  <UserDetails user={user}/>
+                  :
+                  <Segment inverted>
+                    <Header>tervetuloa</Header>
+                    Login to play or register first if you haven't already.
+                  </Segment>
+                }
               </Route>
               <Route path='/play'>
                 <Game user={user}/>

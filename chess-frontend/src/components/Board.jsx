@@ -25,7 +25,7 @@ const squareStyle = {
   height: '12.5%',
   width: '12.5%'
 }
-const MySquare = ({ content, handleSelection, selectedSquare, validMoves, attackedSquares, handleDragOver }) => {
+const MySquare = ({ content, handleSelection, selectedSquare, validMoves, attackedSquares }) => {
   const index = content[0]
   let color = ((index + Math.floor(index/8))%2)===0 ? '#f58a42' : '#52170d'
   
@@ -43,13 +43,13 @@ const MySquare = ({ content, handleSelection, selectedSquare, validMoves, attack
       id={index}
       style={{ ...squareStyle, backgroundColor: color}} 
       onClick={() => handleSelection(content)}
-      onDragEnter={handleDragOver}
     >
-      {content[1] && <Piece piece={content[1]} selectPiece={() => handleSelection(content)}/>}
+      {content[1] && <Piece piece={content[1]}/>}
+      
     </div>
   )
 }
-
+//{content[1] && <Piece piece={content[1]} selectPiece={() => handleSelection(content)}/>}
 
 const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myColor, ...props}) => {
   const [ selectedSquare, setSelectedSquare ] = useState(null)
@@ -67,13 +67,17 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myC
   },[selectedSquare, board])
   
   const handleSelection = (square) => {
+    console.log('handleSelection selectedSquare', selectedSquare)
+    console.log('handleSelection squareDraggedOver', squareDraggedOver)
     if (myColor !== playerToMove) return
     const id = square[0]
     if (selectedSquare && validMoves.includes(squareDraggedOver)) {
+      console.log('selectedSquare && validMoves.includes(squareDraggedOver)')
       movePiece(selectedSquare[0], squareDraggedOver)
       setSelectedSquare(null)
     }
-    else if (!selectedSquare && board[id][1] && board[id][1].color=== playerToMove) {
+    else if (board[id][1] && board[id][1].color=== playerToMove) {
+      console.log('!selectedSquare && board[id][1] && board[id][1].color=== playerToMove')
       setSelectedSquare(square)
     } 
     else if (selectedSquare && selectedSquare[0] === id) setSelectedSquare(null)
@@ -96,7 +100,6 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myC
           validMoves={validMoves}
           handleSelection={handleSelection}
           attackedSquares={attackedSquares}
-          handleDragOver={() => setSquareDraggedOver(element[0])}
         />   
       ))}
     </div>

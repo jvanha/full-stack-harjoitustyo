@@ -33,8 +33,8 @@ export const LOGOUT = gql`
   }
 `
 export const CHALLENGE = gql`
-  mutation challenge($id: String! $username: String!) {
-    challenge(id: $id username: $username) {
+  mutation challenge($id: String! $username: String! $timeControl: Int) {
+    challenge(id: $id username: $username timeControl: $timeControl) {
       username
       id
     }

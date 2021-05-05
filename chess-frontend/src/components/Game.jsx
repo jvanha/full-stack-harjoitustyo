@@ -86,23 +86,24 @@ const Game = ({ user }) => {
   const [ cancelledChallenge, setCancelledChallenge ] = useState(null)
   const [ clock, setClock ] = useState(10)
   const [ clockRunning, setClockRunning] = useState(false)
-  const [ opponentsClock, setOpponentsClock ] = useState(300)
+  const [ opponentsClock, setOpponentsClock ] = useState(10)
   const [ opponentsClockRunning, setOpponentsClockRunning] = useState(false) 
   
   const [ acceptChallenge, acceptChallengeResult ] = useMutation(ACCEPT_CHALLENGE)
   const [ declineChallenge, declineChallengeResult ] = useMutation(DECLINE_CHALLENGE)
   const [ makeAMove, makeAMoveResult ] = useMutation(MAKE_A_MOVE)
   const [ createGame, createGameResult ] = useMutation(CREATE_GAME)
-  console.log('user',user)
+  //console.log('user',user)
 
 
   useSubscription(CHALLENGE_ISSUED, {
     variables: { playerId: user ? user.id : ''},
     onSubscriptionData: ({ subscriptionData }) => {
       console.log('CHALLENGE ISSUED',subscriptionData)
-      const challenger = subscriptionData.data.challengeIssued.challenger
+      const challenger = subscriptionData.data.challengeIssued.opponents.challenger
+      const timeControl = subscriptionData.data.challengeIssued.timeControl
       console.log('challenger',challenger)
-      if (window.confirm(`You have been challenged by ${challenger.username}. Accept the challenge?`)) {
+      if (window.confirm(`You have been challenged for ${timeControl} minute game by ${challenger.username}. Accept the challenge?`)) {
         console.log('challenger', challenger)
         acceptChallenge({ variables: { username: challenger.username, id: challenger.id }})
       } else {
@@ -126,6 +127,8 @@ const Game = ({ user }) => {
       console.log('challengeWaiting',challengeWaiting)
       console.log('subscriptionData', subscriptionData)
       if (challengeWaiting === subscriptionData.data.challengeAccepted.challenged.id) {
+        setClock(10)
+        setOpponentsClock(10)
         setOpponentsClockRunning(true)
         setChallengeWaiting(null)
         alert("Your challenge has been accepted")
@@ -148,10 +151,22 @@ const Game = ({ user }) => {
     onSubscriptionData: ({ subscriptionData }) => {
       console.log('MOVE MADE', subscriptionData)
       const move = subscriptionData.data.moveMade.move
-      movePiece(move.from, move.to)
+      if (move.time === 0) {
+        const whiteId = myColor === 'white' ? user.id : opponent.id
+        const blackId = myColor === 'black' ? user.id : opponent.id
+        const winner = myColor
+        //only the winner creates a new game
+        createGame({ variables: { whiteId, blackId, winner } })
+        alert('You won by timeout')
+        setClockRunning(false)
+        setPlayerToMove('white')
+
+      } else {
+        movePiece(move.from, move.to)
+        setClockRunning(true)
+      }
       setOpponentsClockRunning(false)
       setOpponentsClock(move.time)
-      setClockRunning(true)
     } 
   })
   
@@ -162,6 +177,8 @@ const Game = ({ user }) => {
       setOpponent(acceptChallengeResult.data.acceptChallenge)
       setBoard(initBoard)
       setMyColor('white')
+      setClock(10)
+      setOpponentsClock(10)
       setClockRunning(true)
       console.log('Game on!')
     }
@@ -188,8 +205,10 @@ const Game = ({ user }) => {
   useEffect(() => {
     if (clock < 0) {
       console.log('Time is out')
+      makeAMove({ variables: { userId: user.id, from: 0, to: 0, time: 0}})
       setClockRunning(false)
       setClock(0)
+      alert('you lost by timeout')
     }
   }, [clock])
 
@@ -197,6 +216,7 @@ const Game = ({ user }) => {
     if (myColor) {
       if (isDrawByLackOfLegitMoves(playerToMove, board, enPassant)) {
         alert('Draw')
+        setPlayerToMove('white')
       } else if (isCheckMated(playerToMove, board, enPassant)) {
         if (playerToMove === myColor) alert('You lost')
         else {
@@ -206,8 +226,10 @@ const Game = ({ user }) => {
           //only the winner creates a new game
           createGame({ variables: { whiteId, blackId, winner } })
           alert('You won')
+          setPlayerToMove('white')
         }
       }
+      
     }
   }, [board])
 

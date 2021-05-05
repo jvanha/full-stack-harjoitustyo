@@ -23,28 +23,8 @@ const imgStyle = {
   height: '90%',
   width: '90%',
 }
-const Piece = ({ piece, selectPiece, id }) => {
-  const [ selected, setSelected ] = useState(false)
-  const [ dragging, setDragging ] = useState(false)
-
-  const borderColor = selected ? 'red' : 'blue'
+const Piece = ({ piece }) => {
   const src = piece.color + piece.type + '.png'
-  const handleSelect = (event) => {
-    if (piece) {
-      
-      setTimeout(()=>{
-        setDragging(true)
-        setSelected(!selected)
-        selectPiece()
-      }, 0)
-    }
-  }
-  const handleDragEnd = () => {
-    setDragging(false)
-    setSelected(false)
-    selectPiece()
-
-  }
   /*
   return (
     <div 
@@ -61,10 +41,7 @@ const Piece = ({ piece, selectPiece, id }) => {
  
   return (
     <div 
-      style={{...pieceStyle, borderColor}}
-      draggable
-      onDragStart={(event) => handleSelect(event)}
-      onDragEnd={handleDragEnd}
+      style={{ pieceStyle }}
       >
       <img style={imgStyle} src={`${piece.color}${piece.type}.png`} alt='' />
     </div>

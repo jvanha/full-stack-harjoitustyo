@@ -19,10 +19,13 @@ export const USER_LOGGED_OUT = gql`
 export const CHALLENGE_ISSUED = gql`
   subscription challengeIssued($playerId: String!){
     challengeIssued(playerId: $playerId) {
-      challenger {
-        username
-        id
+      opponents {
+        challenger {
+          username
+          id
+        }
       }
+      timeControl
     }
   }
 `
