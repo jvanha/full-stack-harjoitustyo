@@ -38,9 +38,11 @@ const App = () => {
   useEffect(() => {
     getUser()
   },[token])
+
   useEffect(() => {
     getUser()
   },[])
+  
   useEffect(() => {
     console.log('logoutResult',logoutResult)
     if (logoutResult.called && !logoutResult.loading) {
