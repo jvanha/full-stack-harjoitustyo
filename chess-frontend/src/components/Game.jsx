@@ -105,7 +105,7 @@ const Game = ({ user }) => {
       console.log('challenger',challenger)
       if (window.confirm(`You have been challenged for ${timeControl} minute game by ${challenger.username}. Accept the challenge?`)) {
         console.log('challenger', challenger)
-        acceptChallenge({ variables: { username: challenger.username, id: challenger.id }})
+        acceptChallenge({ variables: { username: challenger.username, id: challenger.id, timeControl }})
       } else {
         declineChallenge({ variables: { username: challenger.username, id: challenger.id }})
         console.log('YOU DECLINED THE CHALLENGE')
@@ -126,13 +126,14 @@ const Game = ({ user }) => {
     onSubscriptionData: ({ subscriptionData }) => {
       console.log('challengeWaiting',challengeWaiting)
       console.log('subscriptionData', subscriptionData)
-      if (challengeWaiting === subscriptionData.data.challengeAccepted.challenged.id) {
-        setClock(10)
-        setOpponentsClock(10)
+      const challenge = subscriptionData.data.challengeAccepted
+      if (challengeWaiting === challenge.opponents.challenged.id) {
+        setClock(challenge.timeControl*60)
+        setOpponentsClock(challenge.timeControl*60)
         setOpponentsClockRunning(true)
         setChallengeWaiting(null)
         alert("Your challenge has been accepted")
-        setOpponent(subscriptionData.data.challengeAccepted.challenged)
+        setOpponent(challenge.opponents.challenged)
         setBoard(initBoard)
         setMyColor('black')
       }
@@ -174,11 +175,12 @@ const Game = ({ user }) => {
     if (acceptChallengeResult.called && !acceptChallengeResult.loading) {
       //POTENTTIAALISESTI VÄÄRIN
       console.log('acceptChallengeResult',acceptChallengeResult)
-      setOpponent(acceptChallengeResult.data.acceptChallenge)
+      const challenge = acceptChallengeResult.data.acceptChallenge
+      setOpponent(challenge.opponents.challenger)
       setBoard(initBoard)
       setMyColor('white')
-      setClock(10)
-      setOpponentsClock(10)
+      setClock(challenge.timeControl*60)
+      setOpponentsClock(challenge.timeControl*60)
       setClockRunning(true)
       console.log('Game on!')
     }

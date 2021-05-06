@@ -7,6 +7,7 @@ import {
   withRouter
 } from 'react-router-dom'
 import { Button, Divider, Header, Icon, Menu, Segment, Sidebar} from 'semantic-ui-react'
+import ChallengeForm from './components/ChallengeForm'
 import Game from './components/Game'
 import LoginModal from './components/LoginModal'
 import MySideBar from './components/MySideBar'
@@ -19,6 +20,7 @@ const App = () => {
   const history = useHistory()
   const [loginModalOpen, setLoginModalOpen] = useState(false)
   const [registryModalOpen, setRegistryModalOpen] = useState(false)
+
   const [token, setToken] = useState(null)
   const [user, setUser] = useState(null)
   const client = useApolloClient()
@@ -111,6 +113,7 @@ const App = () => {
             <Switch>
               <Route path='/rules'>
                 <div style={{ color: 'white' }}>työn alla</div>
+                <ChallengeForm />
               </Route>
               <Route path='/home'>
                 {user 
@@ -143,7 +146,8 @@ const App = () => {
           <RegistryModal
             modalOpen={registryModalOpen}
             close={() => setRegistryModalOpen(false)}
-          />  
+          />
+          
     </Sidebar.Pushable>
   )
 }

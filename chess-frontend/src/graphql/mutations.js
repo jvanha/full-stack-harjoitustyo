@@ -35,8 +35,12 @@ export const LOGOUT = gql`
 export const CHALLENGE = gql`
   mutation challenge($id: String! $username: String! $timeControl: Int) {
     challenge(id: $id username: $username timeControl: $timeControl) {
-      username
-      id
+      opponents {
+        challenged {
+          username
+          id
+        }
+      }
     }
   }
 `
@@ -49,10 +53,15 @@ export const CANCEL_CHALLENGE = gql`
   }
 `
 export const ACCEPT_CHALLENGE = gql`
-  mutation acceptChallenge($id: String! $username: String!) {
-    acceptChallenge(id: $id username: $username) {
-      username
-      id
+  mutation acceptChallenge($id: String! $username: String! $timeControl: Int) {
+    acceptChallenge(id: $id username: $username timeControl: $timeControl) {
+      opponents {
+        challenger {
+          username
+          id
+        }
+      }
+      timeControl
     }
   }
 `

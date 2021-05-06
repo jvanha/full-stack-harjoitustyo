@@ -28,13 +28,11 @@ const LoginForm = ({ setToken, close }) => {
     }
   }, [result.data])
 
-  const submit = async (event) => {
+  const submit = (event) => {
     event.preventDefault()
     login({ variables: { username, password }})
     setUsername('')
     setPassword('')
-
-    
   }
  
   return (

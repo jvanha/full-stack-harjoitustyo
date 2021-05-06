@@ -42,10 +42,13 @@ export const CHALLENGE_CANCELLED = gql`
 export const CHALLENGE_ACCEPTED = gql`
   subscription challengeAccepted($playerId: String!){
     challengeAccepted(playerId: $playerId) {
-      challenged {
-        username
-        id
+      opponents {
+        challenged {
+          username
+          id
+        }
       }
+      timeControl
     }
   }
 `

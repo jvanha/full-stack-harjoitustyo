@@ -95,12 +95,13 @@ const typeDefs = gql`
       username: String!
       id: String!
       timeControl: Int
-    ): User!
+    ): Challenge!
     
     acceptChallenge(
       username: String!
       id: String!
-    ): User!
+      timeControl: Int
+    ): Challenge!
     
     cancelChallenge(
       username: String!
@@ -129,7 +130,7 @@ const typeDefs = gql`
     userLoggedOut: User
     challengeIssued(playerId: String): Challenge
     challengeCancelled(playerId: String): Opponents
-    challengeAccepted(playerId: String): Opponents
+    challengeAccepted(playerId: String): Challenge
     challengeDeclined(playerId: String): Opponents
     messageAdded: Message
   }
@@ -215,23 +216,21 @@ const resolvers = {
       const challenger = {
         username: currentUser.username,
         id: currentUser.id,
-        
       }
       const { username, id, timeControl } = args;
-        const payload = {
-          challengeIssued: {
-            opponents: { 
-              challenger,
-              challenged: { username, id },
-            },
-            timeControl,
-          }
-        }
+      const challenge = {
+        opponents: { 
+          challenger,
+          challenged: { username, id },
+        },
+        timeControl,
+      }
+      const payload = { challengeIssued: { ...challenge } }
       console.log('payload', payload)
       console.log()
       pubsub.publish('CHALLENGE_ISSUED', payload)
       console.log('HERE')
-      return { username, id }
+      return challenge
     },
     cancelChallenge: (rootm, args, context) => {
       console.log('cancelChallenge resolver')
@@ -253,13 +252,23 @@ const resolvers = {
       console.log('context.currentUser',context.currentUser)
       console.log('args', args)
       console.log()
-      const payload = { 
-        challengeAccepted: {
-          challenger: args,
-          challenged: context.currentUser
-        }}
+      const currentUser = context.currentUser
+      const challenged = {
+        username: currentUser.username,
+        id: currentUser.id,
+      }
+      const { username, id, timeControl } = args;
+      const challenge = {
+        opponents: { 
+          challenger: { username, id },
+          challenged,
+        },
+        timeControl,
+      }
+      const payload = { challengeAccepted: {...challenge } }
+      console.log('payload', payload)
       pubsub.publish('CHALLENGE_ACCEPTED', payload)
-      return args
+      return challenge
     },
     declineChallenge: (root, args, context) => {
       console.log('declineChallenge resolver')
@@ -300,6 +309,7 @@ const resolvers = {
         console.log('move made')
         console.log('payload', payload)
         console.log('variables', variables)
+        console.log()
         return payload.moveMade.userId === variables.opponentId
       })
     },
@@ -308,10 +318,9 @@ const resolvers = {
         console.log('challenge issued')
         console.log('payload', payload)
         console.log('variables', variables)
-        //console.log(payload.challengeIssued.opponents.challenged.id === variables.playerId)
-        //console.log()
-        return true;
-        //return payload.challengeIssued.opponents.challenged.id === variables.playerId
+        console.log(payload.challengeIssued.opponents.challenged.id === variables.playerId)
+        console.log()
+        return payload.challengeIssued.opponents.challenged.id === variables.playerId
       })
     },
     challengeCancelled: {
@@ -330,7 +339,7 @@ const resolvers = {
         console.log('payload', payload)
         console.log('variables', variables)
         console.log()
-        return payload.challengeAccepted.challenger.id === variables.playerId
+        return payload.challengeAccepted.opponents.challenger.id === variables.playerId
       })
     },
     challengeDeclined: {

@@ -41,20 +41,22 @@ const Users = ({ challengeWaiting, setChallengeWaiting, me}) => {
     return <div>No users online</div>
   
   return (
-    <List relaxed celled>
-      <List.Header as='h3'>
-        Users
-      </List.Header>
-      {result.data.allUsers.map(user => 
-        <User 
-          key={user.id}
-          user={user}
-          challengeWaiting={challengeWaiting}
-          setChallengeWaiting={setChallengeWaiting}
-          me={me}
-        />
-      )}
-    </List>
+    <div>
+      <List relaxed celled>
+        <List.Header as='h3'>
+          Users
+        </List.Header>
+        {result.data.allUsers.map(user => 
+          <User 
+            key={user.id}
+            user={user}
+            challengeWaiting={challengeWaiting}
+            setChallengeWaiting={setChallengeWaiting}
+            me={me}
+          />
+        )}
+      </List>      
+    </div>
   )
 }
 

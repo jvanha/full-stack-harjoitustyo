@@ -1,11 +1,13 @@
 import { useMutation } from '@apollo/client'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button, List } from 'semantic-ui-react'
 import { CHALLENGE, CANCEL_CHALLENGE } from '../graphql/mutations'
+import ChallengeModal from './ChallengeModal'
 
 const User = ({ user, me, challengeWaiting, setChallengeWaiting }) => {
   const [ challenge, challengeResult ] = useMutation(CHALLENGE)
   const [ cancelChallenge, cancelChallengeResult] = useMutation(CANCEL_CHALLENGE)
+  const [challengeModalOpen, setChallengeModalOpen] = useState(false)
 
   useEffect(() => {
     if (challengeResult.called && !challengeResult.loading) {
@@ -44,7 +46,7 @@ const User = ({ user, me, challengeWaiting, setChallengeWaiting }) => {
             </>
           }
           {!challengeWaiting
-            && <Button compact onClick={handleChallence}>challence</Button>
+            && <Button compact onClick={() => setChallengeModalOpen(true)}>challence</Button>
           }
         </List.Content>
       }
@@ -56,8 +58,12 @@ const User = ({ user, me, challengeWaiting, setChallengeWaiting }) => {
           
         </List.Description>
       </List.Content>
-      
-      
+      <ChallengeModal
+        modalOpen={challengeModalOpen}
+        close={() => setChallengeModalOpen(false)}
+        opponent={user}
+        setChallengeWaiting={setChallengeWaiting}
+      /> 
     </List.Item>
   )
 }
