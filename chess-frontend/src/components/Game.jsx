@@ -8,6 +8,7 @@ import { CHALLENGE_ACCEPTED, CHALLENGE_CANCELLED, CHALLENGE_DECLINED, CHALLENGE_
 import { getAttackedSquares, isCheckMated, isDrawByLackOfLegitMoves, isInCheck } from './../utilFunctions'
 import { Menu} from 'semantic-ui-react';
 import Chat from './Chat';
+
 let squares = Array(64)//[...Array(64).keys()]
 const emptyBoard = Array(64)
 let initBoard = Array(64)
