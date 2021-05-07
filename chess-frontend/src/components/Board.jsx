@@ -84,7 +84,10 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myC
     else if (selectedSquare && validMoves.includes(id)) {
       movePiece(selectedSquare[0], id)
       setSelectedSquare(null)
-    } 
+    }
+    else {
+      setSelectedSquare(null)
+    }
       
   }
   

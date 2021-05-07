@@ -8,6 +8,7 @@ import { CHALLENGE_ACCEPTED, CHALLENGE_CANCELLED, CHALLENGE_DECLINED, CHALLENGE_
 import { getAttackedSquares, isCheckMated, isDrawByLackOfLegitMoves, isInCheck } from './../utilFunctions'
 import { Menu} from 'semantic-ui-react';
 import Chat from './Chat';
+import { loadGameState, saveGameState } from '../gameStateService';
 
 let squares = Array(64)//[...Array(64).keys()]
 const emptyBoard = Array(64)
@@ -133,9 +134,9 @@ const Game = ({ user }) => {
         setOpponentsClock(challenge.timeControl*60)
         setOpponentsClockRunning(true)
         setChallengeWaiting(null)
-        alert("Your challenge has been accepted")
         setOpponent(challenge.opponents.challenged)
         setBoard(initBoard)
+        setPlayerToMove('white')
         setMyColor('black')
       }
     }
@@ -161,7 +162,7 @@ const Game = ({ user }) => {
         createGame({ variables: { whiteId, blackId, winner } })
         alert('You won by timeout')
         setClockRunning(false)
-        setPlayerToMove('white')
+        setPlayerToMove(null)
 
       } else {
         movePiece(move.from, move.to)
@@ -171,7 +172,14 @@ const Game = ({ user }) => {
       setOpponentsClock(move.time)
     } 
   })
-  
+  useEffect(() => {
+    const gameState = loadGameState()
+    console.log('gameState', gameState)
+    if (gameState) {
+      console.log('gameState.board', gameState.board)
+      setBoard(gameState.board)
+    }
+  },[])
   useEffect(() => {
     if (acceptChallengeResult.called && !acceptChallengeResult.loading) {
       //POTENTTIAALISESTI VÄÄRIN
@@ -183,6 +191,7 @@ const Game = ({ user }) => {
       setClock(challenge.timeControl*60)
       setOpponentsClock(challenge.timeControl*60)
       setClockRunning(true)
+      setPlayerToMove('white')
       console.log('Game on!')
     }
   }, [acceptChallengeResult.data])
@@ -212,6 +221,7 @@ const Game = ({ user }) => {
       setClockRunning(false)
       setClock(0)
       alert('you lost by timeout')
+      setPlayerToMove(null)
     }
   }, [clock])
 
@@ -219,9 +229,15 @@ const Game = ({ user }) => {
     if (myColor) {
       if (isDrawByLackOfLegitMoves(playerToMove, board, enPassant)) {
         alert('Draw')
-        setPlayerToMove('white')
+        setPlayerToMove(null)
+        setMyColor(null)
+        setClockRunning(false)
       } else if (isCheckMated(playerToMove, board, enPassant)) {
-        if (playerToMove === myColor) alert('You lost')
+        if (playerToMove === myColor) {
+          alert('You lost')
+          setPlayerToMove(null)
+          setClockRunning(false)
+        }
         else {
           const whiteId = myColor === 'white' ? user.id : opponent.id
           const blackId = myColor === 'black' ? user.id : opponent.id
@@ -229,14 +245,35 @@ const Game = ({ user }) => {
           //only the winner creates a new game
           createGame({ variables: { whiteId, blackId, winner } })
           alert('You won')
-          setPlayerToMove('white')
+          setPlayerToMove(null)
+          setOpponentsClockRunning(false)
         }
       }
-      
     }
   }, [board])
-
+ 
+  useEffect(() => {
+    const gameState = {
+      myColor,
+      playerToMove,
+      clock,
+      opponentsClock,
+      board,
+      opponent,
+      longCastleBlack,
+      longCastleWhite,
+      shortCastleBlack,
+      shortCastleWhite,
+      enPassant,
+      board,
+    }
+    console.log('handlePieceMove board', gameState.board)
+    
+    saveGameState(gameState)
+  }, [playerToMove])
+  
   const movePiece = (from, to) => {
+
     console.log('playerToMove != myColor', playerToMove !== myColor)
     console.log('opponent', opponent)
     if (opponent && playerToMove === myColor) {
@@ -333,8 +370,10 @@ const Game = ({ user }) => {
       } else {
         setEnpassant(null)
       }
-      setPlayerToMove(playerToMove === 'white' ? 'black' : 'white')
       setBoard(newBoard)
+      setPlayerToMove(playerToMove === 'white' ? 'black' : 'white')
+      
+    //YLIMÄäRäINEN?
     if (myColor==='white') {
       if (isCheckMated('black', board, enPassant)) {
         createGame({
@@ -345,6 +384,7 @@ const Game = ({ user }) => {
           }})
       }
     }
+    
   }
   
   const handleShow = (color) => {
