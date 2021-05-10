@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken')
 const User = require('./models/user')
 const Game = require('./models/game')
 const bcrypt = require('bcrypt')
+const user = require('./models/user')
 
 const pubsub = new PubSub()
 
@@ -140,6 +141,7 @@ const typeDefs = gql`
 const resolvers = {
   Query: {
     allUsers: () => {
+      console.log('allUsers', usersLoggedIn.map(user=>user.username))
       if (!usersLoggedIn) return []
       return usersLoggedIn
     },
@@ -178,13 +180,12 @@ const resolvers = {
     login: async (root, args) => {
       const { username, password } = args
       const user = await User.findOne({ username })
-      if (!user || !await bcrypt.compare(args.password, user.passwordHash)) {
+      if (!user || !await bcrypt.compare(password, user.passwordHash)) {
         throw new UserInputError('Bad credentials')
       }
 
       if (!usersLoggedIn.map(user => user._id).includes(user._id)) //HUOM!
         usersLoggedIn = [...usersLoggedIn, user]
-      console.log(usersLoggedIn)
       const userForPublish = {
         username: user.username,
         id: user._id
@@ -194,18 +195,17 @@ const resolvers = {
         username: user.username,
         id:  user._id
       }
+      console.log('userLoggedIn',user.username)
+      console.log('usersLoggedIn',usersLoggedIn.map(user=>user.username))
       return { value: jwt.sign(userForToken, JWT_SECRET)}
     },
     logout: (root, args, context) => {
       const currentUser = context.currentUser
-      console.log(currentUser,'logged out')
+      console.log(currentUser.username,'logged out')
       usersLoggedIn = usersLoggedIn.filter(user => user.id !== currentUser.id)
       usersLoggedIn.filter(user => user.id !== currentUser.id)
-      //const user = {
-      //  username: currentUser.username,
-      //  id: currentUser._id
-      //}
       pubsub.publish('USER_LOGGED_OUT', { userLoggedOut: currentUser})
+      //console.log('usersLoggedIn', usersLoggedIn.map(user => user.username))
       return currentUser
     },
     challenge: (root, args, context) => {

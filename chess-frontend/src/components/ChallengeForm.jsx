@@ -3,10 +3,11 @@ import React, { useEffect, useState } from 'react'
 import { Button, Dropdown, Form } from 'semantic-ui-react'
 import { CANCEL_CHALLENGE, CHALLENGE } from '../graphql/mutations'
 const options = [
-  { key: 1, text: '1 min', value: 1 },
-  { key: 3, text: '3 min', value: 3 },
-  { key: 5, text: '5 min', value: 5 },
-  { key: 10, text: '10 min', value: 10 },
+  { key: 0, text: '10 sec', value: 10},
+  { key: 1, text: '1 min', value: 60 },
+  { key: 3, text: '3 min', value: 180 },
+  { key: 5, text: '5 min', value: 300 },
+  { key: 10, text: '10 min', value: 600 },
 
 ]
 const ChallengeForm = ({ opponent, setChallengeWaiting, close }) => {

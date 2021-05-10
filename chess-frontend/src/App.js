@@ -1,4 +1,4 @@
-import { useApolloClient, useLazyQuery, useMutation } from '@apollo/client'
+import { useApolloClient, useLazyQuery, useMutation, useSubscription } from '@apollo/client'
 import React, { useEffect, useState } from 'react'
 import {
   Route,
@@ -14,7 +14,8 @@ import MySideBar from './components/MySideBar'
 import RegistryModal from './components/RegistryModal'
 import UserDetails from './components/UserDetails'
 import { LOGOUT } from './graphql/mutations'
-import { ME } from './graphql/queries'
+import { ALL_USERS, ME } from './graphql/queries'
+import { USER_LOGGED_IN, USER_LOGGED_OUT } from './graphql/subscriptions'
 
 const App = () => {
   const history = useHistory()
@@ -37,6 +38,31 @@ const App = () => {
     client.resetStore()
   }, [])
 */
+  useSubscription(USER_LOGGED_IN, {
+    onSubscriptionData: ({ subscriptionData}) => {
+      console.log('USER_LOGGED_IN subscriptionData',subscriptionData)
+      const loggedInUser = subscriptionData.data.userLoggedIn
+      const usersInStorage = client.readQuery({ query: ALL_USERS })
+      if (!usersInStorage.allUsers.map(user => user.id).includes(loggedInUser.id)) {
+        client.writeQuery({
+          query: ALL_USERS,
+          data: { allUsers: usersInStorage.allUsers.concat(loggedInUser)}
+        })
+      }
+    }
+  })
+  
+  useSubscription(USER_LOGGED_OUT, {
+    onSubscriptionData: ({ subscriptionData}) => {
+      console.log('USER_LOGGED_OU subscriptionData',subscriptionData)
+      const loggedOutUser = subscriptionData.data.userLoggedOut
+      const usersInStorage = client.readQuery({ query: ALL_USERS })
+      client.writeQuery({
+        query: ALL_USERS,
+        data: { allUsers: usersInStorage.allUsers.filter(user => user.id !== loggedOutUser.id)}
+      })
+    }
+  })
   useEffect(() => {
     getUser()
   },[token])

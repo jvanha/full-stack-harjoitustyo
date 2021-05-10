@@ -9,72 +9,76 @@ import { getAttackedSquares, isCheckMated, isDrawByLackOfLegitMoves, isInCheck }
 import { Menu} from 'semantic-ui-react';
 import Chat from './Chat';
 import { loadGameState, saveGameState } from '../gameStateService';
+import PromotionPortal from './PromotionPortal';
 
 let squares = Array(64)//[...Array(64).keys()]
 const emptyBoard = Array(64)
 let initBoard = Array(64)
+let testBoard = Array(64)
 
 let i
 for (i=0; i<64; i++) {
   squares[i] = [i, null]
   initBoard[i] = [i, null]
+  testBoard[i] = [i, null]
 }
-squares[56] = [56, { type: 'R', color: 'white'}]
-squares[50] = [50, { type: 'P', color: 'white'}]
-squares[31] = [31, { type: 'P', color: 'white'}]
-squares[4] = [4, { type: 'K', color: 'black'}]
-squares[14] = [14, { type: 'P', color: 'black'}]
-squares[33] = [33, { type: 'P', color: 'black'}]
-squares[0] = [0, { type: 'R', color: 'black'}]
-squares[7] = [7, { type: 'R', color: 'black'}]
-squares[45] = [45, { type: 'B', color: 'white'}]
-squares[47] = [47, { type: 'Q', color: 'white'}]
-squares[60] = [60, { type: 'K', color: 'white'}]
-squares[3]  = [3, { type: 'N', color: 'black'}]
-squares[63] = [63, { type: 'R', color: 'white'}]
+squares[56] = [56, { type: 'R', color: 'white' }]
+squares[50] = [50, { type: 'P', color: 'white' }]
+squares[31] = [31, { type: 'P', color: 'white' }]
+squares[4] = [4, { type: 'K', color: 'black' }]
+squares[14] = [14, { type: 'P', color: 'black' }]
+squares[33] = [33, { type: 'P', color: 'black' }]
+squares[0] = [0, { type: 'R', color: 'black' }]
+squares[7] = [7, { type: 'R', color: 'black' }]
+squares[45] = [45, { type: 'B', color: 'white' }]
+squares[47] = [47, { type: 'Q', color: 'white' }]
+squares[60] = [60, { type: 'K', color: 'white' }]
+squares[3]  = [3, { type: 'N', color: 'black' }]
+squares[63] = [63, { type: 'R', color: 'white' }]
 
+initBoard[0] = [0, { type: 'R', color: 'black' }]
+initBoard[1] = [1, { type: 'N', color: 'black' }]
+initBoard[2] = [2, { type: 'B', color: 'black' }]
+initBoard[3] = [3, { type: 'Q', color: 'black' }]
+initBoard[4] = [4, { type: 'K', color: 'black' }]
+initBoard[5] = [5, { type: 'B', color: 'black' }]
+initBoard[6] = [6, { type: 'N', color: 'black' }]
+initBoard[7] = [7, { type: 'R', color: 'black' }]
+initBoard[8] = [8, { type: 'P', color: 'black' }]
+initBoard[9] = [9, { type: 'P', color: 'black' }]
+initBoard[10] = [10, { type: 'P', color: 'black' }]
+initBoard[11] = [11, { type: 'P', color: 'black' }]
+initBoard[12] = [12, { type: 'P', color: 'black' }]
+initBoard[13] = [13, { type: 'P', color: 'black' }]
+initBoard[14] = [14, { type: 'P', color: 'black' }]
+initBoard[15] = [15, { type: 'P', color: 'black' }]
 
+initBoard[48] = [48, { type: 'P', color: 'white' }]
+initBoard[49] = [49, { type: 'P', color: 'white' }]
+initBoard[50] = [50, { type: 'P', color: 'white' }]
+initBoard[51] = [51, { type: 'P', color: 'white' }]
+initBoard[52] = [52, { type: 'P', color: 'white' }]
+initBoard[53] = [53, { type: 'P', color: 'white' }]
+initBoard[54] = [54, { type: 'P', color: 'white' }]
+initBoard[55] = [55, { type: 'P', color: 'white' }]
+initBoard[56] = [56, { type: 'R', color: 'white' }]
+initBoard[57] = [57, { type: 'N', color: 'white' }]
+initBoard[58] = [58, { type: 'B', color: 'white' }]
+initBoard[59] = [59, { type: 'Q', color: 'white' }]
+initBoard[60] = [60, { type: 'K', color: 'white' }]
+initBoard[61] = [61, { type: 'B', color: 'white' }]
+initBoard[62] = [62, { type: 'N', color: 'white' }]
+initBoard[63] = [63, { type: 'R', color: 'white' }]
 
-for (i=0; i<64; i++) {
-  squares[i] = [i, null]
-}
-initBoard[0] = [0, { type: 'R', color: 'black'}]
-initBoard[1] = [1, { type: 'N', color: 'black'}]
-initBoard[2] = [2, { type: 'B', color: 'black'}]
-initBoard[3] = [3, { type: 'Q', color: 'black'}]
-initBoard[4] = [4, { type: 'K', color: 'black'}]
-initBoard[5] = [5, { type: 'B', color: 'black'}]
-initBoard[6] = [6, { type: 'N', color: 'black'}]
-initBoard[7] = [7, { type: 'R', color: 'black'}]
-initBoard[8] = [8, { type: 'P', color: 'black'}]
-initBoard[9] = [9, { type: 'P', color: 'black'}]
-initBoard[10] = [10, { type: 'P', color: 'black'}]
-initBoard[11] = [11, { type: 'P', color: 'black'}]
-initBoard[12] = [12, { type: 'P', color: 'black'}]
-initBoard[13] = [13, { type: 'P', color: 'black'}]
-initBoard[14] = [14, { type: 'P', color: 'black'}]
-initBoard[15] = [15, { type: 'P', color: 'black'}]
-
-initBoard[48] = [48, { type: 'P', color: 'white'}]
-initBoard[49] = [49, { type: 'P', color: 'white'}]
-initBoard[50] = [50, { type: 'P', color: 'white'}]
-initBoard[51] = [51, { type: 'P', color: 'white'}]
-initBoard[52] = [52, { type: 'P', color: 'white'}]
-initBoard[53] = [53, { type: 'P', color: 'white'}]
-initBoard[54] = [54, { type: 'P', color: 'white'}]
-initBoard[55] = [55, { type: 'P', color: 'white'}]
-initBoard[56] = [56, { type: 'R', color: 'white'}]
-initBoard[57] = [57, { type: 'N', color: 'white'}]
-initBoard[58] = [58, { type: 'B', color: 'white'}]
-initBoard[59] = [59, { type: 'Q', color: 'white'}]
-initBoard[60] = [60, { type: 'K', color: 'white'}]
-initBoard[61] = [61, { type: 'B', color: 'white'}]
-initBoard[62] = [62, { type: 'N', color: 'white'}]
-initBoard[63] = [63, { type: 'R', color: 'white'}]
+testBoard[0] = [0, { type: 'K', color: 'black' }]
+testBoard[63] = [63, { type: 'K', color: 'white' }]
+testBoard[11] = [11, { type: 'P', color: 'white' }]
 
 const Game = ({ user }) => {
 
-  const [ game, setGame ] = useState(null)
+  const [ game, setGame ] = useState({
+    board: initBoard,
+  })
   const [ activeMenuItem, setActiveMenuItem ] = useState("players")
   const [ board, setBoard ] = useState(initBoard)
   const [ attackedSquares, setAttackedSquares ] = useState(null)
@@ -91,7 +95,8 @@ const Game = ({ user }) => {
   const [ clock, setClock ] = useState(10)
   const [ clockRunning, setClockRunning] = useState(false)
   const [ opponentsClock, setOpponentsClock ] = useState(10)
-  const [ opponentsClockRunning, setOpponentsClockRunning] = useState(false) 
+  const [ opponentsClockRunning, setOpponentsClockRunning] = useState(false)
+  const [ promotion, setPromotion ] = useState(null)
   
   const [ acceptChallenge, acceptChallengeResult ] = useMutation(ACCEPT_CHALLENGE)
   const [ declineChallenge, declineChallengeResult ] = useMutation(DECLINE_CHALLENGE)
@@ -106,8 +111,11 @@ const Game = ({ user }) => {
       console.log('CHALLENGE ISSUED',subscriptionData)
       const challenger = subscriptionData.data.challengeIssued.opponents.challenger
       const timeControl = subscriptionData.data.challengeIssued.timeControl
+      const message = timeControl%60 
+        ? `You have been challenged for ${timeControl} second game by ${challenger.username}. Accept the challenge?`
+        : `You have been challenged for ${timeControl/60} minute game by ${challenger.username}. Accept the challenge?`
       console.log('challenger',challenger)
-      if (window.confirm(`You have been challenged for ${timeControl} minute game by ${challenger.username}. Accept the challenge?`)) {
+      if (window.confirm(message)) {
         console.log('challenger', challenger)
         acceptChallenge({ variables: { username: challenger.username, id: challenger.id, timeControl }})
       } else {
@@ -132,12 +140,13 @@ const Game = ({ user }) => {
       console.log('subscriptionData', subscriptionData)
       const challenge = subscriptionData.data.challengeAccepted
       if (challengeWaiting === challenge.opponents.challenged.id) {
-        setClock(challenge.timeControl*60)
-        setOpponentsClock(challenge.timeControl*60)
+        setClock(challenge.timeControl)
+        setOpponentsClock(challenge.timeControl)
         setOpponentsClockRunning(true)
         setChallengeWaiting(null)
         setOpponent(challenge.opponents.challenged)
-        setBoard(initBoard)
+        setBoard(testBoard)
+        //setBoard(initBoard)
         setPlayerToMove('white')
         setMyColor('black')
       }
@@ -180,7 +189,18 @@ const Game = ({ user }) => {
     if (gameState) {
       console.log('gameState.board', gameState.board)
       setBoard(gameState.board)
-      set
+      setMyColor(gameState.myColor)
+      setClock(gameState.clock)
+      setOpponentsClock(gameState.opponentsClock)
+      setPlayerToMove(gameState.playerToMove)
+      setOpponent(gameState.opponent)
+      setLongCastleBlack(gameState.longCastleBlack)
+      setLongCastleWhite(gameState.longCastleWhite)
+      setShortCastleBlack(gameState.shortCastleBlack)
+      setShortCastleWhite(gameState.shortCastleWhite)
+      setEnpassant(gameState.enPassant)
+      setClockRunning(gameState.clockRunning)
+      setOpponentsClockRunning(gameState.opponentsClockRunning)
     }
   },[])
   useEffect(() => {
@@ -189,10 +209,11 @@ const Game = ({ user }) => {
       console.log('acceptChallengeResult',acceptChallengeResult)
       const challenge = acceptChallengeResult.data.acceptChallenge
       setOpponent(challenge.opponents.challenger)
-      setBoard(initBoard)
+      //setBoard(initBoard)
+      setBoard(testBoard)
       setMyColor('white')
-      setClock(challenge.timeControl*60)
-      setOpponentsClock(challenge.timeControl*60)
+      setClock(challenge.timeControl)
+      setOpponentsClock(challenge.timeControl)
       setClockRunning(true)
       setPlayerToMove('white')
       console.log('Game on!')
@@ -269,11 +290,13 @@ const Game = ({ user }) => {
       shortCastleWhite,
       enPassant,
       board,
+      clockRunning,
+      opponentsClockRunning
     }
     console.log('handlePieceMove board', gameState.board)
     
     saveGameState(gameState)
-  }, [playerToMove])
+  }, [playerToMove, clock, opponentsClock])
   
   const movePiece = (from, to) => {
 
@@ -367,7 +390,7 @@ const Game = ({ user }) => {
         if ((color === 'white' && from - to === 16))
           setEnpassant(to + 8)
         else if ((color === 'black' && to - from === 16))
-          setEnpassant(to -8)
+          setEnpassant(to - 8)
          else 
           setEnpassant(null)
       } else {
@@ -402,7 +425,6 @@ const Game = ({ user }) => {
   return (
     <div style={{ padding: 30, display: 'flex', flexDirection: 'horizontal'}}>
       <div style={{ padding: 30}}>
-        <button onClick={() => setClockRunning(!clockRunning)}>start clock</button>
         {opponent && <div> opponent {opponent.username} {opponent.id}</div>}
         {board && isCheckMated('black',board, enPassant) && <div>White won</div>}
         {board && isCheckMated('white',board, enPassant) && <div>Black won</div>}
@@ -454,6 +476,7 @@ const Game = ({ user }) => {
           && <Chat/>
         }
       </div>
+      <PromotionPortal open={true} handleClose={() => console.log('handleClose')} color='white'/>
     </div>
   );
 }

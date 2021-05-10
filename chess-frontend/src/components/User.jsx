@@ -5,17 +5,8 @@ import { CHALLENGE, CANCEL_CHALLENGE } from '../graphql/mutations'
 import ChallengeModal from './ChallengeModal'
 
 const User = ({ user, me, challengeWaiting, setChallengeWaiting }) => {
-  const [ challenge, challengeResult ] = useMutation(CHALLENGE)
   const [ cancelChallenge, cancelChallengeResult] = useMutation(CANCEL_CHALLENGE)
   const [challengeModalOpen, setChallengeModalOpen] = useState(false)
-
-  useEffect(() => {
-    if (challengeResult.called && !challengeResult.loading) {
-      console.log('challenge result data',challengeResult.data)
-      setChallengeWaiting(user.id)
-    }
-    
-  }, [challengeResult.data])
 
   useEffect(() => {
     if (cancelChallengeResult.called && !cancelChallengeResult.loading) {
@@ -24,10 +15,7 @@ const User = ({ user, me, challengeWaiting, setChallengeWaiting }) => {
     }
     
   }, [cancelChallengeResult.data])
-  
-  const handleChallence = () => {
-    challenge({ variables: { id: user.id, username: user.username, timeControl: 5 } })
-  }
+
 
   const handleCancel = () => {
     cancelChallenge({ variables: { id: user.id, username: user.username } })

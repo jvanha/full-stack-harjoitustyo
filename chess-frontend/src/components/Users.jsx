@@ -9,33 +9,7 @@ import User from './User'
 const Users = ({ challengeWaiting, setChallengeWaiting, me}) => {
   const client = useApolloClient()
   const result = useQuery(ALL_USERS)
-
-  useSubscription(USER_LOGGED_IN, {
-    onSubscriptionData: ({ subscriptionData}) => {
-      console.log('subscriptionData',subscriptionData)
-      const loggedInUser = subscriptionData.data.userLoggedIn
-      const usersInStorage = client.readQuery({ query: ALL_USERS })
-      if (!usersInStorage.allUsers.map(user => user.id).includes(loggedInUser.id)) {
-        client.writeQuery({
-          query: ALL_USERS,
-          data: { allUsers: usersInStorage.allUsers.concat(loggedInUser)}
-        })
-      }
-    }
-  })
-
-  useSubscription(USER_LOGGED_OUT, {
-    onSubscriptionData: ({ subscriptionData}) => {
-      console.log('subscriptionData',subscriptionData)
-      const loggedOutUser = subscriptionData.data.userLoggedOut
-      const usersInStorage = client.readQuery({ query: ALL_USERS })
-      client.writeQuery({
-        query: ALL_USERS,
-        data: { allUsers: usersInStorage.allUsers.filter(user => user.id === loggedOutUser.id)}
-      })
-    }
-  })
-  //console.log('Users result',result)
+  console.log('Users result',result)
   if (result.loading) return <div>loading users...</div>
   if (!result.data || !result.data.allUsers || result.data.allUsers.length === 0)
     return <div>No users online</div>
