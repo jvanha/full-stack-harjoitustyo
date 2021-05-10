@@ -73,6 +73,8 @@ initBoard[62] = [62, { type: 'N', color: 'white'}]
 initBoard[63] = [63, { type: 'R', color: 'white'}]
 
 const Game = ({ user }) => {
+
+  const [ game, setGame ] = useState(null)
   const [ activeMenuItem, setActiveMenuItem ] = useState("players")
   const [ board, setBoard ] = useState(initBoard)
   const [ attackedSquares, setAttackedSquares ] = useState(null)
@@ -178,6 +180,7 @@ const Game = ({ user }) => {
     if (gameState) {
       console.log('gameState.board', gameState.board)
       setBoard(gameState.board)
+      set
     }
   },[])
   useEffect(() => {
