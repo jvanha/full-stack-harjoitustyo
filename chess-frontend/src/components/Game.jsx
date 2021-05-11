@@ -97,7 +97,7 @@ const Game = ({ user }) => {
   const [ opponentsClock, setOpponentsClock ] = useState(10)
   const [ opponentsClockRunning, setOpponentsClockRunning] = useState(false)
   const [ promotion, setPromotion ] = useState(null)
-  
+  const [ autoQueen, setAutoQueen ] = useState(false)
   const [ acceptChallenge, acceptChallengeResult ] = useMutation(ACCEPT_CHALLENGE)
   const [ declineChallenge, declineChallengeResult ] = useMutation(DECLINE_CHALLENGE)
   const [ makeAMove, makeAMoveResult ] = useMutation(MAKE_A_MOVE)
