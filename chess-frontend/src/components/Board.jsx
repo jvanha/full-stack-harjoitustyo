@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { useState } from 'react'
 import { legitMoves } from '../utilFunctions'
 import Piece from './Piece'
+import PromotionPortal from './PromotionPortal'
 
 const boardStyle = {
   height: 500,
@@ -55,7 +56,10 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myC
   const [ selectedSquare, setSelectedSquare ] = useState(null)
   const [ validMoves, setValidMoves ] = useState([])
   const [ squareDraggedOver, setSquareDraggedOver ] = useState(null)
-
+  const [ promotionPortalOpen, setPromotionPortalOpen ] = useState(false)
+  const [ tempSquare, setTempSquare ] = useState(null)
+  const [ promotion, setPromotion ] = useState(null)
+  
   useEffect(() => {
     if (playerToMove === 'white') {
       setValidMoves(legitMoves(selectedSquare, board, props.longCastleWhite, props.shortCastleWhite, enPassant))
@@ -66,9 +70,15 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myC
     
   },[selectedSquare, board])
   
+  useEffect(() => {
+    if(promotion) movePiece(selectedSquare[0], tempSquare[0], promotion)
+    setPromotion(null) 
+  }, [promotion])
+
   const handleSelection = (square) => {
     console.log('handleSelection selectedSquare', selectedSquare)
     console.log('handleSelection squareDraggedOver', squareDraggedOver)
+    console.log('handleSelection square', square)
     if (myColor !== playerToMove) return
     const id = square[0]
     if (selectedSquare && validMoves.includes(squareDraggedOver)) {
@@ -82,8 +92,15 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myC
     } 
     else if (selectedSquare && selectedSquare[0] === id) setSelectedSquare(null)
     else if (selectedSquare && validMoves.includes(id)) {
+
+      if (!props.autoQueen && selectedSquare[1].type === 'P' && (Math.floor(id/8) === 0 || Math.floor(id/8) === 7)) {
+        setTempSquare(square)
+        setPromotionPortalOpen(true)
+        return
+      }
       movePiece(selectedSquare[0], id)
       setSelectedSquare(null)
+
     }
     else {
       setSelectedSquare(null)
@@ -105,6 +122,12 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myC
           attackedSquares={attackedSquares}
         />   
       ))}
+      <PromotionPortal 
+        open={promotionPortalOpen}
+        handleClose={() => setPromotionPortalOpen(false)}
+        color='white'
+        setPromotion={setPromotion}
+        />
     </div>
   )
 }

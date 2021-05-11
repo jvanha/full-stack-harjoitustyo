@@ -69,6 +69,7 @@ export const MOVE_MADE = gql`
         from
         to
         time
+        promotion
       }
     }
   }

@@ -72,9 +72,9 @@ const App = () => {
   },[])
 
   useEffect(() => {
-    console.log('logoutResult',logoutResult)
+    //console.log('logoutResult',logoutResult)
     if (logoutResult.called && !logoutResult.loading) {
-      console.log('CLEAR LOCAL STORAGE')
+      //console.log('CLEAR LOCAL STORAGE')
       localStorage.clear()
       setUser(null)
       client.resetStore()
@@ -83,13 +83,13 @@ const App = () => {
   }, [logoutResult.data])
 
   useEffect(() => {
-    console.log('meResult changed', meResult.data)
+    //console.log('meResult changed', meResult.data)
     if (meResult.data && meResult.data.me) {
-      console.log('meResult.data.me',meResult.data.me)
+      //console.log('meResult.data.me',meResult.data.me)
       const itsme = meResult.data.me
-      console.log({ id: itsme.id, username: itsme.username })
+      //console.log({ id: itsme.id, username: itsme.username })
       setUser({ id: itsme.id, username: itsme.username })
-      console.log('user', user)
+      //console.log('user', user)
       
     }
   }, [meResult])

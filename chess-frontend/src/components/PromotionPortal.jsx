@@ -3,7 +3,11 @@ import { Portal, Segment } from 'semantic-ui-react'
 import Piece from './Piece'
 
 const PromotionPortal = ({ open, handleClose, color, setPromotion }) => {
-   return (
+  const select = (type) => {
+    setPromotion(type)
+    handleClose()
+  }
+  return (
     <Portal onClose={handleClose} open={open}>
       <Segment
         style={{
@@ -13,16 +17,16 @@ const PromotionPortal = ({ open, handleClose, color, setPromotion }) => {
           zIndex: 1000,
         }}
       >
-      <div onClick={()=>console.log('CLICK')}>
+      <div onClick={()=>select('Q')}>
       <Piece piece={{ type: 'Q', color}}/>
       </div>
-      <div onClick={()=>console.log('CLICK')}>
+      <div onClick={()=>select('N')}>
       <Piece piece={{ type: 'N', color}}/>
       </div>
-      <div onClick={()=>console.log('CLICK')}>
+      <div onClick={()=>select('B')}>
       <Piece piece={{ type: 'B', color}}/>
       </div>
-      <div onClick={()=>console.log('CLICK')}>
+      <div onClick={()=>select('R')}>
       <Piece piece={{ type: 'R', color}}/>
       </div>
 

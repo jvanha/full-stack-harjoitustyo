@@ -76,8 +76,8 @@ export const DECLINE_CHALLENGE = gql`
 `
 
 export const MAKE_A_MOVE = gql`
-  mutation makeAMove($userId: String! $from: Int! $to: Int! $time: Int!) {
-    makeAMove(userId: $userId from: $from to: $to time: $time) {
+  mutation makeAMove($userId: String! $from: Int! $to: Int! $time: Int! $promotion: String) {
+    makeAMove(userId: $userId from: $from to: $to time: $time promotion: $promotion) {
       to
       from
     }

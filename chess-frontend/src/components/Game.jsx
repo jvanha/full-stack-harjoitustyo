@@ -6,10 +6,11 @@ import Users from './Users';
 import { ACCEPT_CHALLENGE, MAKE_A_MOVE, DECLINE_CHALLENGE, CREATE_GAME } from './../graphql/mutations';
 import { CHALLENGE_ACCEPTED, CHALLENGE_CANCELLED, CHALLENGE_DECLINED, CHALLENGE_ISSUED, MOVE_MADE} from './../graphql/subscriptions';
 import { getAttackedSquares, isCheckMated, isDrawByLackOfLegitMoves, isInCheck } from './../utilFunctions'
-import { Menu} from 'semantic-ui-react';
+import { Button, Icon, Menu} from 'semantic-ui-react';
 import Chat from './Chat';
-import { loadGameState, saveGameState } from '../gameStateService';
+import { deleteGameState, loadGameState, saveGameState } from '../localStorageService';
 import PromotionPortal from './PromotionPortal';
+import SettingsModal from './SettingsModal';
 
 let squares = Array(64)//[...Array(64).keys()]
 const emptyBoard = Array(64)
@@ -96,12 +97,15 @@ const Game = ({ user }) => {
   const [ clockRunning, setClockRunning] = useState(false)
   const [ opponentsClock, setOpponentsClock ] = useState(10)
   const [ opponentsClockRunning, setOpponentsClockRunning] = useState(false)
-  const [ promotion, setPromotion ] = useState(null)
+  
   const [ autoQueen, setAutoQueen ] = useState(false)
+  const [ settingsModalOpen, setSettingsModalOpen ] = useState(false)
+  
   const [ acceptChallenge, acceptChallengeResult ] = useMutation(ACCEPT_CHALLENGE)
   const [ declineChallenge, declineChallengeResult ] = useMutation(DECLINE_CHALLENGE)
   const [ makeAMove, makeAMoveResult ] = useMutation(MAKE_A_MOVE)
   const [ createGame, createGameResult ] = useMutation(CREATE_GAME)
+
   //console.log('user',user)
 
 
@@ -176,7 +180,7 @@ const Game = ({ user }) => {
         setPlayerToMove(null)
 
       } else {
-        movePiece(move.from, move.to)
+        movePiece(move.from, move.to, move.promotion)
         setClockRunning(true)
       }
       setOpponentsClockRunning(false)
@@ -246,21 +250,25 @@ const Game = ({ user }) => {
       setClock(0)
       alert('you lost by timeout')
       setPlayerToMove(null)
+      deleteGameState()
     }
   }, [clock])
 
   useEffect(() => {
+    //VAATII KORJAUSTA
     if (myColor) {
       if (isDrawByLackOfLegitMoves(playerToMove, board, enPassant)) {
         alert('Draw')
         setPlayerToMove(null)
         setMyColor(null)
         setClockRunning(false)
+        deleteGameState()
       } else if (isCheckMated(playerToMove, board, enPassant)) {
         if (playerToMove === myColor) {
           alert('You lost')
           setPlayerToMove(null)
           setClockRunning(false)
+          deleteGameState()
         }
         else {
           const whiteId = myColor === 'white' ? user.id : opponent.id
@@ -271,6 +279,7 @@ const Game = ({ user }) => {
           alert('You won')
           setPlayerToMove(null)
           setOpponentsClockRunning(false)
+          deleteGameState()
         }
       }
     }
@@ -298,7 +307,7 @@ const Game = ({ user }) => {
     saveGameState(gameState)
   }, [playerToMove, clock, opponentsClock])
   
-  const movePiece = (from, to) => {
+  const movePiece = (from, to, promotion) => {
 
     console.log('playerToMove != myColor', playerToMove !== myColor)
     console.log('opponent', opponent)
@@ -307,7 +316,7 @@ const Game = ({ user }) => {
       setOpponentsClockRunning(true)
       console.log('Trying to make a move')
       console.log({ variables: { userId: user.id, from, to}})
-      makeAMove({ variables: { userId: user.id, from, to, time: clock}})
+      makeAMove({ variables: { userId: user.id, from, to, time: clock, promotion}})
     }
     console.log('movePiece board', board)
     console.log('movePiece from', from)
@@ -318,7 +327,7 @@ const Game = ({ user }) => {
     const newBoard = board.map(square => {
       if (square[0] === to) {
         if (type === 'P' && (square[0] < 8 || square[0] > 55))
-          return [to, { type: 'Q', color }] 
+          return [to, { type: promotion, color }] 
         return [to, squareFrom[1]]
       }
       else if (square[0] === from) return [from, null]
@@ -426,8 +435,6 @@ const Game = ({ user }) => {
     <div style={{ padding: 30, display: 'flex', flexDirection: 'horizontal'}}>
       <div style={{ padding: 30}}>
         {opponent && <div> opponent {opponent.username} {opponent.id}</div>}
-        {board && isCheckMated('black',board, enPassant) && <div>White won</div>}
-        {board && isCheckMated('white',board, enPassant) && <div>Black won</div>}
         <Clock time={opponentsClock}/>
         <Board 
           board={board} 
@@ -440,6 +447,8 @@ const Game = ({ user }) => {
           shortCastleWhite={shortCastleWhite}
           enPassant={enPassant}
           myColor={myColor}
+          autoQueen={autoQueen}
+
         />
         <Clock time={clock}/>
         {!attackedSquares && <button onClick={() => handleShow('black')}>show black's attack</button>}
@@ -447,6 +456,7 @@ const Game = ({ user }) => {
         {attackedSquares && <button onClick={() => handleShow('')}>hide attack</button>}
         <button onClick={() => isInCheck('black', board)}>is black in check</button>
       </div>
+      <Button circular inverted icon='setting' onClick={()=>setSettingsModalOpen(true)}/>
       <div style={{ backgroundColor: 'white'}}>
         <Menu attached='top' inverted>
           <Menu.Item
@@ -476,7 +486,10 @@ const Game = ({ user }) => {
           && <Chat/>
         }
       </div>
-      <PromotionPortal open={true} handleClose={() => console.log('handleClose')} color='white'/>
+      <SettingsModal
+        modalOpen={settingsModalOpen}
+        close={() => setSettingsModalOpen(false)}
+      />
     </div>
   );
 }

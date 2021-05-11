@@ -9,3 +9,7 @@ export const loadGameState = () => {
   if (state) return JSON.parse(state)
   return undefined
 }
+
+export const deleteGameState = () => {
+  localStorage.removeItem('game-state')
+}
