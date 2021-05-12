@@ -9,12 +9,17 @@ const Settings = () => {
   }
   return (
     <Segment placeholder>
-      <Segment.Checkbox
+      <Checkbox
           checked={autoQueen}
           label='Always promote to queen'
           toggle
           onChange={handleChange}
-        />
+      />
+      <Checkbox
+          checked={autoQueen}
+          label='Always promote to queen'
+          toggle
+      />
       <Segment.Inline>
         <Button toggle>Save</Button>
       </Segment.Inline>
