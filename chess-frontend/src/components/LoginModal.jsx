@@ -4,7 +4,7 @@ import LoginForm from './LoginForm'
 
 const LoginModal = ({ setToken, close, modalOpen }) => {
   return (
-    <Modal closeIcon open={modalOpen} onClose={close}>
+    <Modal size='tiny' closeIcon open={modalOpen} onClose={close}>
       <Modal.Header>Login</Modal.Header>
       <Modal.Content>
         <LoginForm setToken={setToken} close={close}/>

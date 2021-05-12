@@ -24,15 +24,17 @@ const squareStyle = {
   display: 'flex',
   justifyContent: 'center',
   height: '12.5%',
-  width: '12.5%'
+  width: '12.5%',
+  transitionDuration: '1000ms',
+  transitionTimingFunction: 'ease-out'
 }
-const MySquare = ({ content, handleSelection, selectedSquare, validMoves, attackedSquares }) => {
+const MySquare = ({ content, handleSelection, selectedSquare, validMoves, attackedSquares, settings }) => {
   const index = content[0]
   let color = ((index + Math.floor(index/8))%2)===0 ? '#f58a42' : '#52170d'
   
   if (content === selectedSquare)
     color = 'green'
-  if (validMoves && validMoves.includes(content[0])) {
+  if (settings && settings.showLegalMoves && validMoves && validMoves.includes(content[0])) {
     color = 'red'
   }
   if (attackedSquares && attackedSquares.includes(content[0])) {
@@ -52,7 +54,7 @@ const MySquare = ({ content, handleSelection, selectedSquare, validMoves, attack
 }
 //{content[1] && <Piece piece={content[1]} selectPiece={() => handleSelection(content)}/>}
 
-const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myColor, ...props}) => {
+const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myColor, gameSettings, ...props}) => {
   const [ selectedSquare, setSelectedSquare ] = useState(null)
   const [ validMoves, setValidMoves ] = useState([])
   const [ squareDraggedOver, setSquareDraggedOver ] = useState(null)
@@ -93,12 +95,12 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myC
     else if (selectedSquare && selectedSquare[0] === id) setSelectedSquare(null)
     else if (selectedSquare && validMoves.includes(id)) {
 
-      if (!props.autoQueen && selectedSquare[1].type === 'P' && (Math.floor(id/8) === 0 || Math.floor(id/8) === 7)) {
+      if (!gameSettings.autoQueen && selectedSquare[1].type === 'P' && (Math.floor(id/8) === 0 || Math.floor(id/8) === 7)) {
         setTempSquare(square)
         setPromotionPortalOpen(true)
         return
       }
-      movePiece(selectedSquare[0], id)
+      movePiece(selectedSquare[0], id, 'Q')
       setSelectedSquare(null)
 
     }
@@ -110,16 +112,16 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myC
   
   
   return (
-    <div style={myColor==="black" ? boardStyleReversed : boardStyle}>
+    <div style={myColor === "black" ? boardStyleReversed : boardStyle}>
       {board.map(element => (
         <MySquare
-          draggable='false'
           key={element[0]}
           content={element}
           selectedSquare={selectedSquare}
           validMoves={validMoves}
           handleSelection={handleSelection}
           attackedSquares={attackedSquares}
+          settings={gameSettings}
         />   
       ))}
       <PromotionPortal 
@@ -127,6 +129,7 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myC
         handleClose={() => setPromotionPortalOpen(false)}
         color='white'
         setPromotion={setPromotion}
+        settings={gameSettings}
         />
     </div>
   )

@@ -8,7 +8,7 @@ import { CHALLENGE_ACCEPTED, CHALLENGE_CANCELLED, CHALLENGE_DECLINED, CHALLENGE_
 import { getAttackedSquares, isCheckMated, isDrawByLackOfLegitMoves, isInCheck } from './../utilFunctions'
 import { Button, Icon, Menu} from 'semantic-ui-react';
 import Chat from './Chat';
-import { deleteGameState, loadGameState, saveGameState } from '../localStorageService';
+import { deleteGameState, loadGameSettings, loadGameState, saveGameState } from '../localStorageService';
 import PromotionPortal from './PromotionPortal';
 import SettingsModal from './SettingsModal';
 
@@ -83,7 +83,7 @@ const Game = ({ user }) => {
   const [ activeMenuItem, setActiveMenuItem ] = useState("players")
   const [ board, setBoard ] = useState(initBoard)
   const [ attackedSquares, setAttackedSquares ] = useState(null)
-  const [ playerToMove, setPlayerToMove ] = useState('white')
+  const [ playerToMove, setPlayerToMove ] = useState(null)
   const [ longCastleWhite, setLongCastleWhite ] = useState(true)
   const [ shortCastleWhite, setShortCastleWhite ] = useState(true)
   const [ longCastleBlack, setLongCastleBlack ] = useState(true)
@@ -100,7 +100,7 @@ const Game = ({ user }) => {
   
   const [ autoQueen, setAutoQueen ] = useState(false)
   const [ settingsModalOpen, setSettingsModalOpen ] = useState(false)
-  
+  const [ gameSettings, setGameSettings ] = useState({ autoQueen: false, showLegalMoves: false}) 
   const [ acceptChallenge, acceptChallengeResult ] = useMutation(ACCEPT_CHALLENGE)
   const [ declineChallenge, declineChallengeResult ] = useMutation(DECLINE_CHALLENGE)
   const [ makeAMove, makeAMoveResult ] = useMutation(MAKE_A_MOVE)
@@ -151,8 +151,8 @@ const Game = ({ user }) => {
         setOpponent(challenge.opponents.challenged)
         setBoard(testBoard)
         //setBoard(initBoard)
-        setPlayerToMove('white')
         setMyColor('black')
+        setPlayerToMove('white')
       }
     }
   })
@@ -178,6 +178,7 @@ const Game = ({ user }) => {
         alert('You won by timeout')
         setClockRunning(false)
         setPlayerToMove(null)
+        deleteGameState()
 
       } else {
         movePiece(move.from, move.to, move.promotion)
@@ -206,6 +207,12 @@ const Game = ({ user }) => {
       setClockRunning(gameState.clockRunning)
       setOpponentsClockRunning(gameState.opponentsClockRunning)
     }
+    const settings = loadGameSettings()
+    console.log('loadGameSettings settings', settings)
+    if (settings) {
+      setGameSettings(settings)
+    }
+    console.log('gameSettings', gameSettings)
   },[])
   useEffect(() => {
     if (acceptChallengeResult.called && !acceptChallengeResult.loading) {
@@ -286,26 +293,28 @@ const Game = ({ user }) => {
   }, [board])
  
   useEffect(() => {
-    const gameState = {
-      myColor,
-      playerToMove,
-      clock,
-      opponentsClock,
-      board,
-      opponent,
-      longCastleBlack,
-      longCastleWhite,
-      shortCastleBlack,
-      shortCastleWhite,
-      enPassant,
-      board,
-      clockRunning,
-      opponentsClockRunning
+    if(playerToMove) {
+      const gameState = {
+        myColor,
+        playerToMove,
+        clock,
+        opponentsClock,
+        board,
+        opponent,
+        longCastleBlack,
+        longCastleWhite,
+        shortCastleBlack,
+        shortCastleWhite,
+        enPassant,
+        board,
+        clockRunning,
+        opponentsClockRunning
+      }
+      console.log('handlePieceMove board', gameState.board)
+      
+      saveGameState(gameState)
     }
-    console.log('handlePieceMove board', gameState.board)
-    
-    saveGameState(gameState)
-  }, [playerToMove, clock, opponentsClock])
+  }, [playerToMove])
   
   const movePiece = (from, to, promotion) => {
 
@@ -447,7 +456,7 @@ const Game = ({ user }) => {
           shortCastleWhite={shortCastleWhite}
           enPassant={enPassant}
           myColor={myColor}
-          autoQueen={autoQueen}
+          gameSettings={gameSettings}
 
         />
         <Clock time={clock}/>
@@ -489,6 +498,8 @@ const Game = ({ user }) => {
       <SettingsModal
         modalOpen={settingsModalOpen}
         close={() => setSettingsModalOpen(false)}
+        settings={gameSettings}
+        setSettings={setGameSettings}
       />
     </div>
   );
