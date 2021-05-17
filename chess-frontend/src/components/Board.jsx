@@ -57,7 +57,6 @@ const MySquare = ({ content, handleSelection, selectedSquare, validMoves, attack
 const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myColor, gameSettings, ...props}) => {
   const [ selectedSquare, setSelectedSquare ] = useState(null)
   const [ validMoves, setValidMoves ] = useState([])
-  const [ squareDraggedOver, setSquareDraggedOver ] = useState(null)
   const [ promotionPortalOpen, setPromotionPortalOpen ] = useState(false)
   const [ tempSquare, setTempSquare ] = useState(null)
   const [ promotion, setPromotion ] = useState(null)
@@ -79,16 +78,11 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myC
 
   const handleSelection = (square) => {
     console.log('handleSelection selectedSquare', selectedSquare)
-    console.log('handleSelection squareDraggedOver', squareDraggedOver)
     console.log('handleSelection square', square)
     if (myColor !== playerToMove) return
     const id = square[0]
-    if (selectedSquare && validMoves.includes(squareDraggedOver)) {
-      console.log('selectedSquare && validMoves.includes(squareDraggedOver)')
-      movePiece(selectedSquare[0], squareDraggedOver)
-      setSelectedSquare(null)
-    }
-    else if (board[id][1] && board[id][1].color=== playerToMove) {
+
+    if (board[id][1] && board[id][1].color=== playerToMove) {
       console.log('!selectedSquare && board[id][1] && board[id][1].color=== playerToMove')
       setSelectedSquare(square)
     } 
