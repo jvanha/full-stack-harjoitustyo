@@ -11,7 +11,7 @@ const options = [
 
 ]
 const ChallengeForm = ({ opponent, setChallengeWaiting, close }) => {
-  const [ timeControl, setTimeControl ] = useState(5)
+  const [ timeControl, setTimeControl ] = useState(300)
   const [ challenge, challengeResult ] = useMutation(CHALLENGE)
   const [ cancelChallenge, cancelChallengeResult] = useMutation(CANCEL_CHALLENGE)
 

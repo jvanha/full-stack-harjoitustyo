@@ -188,7 +188,9 @@ const Game = ({ user }) => {
       setOpponentsClock(move.time)
     } 
   })
+  
   useEffect(() => {
+    
     const gameState = loadGameState()
     console.log('gameState', gameState)
     if (gameState) {
@@ -204,9 +206,10 @@ const Game = ({ user }) => {
       setShortCastleBlack(gameState.shortCastleBlack)
       setShortCastleWhite(gameState.shortCastleWhite)
       setEnpassant(gameState.enPassant)
-      setClockRunning(gameState.clockRunning)
-      setOpponentsClockRunning(gameState.opponentsClockRunning)
+      //setClockRunning(gameState.clockRunning)
+      //setOpponentsClockRunning(gameState.opponentsClockRunning)
     }
+    
     const settings = loadGameSettings()
     console.log('loadGameSettings settings', settings)
     if (settings) {
@@ -310,7 +313,7 @@ const Game = ({ user }) => {
         clockRunning,
         opponentsClockRunning
       }
-      console.log('handlePieceMove board', gameState.board)
+      //console.log('handlePieceMove board', gameState.board)
       
       saveGameState(gameState)
     }
@@ -318,18 +321,18 @@ const Game = ({ user }) => {
   
   const movePiece = (from, to, promotion) => {
 
-    console.log('playerToMove != myColor', playerToMove !== myColor)
-    console.log('opponent', opponent)
+    //console.log('playerToMove != myColor', playerToMove !== myColor)
+    //console.log('opponent', opponent)
     if (opponent && playerToMove === myColor) {
       setClockRunning(false)
       setOpponentsClockRunning(true)
-      console.log('Trying to make a move')
+      //console.log('Trying to make a move')
       console.log({ variables: { userId: user.id, from, to}})
       makeAMove({ variables: { userId: user.id, from, to, time: clock, promotion}})
     }
-    console.log('movePiece board', board)
-    console.log('movePiece from', from)
-    console.log('movePiece to', to)
+    //console.log('movePiece board', board)
+    //console.log('movePiece from', from)
+    //console.log('movePiece to', to)
     const squareFrom = board[from]
     const color = squareFrom[1].color
     const type = squareFrom[1].type

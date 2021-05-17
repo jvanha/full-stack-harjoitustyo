@@ -288,9 +288,6 @@ export const isDrawByLackOfLegitMoves = (color, board, enPassant) => {
 export const isInCheck = (color, board) => {
   //POTENTTIAALISESTI VÄÄRIN
   const kingSquare = board.filter((square) => (square[1] && square[1].color === color && square[1].type === 'K'))
-  console.log('board', board)
-  console.log('kingSquare',kingSquare)
-  console.log('kingSquare[0]',kingSquare[0])
   if(!kingSquare || !kingSquare[0]) return false
   return getAttackedSquares(board, color==='white'? 'black': 'white').includes(kingSquare[0][0])
 }
