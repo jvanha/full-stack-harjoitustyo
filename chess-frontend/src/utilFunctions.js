@@ -278,16 +278,41 @@ export const getAllLegidMoves = (board, color, longCastleRight, shortCastleRight
 }
 
 export const isCheckMated = (color, board, enPassant) => {
-  return isInCheck(color,board) && getAllLegidMoves(board, color, false, false, enPassant).length === 0
+  const check = isInCheck(color, board)
+  const result = isInCheck(color,board) && getAllLegidMoves(board, color, false, false, enPassant).length === 0
+  return result
 }
 export const isDrawByLackOfLegitMoves = (color, board, enPassant) => {
   return !isInCheck(color,board) && getAllLegidMoves(board, color, false, false, enPassant).length === 0
 }
+export const isDrawByInsufficientMaterial = (board) => {
+  const pieces = board.filter(square => square[1])
+  if (pieces.length === 2) return true
+  else if (pieces.length === 3) {
+    const minorPiece = pieces.filter(piece => piece[1].type !== 'K')[0][1]
+    console.log('minorPiece', minorPiece)
+    if (minorPiece.type === 'N' || minorPiece.type === 'B') return true
+  }
+  else if (pieces.length === 4) {
+    const minorPieces = pieces.filter(piece => piece[1].type !== 'K')
+    if (minorPieces[0][1].color !== minorPieces[1][1].color) {
+      if (minorPieces[0][1].type === 'P' && minorPieces[1][1].type === 'P' && minorPieces[0][0]%2 === minorPieces[1][0]%2) {
+        return true
+      }
+    }
+      
+  }
+
+  console.log('isDrawByInsufficientMaterial', pieces)
+  return false
+}
 
 
 export const isInCheck = (color, board) => {
-  //POTENTTIAALISESTI VÄÄRIN
   const kingSquare = board.filter((square) => (square[1] && square[1].color === color && square[1].type === 'K'))
+  
   if(!kingSquare || !kingSquare[0]) return false
-  return getAttackedSquares(board, color==='white'? 'black': 'white').includes(kingSquare[0][0])
+  const result = getAttackedSquares(board, color==='white'? 'black': 'white').includes(kingSquare[0][0])
+
+  return result
 }

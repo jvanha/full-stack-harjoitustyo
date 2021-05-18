@@ -92,16 +92,31 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myC
   }, [promotion])
 
   useEffect(() => {
+    console.log('useEffect on movingPiece', movingPiece)
     if (tempSquare && movingPiece) {
       setTimeout(() => {
         movePiece(selectedSquare[0], tempSquare[0], promotion?promotion:'Q')
         setMovingPiece(null)
         setPromotion(null)
-      },350)
+        setTempSquare(null)
+        setSelectedSquare(null)
+      },0)
     }
     
   }, [movingPiece])
-
+  useEffect(() => {
+    console.log('props.moveMade',props.moveMade)
+    if (props.moveMade) {
+      const {from, to, promotion} = props.moveMade
+      setMovingPiece({from, to})
+      setTimeout(() => {
+        movePiece(from,to,promotion)
+        setMovingPiece(null)
+        setPromotion(null)
+      },0)
+    }
+    
+  },[props.moveMade])
   const handleSelection = (square) => {
     //console.log('handleSelection selectedSquare', selectedSquare)
     //console.log('handleSelection square', square)

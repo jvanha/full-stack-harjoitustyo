@@ -5,7 +5,7 @@ import Clock from './Clock';
 import Users from './Users';
 import { ACCEPT_CHALLENGE, MAKE_A_MOVE, DECLINE_CHALLENGE, CREATE_GAME } from './../graphql/mutations';
 import { CHALLENGE_ACCEPTED, CHALLENGE_CANCELLED, CHALLENGE_DECLINED, CHALLENGE_ISSUED, MOVE_MADE} from './../graphql/subscriptions';
-import { getAttackedSquares, isCheckMated, isDrawByLackOfLegitMoves, isInCheck } from './../utilFunctions'
+import { getAttackedSquares, isCheckMated, isDrawByInsufficientMaterial, isDrawByLackOfLegitMoves, isInCheck } from './../utilFunctions'
 import { Button, Icon, Menu} from 'semantic-ui-react';
 import Chat from './Chat';
 import { deleteGameState, loadGameSettings, loadGameState, saveGameState } from '../localStorageService';
@@ -74,6 +74,7 @@ initBoard[63] = [63, { type: 'R', color: 'white' }]
 testBoard[0] = [0, { type: 'K', color: 'black' }]
 testBoard[63] = [63, { type: 'K', color: 'white' }]
 testBoard[11] = [11, { type: 'P', color: 'white' }]
+testBoard[14] = [14, { type: 'Q', color: 'white' }]
 
 const Game = ({ user }) => {
 
@@ -101,6 +102,8 @@ const Game = ({ user }) => {
   const [ autoQueen, setAutoQueen ] = useState(false)
   const [ settingsModalOpen, setSettingsModalOpen ] = useState(false)
   const [ gameSettings, setGameSettings ] = useState({ autoQueen: false, showLegalMoves: false}) 
+  const [ moveMade, setMoveMade ] = useState(null)
+
   const [ acceptChallenge, acceptChallengeResult ] = useMutation(ACCEPT_CHALLENGE)
   const [ declineChallenge, declineChallengeResult ] = useMutation(DECLINE_CHALLENGE)
   const [ makeAMove, makeAMoveResult ] = useMutation(MAKE_A_MOVE)
@@ -181,7 +184,8 @@ const Game = ({ user }) => {
         deleteGameState()
 
       } else {
-        movePiece(move.from, move.to, move.promotion)
+        //movePiece(move.from, move.to, move.promotion)
+        setMoveMade(move)
         setClockRunning(true)
       }
       setOpponentsClockRunning(false)
@@ -206,8 +210,8 @@ const Game = ({ user }) => {
       setShortCastleBlack(gameState.shortCastleBlack)
       setShortCastleWhite(gameState.shortCastleWhite)
       setEnpassant(gameState.enPassant)
-      //setClockRunning(gameState.clockRunning)
-      //setOpponentsClockRunning(gameState.opponentsClockRunning)
+      setClockRunning(gameState.clockRunning)
+      setOpponentsClockRunning(gameState.opponentsClockRunning)
     }
     
     const settings = loadGameSettings()
@@ -273,6 +277,12 @@ const Game = ({ user }) => {
         setMyColor(null)
         setClockRunning(false)
         deleteGameState()
+      } else if (isDrawByInsufficientMaterial(board)) {
+        alert('Draw! Insufficient material')
+        setPlayerToMove(null)
+        setMyColor(null)
+        setClockRunning(false)
+        deleteGameState()
       } else if (isCheckMated(playerToMove, board, enPassant)) {
         if (playerToMove === myColor) {
           alert('You lost')
@@ -291,51 +301,48 @@ const Game = ({ user }) => {
           setOpponentsClockRunning(false)
           deleteGameState()
         }
+      } else {
+        const gameState = {
+          myColor,
+          playerToMove,
+          clock,
+          opponentsClock,
+          board,
+          opponent,
+          longCastleBlack,
+          longCastleWhite,
+          shortCastleBlack,
+          shortCastleWhite,
+          enPassant,
+          board,
+          clockRunning,
+          opponentsClockRunning
+        }
+        //console.log('handlePieceMove board', gameState.board)
+        
+        saveGameState(gameState)
       }
     }
   }, [board])
  
   useEffect(() => {
-    if(playerToMove) {
-      const gameState = {
-        myColor,
-        playerToMove,
-        clock,
-        opponentsClock,
-        board,
-        opponent,
-        longCastleBlack,
-        longCastleWhite,
-        shortCastleBlack,
-        shortCastleWhite,
-        enPassant,
-        board,
-        clockRunning,
-        opponentsClockRunning
-      }
-      //console.log('handlePieceMove board', gameState.board)
-      
-      saveGameState(gameState)
-    }
+    
   }, [playerToMove])
   
   const movePiece = (from, to, promotion) => {
-
-    //console.log('playerToMove != myColor', playerToMove !== myColor)
-    //console.log('opponent', opponent)
+    console.log('movePiece+++++++++++++++++++++++++++++++++++++++++++++++++++')
+    console.log(from,to,promotion)
     if (opponent && playerToMove === myColor) {
       setClockRunning(false)
       setOpponentsClockRunning(true)
-      //console.log('Trying to make a move')
       console.log({ variables: { userId: user.id, from, to}})
       makeAMove({ variables: { userId: user.id, from, to, time: clock, promotion}})
     }
-    //console.log('movePiece board', board)
-    //console.log('movePiece from', from)
-    //console.log('movePiece to', to)
+    
     const squareFrom = board[from]
     const color = squareFrom[1].color
     const type = squareFrom[1].type
+    
     const newBoard = board.map(square => {
       if (square[0] === to) {
         if (type === 'P' && (square[0] < 8 || square[0] > 55))
@@ -352,48 +359,52 @@ const Game = ({ user }) => {
         if (color === 'white') {
           setLongCastleWhite(false)
           setShortCastleWhite(false)
+          setPlayerToMove(playerToMove === 'white' ? 'black' : 'white')
+          setEnpassant(null)
           if (longCastleWhite && to === 58) {
             setBoard(newBoard.map(square => {
               if (square[0] === 59) return [59, { type: 'R', color: 'white'}]
               if (square[0] === 56) return [56, null]
               return square
             }))
-            setPlayerToMove(playerToMove === 'white' ? 'black' : 'white')
-            setEnpassant(null)
+            
             return 
           }
           else if (shortCastleWhite && to === 62) {
+            setPlayerToMove(playerToMove === 'white' ? 'black' : 'white')
+            setEnpassant(null)
             setBoard(newBoard.map(square => {
               if (square[0] === 61) return [61, { type: 'R', color: 'white'}]
               if (square[0] === 63) return [63, null]
               return square
             }))
-            setPlayerToMove(playerToMove === 'white' ? 'black' : 'white')
-            setEnpassant(null)
+            
             return
           }
           
         } else {
           setLongCastleBlack(false)
           setShortCastleBlack(false)
+          setPlayerToMove(playerToMove === 'white' ? 'black' : 'white')
+          setEnpassant(null)
           if (longCastleBlack && to === 2) {
             setBoard(newBoard.map(square => {
               if (square[0] === 3) return [3, { type: 'R', color: 'black'}]
               if (square[0] === 0) return [0, null]
               return square
             }))
-            setPlayerToMove(playerToMove === 'white' ? 'black' : 'white')
-            setEnpassant(null)
+            
             return 
           }
           else if (shortCastleBlack && to === 6) {
+            setPlayerToMove(playerToMove === 'white' ? 'black' : 'white')
+            setEnpassant(null)
             setBoard(newBoard.map(square => {
               if (square[0] === 5) return [5, { type: 'R', color: 'black'}]
               if (square[0] === 7) return [7, null]
               return square
             }))
-            setPlayerToMove(playerToMove === 'white' ? 'black' : 'white')
-            setEnpassant(null)
+            
             return
           }
         }
@@ -417,8 +428,9 @@ const Game = ({ user }) => {
       } else {
         setEnpassant(null)
       }
-      setBoard(newBoard)
       setPlayerToMove(playerToMove === 'white' ? 'black' : 'white')
+      setBoard(newBoard)
+      
       
     //YLIMÄäRäINEN?
     if (myColor==='white') {
@@ -460,6 +472,8 @@ const Game = ({ user }) => {
           enPassant={enPassant}
           myColor={myColor}
           gameSettings={gameSettings}
+          moveMade={moveMade}
+
 
         />
         <Clock time={clock}/>

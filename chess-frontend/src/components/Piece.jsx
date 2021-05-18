@@ -17,7 +17,7 @@ const pieceStyle = {
   justifyContent: 'center',
   height: '100%',
   width: '100%',
-  transitionDuration: '350ms',
+  transitionDuration: '100ms',
   transitionTimingFunction: 'ease-out'
 }
 const imgStyle = {
