@@ -72,8 +72,8 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myC
   const [ tempSquare, setTempSquare ] = useState(null)
   const [ promotion, setPromotion ] = useState(null)
   const [ movingPiece, setMovingPiece ] = useState(null)
-  console.log('promotion', promotion)
-  console.log('movingPiece', movingPiece)
+  //console.log('promotion', promotion)
+  //console.log('movingPiece', movingPiece)
   useEffect(() => {
     if (playerToMove === 'white') {
       setValidMoves(legitMoves(selectedSquare, board, props.longCastleWhite, props.shortCastleWhite, enPassant))
@@ -86,7 +86,7 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myC
   
   useEffect(() => {
     if(promotion && tempSquare && selectedSquare) {
-      console.log('setting movingPiece')
+      //console.log('setting movingPiece')
       setMovingPiece({ from: selectedSquare[0], to: tempSquare[0] })
     }
   }, [promotion])
