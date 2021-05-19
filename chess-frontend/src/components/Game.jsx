@@ -109,8 +109,6 @@ const Game = ({ user }) => {
   const [ makeAMove, makeAMoveResult ] = useMutation(MAKE_A_MOVE)
   const [ createGame, createGameResult ] = useMutation(CREATE_GAME)
 
-  //console.log('user',user)
-
 
   useSubscription(CHALLENGE_ISSUED, {
     variables: { playerId: user ? user.id : ''},
@@ -318,7 +316,6 @@ const Game = ({ user }) => {
           clockRunning,
           opponentsClockRunning
         }
-        //console.log('handlePieceMove board', gameState.board)
         
         saveGameState(gameState)
       }
@@ -330,8 +327,6 @@ const Game = ({ user }) => {
   }, [playerToMove])
   
   const movePiece = (from, to, promotion) => {
-    console.log('movePiece+++++++++++++++++++++++++++++++++++++++++++++++++++')
-    console.log(from,to,promotion)
     if (opponent && playerToMove === myColor) {
       setClockRunning(false)
       setOpponentsClockRunning(true)
