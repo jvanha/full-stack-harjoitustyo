@@ -18,7 +18,8 @@ const pieceStyle = {
   height: '100%',
   width: '100%',
   transitionDuration: '100ms',
-  transitionTimingFunction: 'ease-out'
+  transitionTimingFunction: 'ease-out',
+  transitionProperty: 'transform'
 }
 const imgStyle = {
   marginTop: 5, 

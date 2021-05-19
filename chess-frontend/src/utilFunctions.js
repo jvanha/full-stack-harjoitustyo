@@ -1,5 +1,5 @@
 
-const legitPawnMoves = (squareId, pieceColor, board, enPassant) => {
+const legalPawnMoves = (squareId, pieceColor, board, enPassant) => {
   const squareOccupiedByEnemy = (squareId) => {
     if (!board[squareId][1] || board[squareId][1].color === pieceColor )
       return false
@@ -69,7 +69,7 @@ const kingAttackSquares = (squareId, pieceColor, board) => {
     squares.push(squareId-8)
   return squares
 }
-const legitKingMoves = (squareId, pieceColor, board, longCastleRight, shortCastleRight) => {
+const legalKingMoves = (squareId, pieceColor, board, longCastleRight, shortCastleRight) => {
   let squares = kingAttackSquares(squareId, pieceColor, board)
   if (pieceColor === 'white') {
     const squaresUnderAttack = getAttackedSquares(board, 'black')
@@ -248,7 +248,7 @@ export const attackSquares = (square, board, enPassant) => {
   return []
 }
 
-export const legitMoves = (square, board, longCastleRight, shortCastleRight, enPassant) => {
+export const legalMoves = (square, board, longCastleRight, shortCastleRight, enPassant) => {
   const move = (to) => {
     const newBoard = board.map(sq => {
       if (sq[0] === to) return [to, square[1]]
@@ -264,8 +264,8 @@ export const legitMoves = (square, board, longCastleRight, shortCastleRight, enP
   const squareId = square[0]
   const pieceType = square[1].type
   const pieceColor = square[1].color
-  if (pieceType === 'P') squares = legitPawnMoves(squareId, pieceColor, board, enPassant)
-  else if (pieceType === 'K') squares = legitKingMoves(squareId, pieceColor, board, longCastleRight, shortCastleRight)
+  if (pieceType === 'P') squares = legalPawnMoves(squareId, pieceColor, board, enPassant)
+  else if (pieceType === 'K') squares = legalKingMoves(squareId, pieceColor, board, longCastleRight, shortCastleRight)
   else squares = attackSquares(square, board)
   return squares.filter((square) => !isInCheck(pieceColor, move(square)))
 } 
@@ -274,7 +274,7 @@ export const getAttackedSquares = (board, color) => {
   return [...new Set(board.filter(square => (square[1] && square[1].color===color)).map(square => attackSquares(square,board)).flat())]
 }
 export const getAllLegidMoves = (board, color, longCastleRight, shortCastleRight, enPassant) => {
-  return [...new Set(board.filter(square => (square[1] && square[1].color===color)).map(square => legitMoves(square,board,longCastleRight, shortCastleRight, enPassant)).flat())]
+  return [...new Set(board.filter(square => (square[1] && square[1].color===color)).map(square => legalMoves(square,board,longCastleRight, shortCastleRight, enPassant)).flat())]
 }
 
 export const isCheckMated = (color, board, enPassant) => {
@@ -282,27 +282,23 @@ export const isCheckMated = (color, board, enPassant) => {
   const result = isInCheck(color,board) && getAllLegidMoves(board, color, false, false, enPassant).length === 0
   return result
 }
-export const isDrawByLackOfLegitMoves = (color, board, enPassant) => {
+export const isDrawByLackOflegalMoves = (color, board, enPassant) => {
   return !isInCheck(color,board) && getAllLegidMoves(board, color, false, false, enPassant).length === 0
 }
 export const isDrawByInsufficientMaterial = (board) => {
-  const pieces = board.filter(square => square[1])
-  if (pieces.length === 2) return true
-  else if (pieces.length === 3) {
-    const minorPiece = pieces.filter(piece => piece[1].type !== 'K')[0][1]
-    console.log('minorPiece', minorPiece)
-    if (minorPiece.type === 'N' || minorPiece.type === 'B') return true
+  const pieces = board.filter(square => square[1] && square[1].type !== 'K')
+  if (pieces.length === 0) return true
+  else if (pieces.length === 1) {
+    if (pieces.type[0][1] === 'N' || pieces[0][1].type === 'B') return true
   }
-  else if (pieces.length === 4) {
-    const minorPieces = pieces.filter(piece => piece[1].type !== 'K')
-    if (minorPieces[0][1].color !== minorPieces[1][1].color) {
-      if (minorPieces[0][1].type === 'P' && minorPieces[1][1].type === 'P' && minorPieces[0][0]%2 === minorPieces[1][0]%2) {
+  else if (pieces.length === 2) {
+    if (pieces[0][1].color !== pieces[1][1].color) {
+      if (pieces[0][1].type === 'B' && pieces[1][1].type === 'B' && pieces[0][0]%2 === pieces[1][0]%2) {
         return true
       }
     }
       
   }
-
   console.log('isDrawByInsufficientMaterial', pieces)
   return false
 }

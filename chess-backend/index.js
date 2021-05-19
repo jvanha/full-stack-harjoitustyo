@@ -93,7 +93,9 @@ const typeDefs = gql`
       time: Int!
       promotion: String
     ): Move
-    
+    resign(
+      userId: String!
+    ): String
     challenge(
       username: String!
       id: String!
@@ -228,10 +230,7 @@ const resolvers = {
         timeControl,
       }
       const payload = { challengeIssued: { ...challenge } }
-      console.log('payload', payload)
-      console.log()
       pubsub.publish('CHALLENGE_ISSUED', payload)
-      console.log('HERE')
       return challenge
     },
     cancelChallenge: (rootm, args, context) => {
@@ -291,10 +290,14 @@ const resolvers = {
       const payload = {
         moveMade: { userId, move }
       }
-      console.log('makeAMove resolver')
-      console.log('payload', payload)
+      //console.log('makeAMove resolver')
+      //console.log('payload', payload)
       pubsub.publish('MOVE_MADE', payload)
       return move
+    },
+    resign: (root, args) => {
+      console.log(args, 'resigned')
+      return args.userId
     },
     addMessage: (root, args, context) => {
       const writer = context.currentUser
@@ -308,10 +311,10 @@ const resolvers = {
   Subscription: {
     moveMade: {
       subscribe: withFilter(() => pubsub.asyncIterator(['MOVE_MADE']), (payload, variables) => {
-        console.log('move made')
-        console.log('payload', payload)
-        console.log('variables', variables)
-        console.log()
+        //console.log('move made')
+        //console.log('payload', payload)
+        //console.log('variables', variables)
+        //console.log()
         return payload.moveMade.userId === variables.opponentId
       })
     },
@@ -375,7 +378,7 @@ const server = new ApolloServer({
         auth.substring(7), JWT_SECRET
       )
       const currentUser = await User.findById(decodedToken.id)
-      console.log('currentUser',currentUser)
+      //console.log('currentUser',currentUser)
       return { 
         currentUser: {
           username: currentUser.username,

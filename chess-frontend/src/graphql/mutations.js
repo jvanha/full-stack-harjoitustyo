@@ -94,6 +94,11 @@ export const ADD_MESSAGE = gql`
     }
   }
 `
+export const RESIGN = gql`
+  mutation resign($userId: String!) {
+    resign(userId: $userId)
+  }
+`
 
 
 

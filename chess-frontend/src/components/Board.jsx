@@ -1,17 +1,21 @@
 import React from 'react'
 import { useEffect } from 'react'
 import { useState } from 'react'
-import { legitMoves } from '../utilFunctions'
+import { legalMoves } from '../utilFunctions'
 import Piece from './Piece'
 import PromotionPortal from './PromotionPortal'
 
 const boardStyle = {
+  paddingTop: 5,
+  paddingBottom: 5,
   height: 504,
   width: 504,
   display: 'flex',
   flexWrap: 'wrap',
 }
 const boardStyleReversed = {
+  paddingTop: 5,
+  paddingBottom: 5,
   height: 504,
   width: 504,
   display: 'flex',
@@ -24,17 +28,12 @@ const squareStyle = {
   justifyContent: 'center',
   height: '12.5%',
   width: '12.5%',
-  transitionDuration: '100ms',
-  transitionTimingFunction: 'ease-out'
 }
 const MySquare = ({ content, handleSelection, selectedSquare, validMoves, attackedSquares, settings, movingPiece, reversed }) => {
   const index = content[0]
   let color = ((index + Math.floor(index/8))%2)===0 ? '#f58a42' : '#52170d'
 
   if (content === selectedSquare) {
-    //console.log('content === selectedSquare')
-    //console.log('content', content)
-    //console.log('selectedSquare', selectedSquare)
     color = 'green'
   }
   if (settings && settings.showLegalMoves && validMoves && validMoves.includes(content[0])) {
@@ -43,10 +42,7 @@ const MySquare = ({ content, handleSelection, selectedSquare, validMoves, attack
   if (attackedSquares && attackedSquares.includes(content[0])) {
     color = 'purple'
   }
-  if (movingPiece) {
-    //console.log('movingPiece', movingPiece)
-    //console.log('content[0]', content[0])
-  }
+
   return (
     <div
       id={index}
@@ -63,30 +59,27 @@ const MySquare = ({ content, handleSelection, selectedSquare, validMoves, attack
     </div>
   )
 }
-//{content[1] && <Piece piece={content[1]} selectPiece={() => handleSelection(content)}/>}
 
-const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myColor, gameSettings, ...props}) => {
+const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myColor, gameSettings, makeAMove, ...props}) => {
   const [ selectedSquare, setSelectedSquare ] = useState(null)
   const [ validMoves, setValidMoves ] = useState([])
   const [ promotionPortalOpen, setPromotionPortalOpen ] = useState(false)
   const [ tempSquare, setTempSquare ] = useState(null)
   const [ promotion, setPromotion ] = useState(null)
   const [ movingPiece, setMovingPiece ] = useState(null)
-  //console.log('promotion', promotion)
-  //console.log('movingPiece', movingPiece)
+
   useEffect(() => {
     if (playerToMove === 'white') {
-      setValidMoves(legitMoves(selectedSquare, board, props.longCastleWhite, props.shortCastleWhite, enPassant))
+      setValidMoves(legalMoves(selectedSquare, board, props.longCastleWhite, props.shortCastleWhite, enPassant))
     }
     else {
-      setValidMoves(legitMoves(selectedSquare, board, props.longCastleBlack, props.shortCastleBlack, enPassant))
+      setValidMoves(legalMoves(selectedSquare, board, props.longCastleBlack, props.shortCastleBlack, enPassant))
     }
     
   },[selectedSquare, board])
   
   useEffect(() => {
     if(promotion && tempSquare && selectedSquare) {
-      //console.log('setting movingPiece')
       setMovingPiece({ from: selectedSquare[0], to: tempSquare[0] })
     }
   }, [promotion])
@@ -94,6 +87,7 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myC
   useEffect(() => {
     console.log('useEffect on movingPiece', movingPiece)
     if (tempSquare && movingPiece) {
+      makeAMove(selectedSquare[0], tempSquare[0], promotion?promotion:'Q')
       setTimeout(() => {
         movePiece(selectedSquare[0], tempSquare[0], promotion?promotion:'Q')
         setMovingPiece(null)
@@ -118,13 +112,10 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myC
     
   },[props.moveMade])
   const handleSelection = (square) => {
-    //console.log('handleSelection selectedSquare', selectedSquare)
-    //console.log('handleSelection square', square)
     if (myColor !== playerToMove) return
     const index = square[0]
 
     if (board[index][1] && board[index][1].color=== playerToMove) {
-      //console.log('!selectedSquare && board[id][1] && board[id][1].color=== playerToMove')
       setSelectedSquare(square)
     } 
     else if (selectedSquare && selectedSquare[0] === index) setSelectedSquare(null)
@@ -138,8 +129,6 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myC
       console.log('setting movingPiece')
       setTempSquare(square)
       setMovingPiece({ from: selectedSquare[0], to: index })
-      
-      //setSelectedSquare(null)
     }
     else {
       setSelectedSquare(null)

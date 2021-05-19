@@ -3,10 +3,10 @@ import React, { useEffect, useState } from 'react';
 import Board from './Board'
 import Clock from './Clock';
 import Users from './Users';
-import { ACCEPT_CHALLENGE, MAKE_A_MOVE, DECLINE_CHALLENGE, CREATE_GAME } from './../graphql/mutations';
+import { ACCEPT_CHALLENGE, MAKE_A_MOVE, DECLINE_CHALLENGE, CREATE_GAME, RESIGN } from './../graphql/mutations';
 import { CHALLENGE_ACCEPTED, CHALLENGE_CANCELLED, CHALLENGE_DECLINED, CHALLENGE_ISSUED, MOVE_MADE} from './../graphql/subscriptions';
-import { getAttackedSquares, isCheckMated, isDrawByInsufficientMaterial, isDrawByLackOfLegitMoves, isInCheck } from './../utilFunctions'
-import { Button, Icon, Menu} from 'semantic-ui-react';
+import { getAttackedSquares, isCheckMated, isDrawByInsufficientMaterial, isDrawByLackOflegalMoves, isInCheck } from './../utilFunctions'
+import { Button, Item, Label, Menu} from 'semantic-ui-react';
 import Chat from './Chat';
 import { deleteGameState, loadGameSettings, loadGameState, saveGameState } from '../localStorageService';
 import PromotionPortal from './PromotionPortal';
@@ -77,7 +77,7 @@ testBoard[11] = [11, { type: 'P', color: 'white' }]
 testBoard[14] = [14, { type: 'Q', color: 'white' }]
 
 const Game = ({ user }) => {
-
+  
   const [ game, setGame ] = useState({
     board: initBoard,
   })
@@ -108,8 +108,8 @@ const Game = ({ user }) => {
   const [ declineChallenge, declineChallengeResult ] = useMutation(DECLINE_CHALLENGE)
   const [ makeAMove, makeAMoveResult ] = useMutation(MAKE_A_MOVE)
   const [ createGame, createGameResult ] = useMutation(CREATE_GAME)
-
-
+  const [ resign ] = useMutation(RESIGN)
+  
   useSubscription(CHALLENGE_ISSUED, {
     variables: { playerId: user ? user.id : ''},
     onSubscriptionData: ({ subscriptionData }) => {
@@ -150,8 +150,8 @@ const Game = ({ user }) => {
         setOpponentsClockRunning(true)
         setChallengeWaiting(null)
         setOpponent(challenge.opponents.challenged)
-        setBoard(testBoard)
-        //setBoard(initBoard)
+        //setBoard(testBoard)
+        setBoard(initBoard)
         setMyColor('black')
         setPlayerToMove('white')
       }
@@ -182,7 +182,6 @@ const Game = ({ user }) => {
         deleteGameState()
 
       } else {
-        //movePiece(move.from, move.to, move.promotion)
         setMoveMade(move)
         setClockRunning(true)
       }
@@ -225,8 +224,8 @@ const Game = ({ user }) => {
       console.log('acceptChallengeResult',acceptChallengeResult)
       const challenge = acceptChallengeResult.data.acceptChallenge
       setOpponent(challenge.opponents.challenger)
-      //setBoard(initBoard)
-      setBoard(testBoard)
+      setBoard(initBoard)
+      //setBoard(testBoard)
       setMyColor('white')
       setClock(challenge.timeControl)
       setOpponentsClock(challenge.timeControl)
@@ -256,7 +255,6 @@ const Game = ({ user }) => {
 
   useEffect(() => {
     if (clock < 0) {
-      console.log('Time is out')
       makeAMove({ variables: { userId: user.id, from: 0, to: 0, time: 0}})
       setClockRunning(false)
       setClock(0)
@@ -269,7 +267,7 @@ const Game = ({ user }) => {
   useEffect(() => {
     //VAATII KORJAUSTA
     if (myColor) {
-      if (isDrawByLackOfLegitMoves(playerToMove, board, enPassant)) {
+      if (isDrawByLackOflegalMoves(playerToMove, board, enPassant)) {
         alert('Draw')
         setPlayerToMove(null)
         setMyColor(null)
@@ -322,16 +320,16 @@ const Game = ({ user }) => {
     }
   }, [board])
  
-  useEffect(() => {
-    
-  }, [playerToMove])
+  const handleMoveMaking = (from, to, promotion) => {
+    makeAMove({ variables: { userId: user.id, from, to, time: clock, promotion}})
+  }
   
+
   const movePiece = (from, to, promotion) => {
     if (opponent && playerToMove === myColor) {
       setClockRunning(false)
       setOpponentsClockRunning(true)
       console.log({ variables: { userId: user.id, from, to}})
-      makeAMove({ variables: { userId: user.id, from, to, time: clock, promotion}})
     }
     
     const squareFrom = board[from]
@@ -451,10 +449,17 @@ const Game = ({ user }) => {
 
   
   return (
-    <div style={{ padding: 30, display: 'flex', flexDirection: 'horizontal'}}>
+    <div style={{ padding: 30, display: 'flex', flexDirection: 'row'}}>
       <div style={{ padding: 30}}>
-        {opponent && <div> opponent {opponent.username} {opponent.id}</div>}
-        <Clock time={opponentsClock}/>
+        <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+          { opponent &&
+            <Label image>
+              <img src='https://react.semantic-ui.com/images/avatar/small/joe.jpg' />
+              {opponent.username}
+            </Label>
+          }
+          <Clock time={opponentsClock}/>
+        </div>
         <Board 
           board={board} 
           movePiece={movePiece}
@@ -468,18 +473,35 @@ const Game = ({ user }) => {
           myColor={myColor}
           gameSettings={gameSettings}
           moveMade={moveMade}
+          makeAMove={handleMoveMaking}
 
 
         />
-        <Clock time={clock}/>
+        <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+          { user &&
+            <Label image>
+            <img src='https://react.semantic-ui.com/images/avatar/small/joe.jpg' />
+            {user.username}
+          </Label>
+          }
+          <Clock time={clock}/>
+
+        </div>
         {!attackedSquares && <button onClick={() => handleShow('black')}>show black's attack</button>}
         {!attackedSquares && <button onClick={() => handleShow('white')}>show white's attack</button>}
         {attackedSquares && <button onClick={() => handleShow('')}>hide attack</button>}
         <button onClick={() => isInCheck('black', board)}>is black in check</button>
-      </div>
+        </div>
       <Button circular inverted icon='setting' onClick={()=>setSettingsModalOpen(true)}/>
       <div style={{ backgroundColor: 'white'}}>
         <Menu attached='top' inverted>
+          { opponent &&
+            <Menu.Item
+              name='Game'
+              active={activeMenuItem === 'game'}
+              onClick={() => setActiveMenuItem('game')}
+            />
+          }
           <Menu.Item
             name='players'
             active={activeMenuItem === 'players'}
@@ -489,11 +511,6 @@ const Game = ({ user }) => {
             name='chat'
             active={activeMenuItem === 'chat'}
             onClick={() => setActiveMenuItem('chat')}
-          />
-          <Menu.Item
-            name='moves'
-            active={activeMenuItem === 'moves'}
-            onClick={() => setActiveMenuItem('moves')}
           />
         </Menu>
         {activeMenuItem === 'players'
@@ -506,6 +523,9 @@ const Game = ({ user }) => {
         {activeMenuItem === 'chat' && user
           && <Chat/>
         }
+        {activeMenuItem === 'game' && user
+          && <Button onClick={()=>resign({ variables: { userId: user.id}})}>Resign</Button>
+        } 
       </div>
       <SettingsModal
         modalOpen={settingsModalOpen}
