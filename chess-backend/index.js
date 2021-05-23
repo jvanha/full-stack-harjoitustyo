@@ -4,15 +4,27 @@ const jwt = require('jsonwebtoken')
 const User = require('./models/user')
 const Game = require('./models/game')
 const bcrypt = require('bcrypt')
-const user = require('./models/user')
+const stockfish = require('stockfish')
 
 const pubsub = new PubSub()
-
+const engine = stockfish()
 let usersLoggedIn = []
+let engines = []
+let bestMove
 
+engine.onmessage = (message) => {
+  console.log(message)
+  if (message.startsWith('uciok')) engine.postMessage('isready')
+  if (message.startsWith('readyok')) {
+    engine.postMessage('setoption name Skill Level value 1')
+  }
+  if (message.startsWith('bestmove')) bestMove = message.substring(9,13) 
+
+}
 
 const JWT_SECRET = 'suusialas'
 const MONGODB_URI = 'mongodb+srv://fullstack:poalkj@cluster0.j1rcu.mongodb.net/chess?retryWrites=true&w=majority'
+
 console.log('connecting to', MONGODB_URI)
 mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true })
   .then(() => {
@@ -71,6 +83,7 @@ const typeDefs = gql`
   type Query {
     me: User
     allUsers: [User]
+    getComputerMove(fen: String): String 
   }
   
 
@@ -93,9 +106,11 @@ const typeDefs = gql`
       time: Int!
       promotion: String
     ): Move
+
     resign(
       userId: String!
     ): String
+
     challenge(
       username: String!
       id: String!
@@ -152,7 +167,22 @@ const resolvers = {
     me: async (root, args, context) => {
       console.log('context.currentUser',context.currentUser)
       return context.currentUser
-    }
+    },
+    getComputerMove: (root, args) => {
+      let move
+      const fen = args.fen
+      engine.postMessage(`position ${fen}`)
+      console.log(engine.postMessage(`go`))
+      setTimeout(()=> {
+        console.log('BEST MOVE', bestMove)
+        if (bestMove) {
+          move = bestMove
+          bestMove = null
+        }
+        console.log('move',move)
+        return move
+      },3)
+    },
   },
   Mutation: {
     createUser: async (root, args) => {
@@ -201,6 +231,10 @@ const resolvers = {
       }
       console.log('userLoggedIn',user.username)
       console.log('usersLoggedIn',usersLoggedIn.map(user=>user.username))
+
+      const newEngeine = stockfish()
+      newEngine.onMessage = (message) => { console.log(username, message)}
+      engines.push(newEngine)
       return { value: jwt.sign(userForToken, JWT_SECRET)}
     },
     logout: (root, args, context) => {
