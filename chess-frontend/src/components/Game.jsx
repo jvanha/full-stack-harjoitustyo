@@ -11,9 +11,10 @@ import Chat from './Chat';
 import { deleteGameState, loadGameSettings, loadGameState, saveGameState } from '../localStorageService';
 import PromotionPortal from './PromotionPortal';
 import SettingsModal from './SettingsModal';
+import engine, { toFen } from '../engine';
 
 let squares = Array(64)//[...Array(64).keys()]
-const emptyBoard = Array(64)
+let emptyBoard = Array(64)
 let initBoard = Array(64)
 let testBoard = Array(64)
 
@@ -22,6 +23,7 @@ for (i=0; i<64; i++) {
   squares[i] = [i, null]
   initBoard[i] = [i, null]
   testBoard[i] = [i, null]
+  emptyBoard[i] = [i, null]
 }
 squares[56] = [56, { type: 'R', color: 'white' }]
 squares[50] = [50, { type: 'P', color: 'white' }]
@@ -82,7 +84,7 @@ const Game = ({ user }) => {
     board: initBoard,
   })
   const [ activeMenuItem, setActiveMenuItem ] = useState("players")
-  const [ board, setBoard ] = useState(initBoard)
+  const [ board, setBoard ] = useState(emptyBoard)
   const [ attackedSquares, setAttackedSquares ] = useState(null)
   const [ playerToMove, setPlayerToMove ] = useState(null)
   const [ longCastleWhite, setLongCastleWhite ] = useState(true)
@@ -99,11 +101,11 @@ const Game = ({ user }) => {
   const [ opponentsClock, setOpponentsClock ] = useState(10)
   const [ opponentsClockRunning, setOpponentsClockRunning] = useState(false)
   
-  const [ autoQueen, setAutoQueen ] = useState(false)
+
   const [ settingsModalOpen, setSettingsModalOpen ] = useState(false)
   const [ gameSettings, setGameSettings ] = useState({ autoQueen: false, showLegalMoves: false}) 
   const [ moveMade, setMoveMade ] = useState(null)
-
+  const [ nextComputerMove, setNextComputerMove ] = useState(null)
   const [ acceptChallenge, acceptChallengeResult ] = useMutation(ACCEPT_CHALLENGE)
   const [ declineChallenge, declineChallengeResult ] = useMutation(DECLINE_CHALLENGE)
   const [ makeAMove, makeAMoveResult ] = useMutation(MAKE_A_MOVE)
@@ -318,11 +320,29 @@ const Game = ({ user }) => {
         saveGameState(gameState)
       }
     }
+    fetchComputerMove()
+ 
   }, [board])
+
+  useEffect(() => {
+    console.log('nextComputerMove',nextComputerMove)
+    if (opponent && opponent.id === 'computer' && playerToMove === 'white') {
+      setMoveMade({...nextComputerMove, promotion: 'Q'})
+      setClockRunning(true)
+    }
+  }, [nextComputerMove])
  
   const handleMoveMaking = (from, to, promotion) => {
+    if (opponent && opponent.id === 'computer') {
+      return
+    }
     makeAMove({ variables: { userId: user.id, from, to, time: clock, promotion}})
   }
+  const fetchComputerMove = async () => {
+    const move = await engine.getMove(board, playerToMove, longCastleWhite, shortCastleWhite, longCastleBlack, shortCastleBlack, enPassant)
+    setNextComputerMove(move) 
+  }
+  
   
 
   const movePiece = (from, to, promotion) => {
@@ -447,10 +467,31 @@ const Game = ({ user }) => {
     }
   }
 
-  
+  const playComputer = () => {
+    setOpponent({ username: 'Computer', id: 'computer'})
+    setLongCastleBlack(true)
+    setShortCastleBlack(true)
+    setLongCastleWhite(true)
+    setShortCastleWhite(true)
+    setClock(600)
+    setOpponentsClock(600)
+    setOpponentsClockRunning(true)
+    setChallengeWaiting(null)
+          //setBoard(testBoard)
+    setMyColor('black')
+    setPlayerToMove('white')
+    setBoard(initBoard)
+  }
+
+  //        {toFen(board, longCastleWhite, shortCastleWhite, longCastleBlack, shortCastleBlack, enPassant)}
+
   return (
     <div style={{ padding: 30, display: 'flex', flexDirection: 'row'}}>
       <div style={{ padding: 30}}>
+      {toFen(board, longCastleWhite, shortCastleWhite, longCastleBlack, shortCastleBlack, enPassant)}
+      {(!opponent || opponent.id === 'computer') &&
+        <Button onClick={playComputer}>Play against computer</Button>
+      }
         <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
           { opponent &&
             <Label image>
