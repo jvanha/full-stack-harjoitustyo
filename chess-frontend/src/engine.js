@@ -1,4 +1,6 @@
+
 import axios from 'axios'
+
 
 // HYÖDYTÖN
 const evaluatePosition = async (board, activeColor, whiteLong, whiteShort, blackLong, blackShort, enPassant) => {
@@ -80,11 +82,13 @@ const getFenEnPassant = (enPassant) => {
   return column + row
 }
 
-export const toFen = (board, whiteLong, whiteShort, blackLong, blackShort, enPassant) => {
+export const toFen = (board, activeColor, whiteLong, whiteShort, blackLong, blackShort, enPassant) => {
   const position = getFenPosition(board)
   const castling = getFenCastling(whiteLong, whiteShort, blackLong, blackShort)
   const fenEnPassant = getFenEnPassant(enPassant)
-  return `${position} ${castling} ${fenEnPassant}`
+  const fenActiveColor = activeColor ? activeColor[0] : 'w'
+  console.log('fenActiveColor',fenActiveColor)
+  return `${position} ${fenActiveColor} ${castling} ${fenEnPassant}`
 }
 
 export default { evaluatePosition, getMove }

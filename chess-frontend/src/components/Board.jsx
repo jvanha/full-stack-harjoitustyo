@@ -98,6 +98,7 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myC
     }
     
   }, [movingPiece])
+  
   useEffect(() => {
     console.log('props.moveMade',props.moveMade)
     if (props.moveMade) {

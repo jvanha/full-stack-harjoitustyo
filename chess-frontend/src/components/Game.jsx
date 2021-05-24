@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Board from './Board'
 import Clock from './Clock';
 import Users from './Users';
-import { ACCEPT_CHALLENGE, MAKE_A_MOVE, DECLINE_CHALLENGE, CREATE_GAME, RESIGN } from './../graphql/mutations';
+import { ACCEPT_CHALLENGE, MAKE_A_MOVE, DECLINE_CHALLENGE, CREATE_GAME, RESIGN, GET_COMPUTER_MOVE } from './../graphql/mutations';
 import { CHALLENGE_ACCEPTED, CHALLENGE_CANCELLED, CHALLENGE_DECLINED, CHALLENGE_ISSUED, MOVE_MADE} from './../graphql/subscriptions';
 import { getAttackedSquares, isCheckMated, isDrawByInsufficientMaterial, isDrawByLackOflegalMoves, isInCheck } from './../utilFunctions'
 import { Button, Item, Label, Menu} from 'semantic-ui-react';
@@ -111,6 +111,7 @@ const Game = ({ user }) => {
   const [ makeAMove, makeAMoveResult ] = useMutation(MAKE_A_MOVE)
   const [ createGame, createGameResult ] = useMutation(CREATE_GAME)
   const [ resign ] = useMutation(RESIGN)
+  const [ getComputerMove, getComputerMoveResult ] = useMutation(GET_COMPUTER_MOVE)
   
   useSubscription(CHALLENGE_ISSUED, {
     variables: { playerId: user ? user.id : ''},
@@ -320,17 +321,31 @@ const Game = ({ user }) => {
         saveGameState(gameState)
       }
     }
-    fetchComputerMove()
+    console.log(opponent, playerToMove)
+    if (opponent && opponent.id === 'computer' && playerToMove === 'white') {
+      const fen = toFen(board, playerToMove, longCastleWhite, shortCastleWhite, longCastleBlack, shortCastleBlack, enPassant)
+      console.log('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
+      console.log('fen',fen)
+      if (fen) {
+        const variables = { fen }
+        console.log('variables',variables)
+        getComputerMove({ variables })
+      }
+    }
  
   }, [board])
 
   useEffect(() => {
-    console.log('nextComputerMove',nextComputerMove)
-    if (opponent && opponent.id === 'computer' && playerToMove === 'white') {
-      setMoveMade({...nextComputerMove, promotion: 'Q'})
-      setClockRunning(true)
+    console.log(getComputerMoveResult)
+    if (getComputerMoveResult.called && !getComputerMoveResult.loading) {
+      const move = getComputerMoveResult.data.getComputerMove
+      console.log('move', move)
+      if (opponent && opponent.id === 'computer' && playerToMove === 'white') {
+        setMoveMade({ ...move, promotion: 'Q'})
+        setClockRunning(true)
+      }
     }
-  }, [nextComputerMove])
+  }, [getComputerMoveResult.data])
  
   const handleMoveMaking = (from, to, promotion) => {
     if (opponent && opponent.id === 'computer') {
@@ -338,11 +353,6 @@ const Game = ({ user }) => {
     }
     makeAMove({ variables: { userId: user.id, from, to, time: clock, promotion}})
   }
-  const fetchComputerMove = async () => {
-    const move = await engine.getMove(board, playerToMove, longCastleWhite, shortCastleWhite, longCastleBlack, shortCastleBlack, enPassant)
-    setNextComputerMove(move) 
-  }
-  
   
 
   const movePiece = (from, to, promotion) => {
@@ -351,7 +361,10 @@ const Game = ({ user }) => {
       setOpponentsClockRunning(true)
       console.log({ variables: { userId: user.id, from, to}})
     }
-    
+    console.log(from)
+    console.log(to)
+    console.log(board)
+
     const squareFrom = board[from]
     const color = squareFrom[1].color
     const type = squareFrom[1].type

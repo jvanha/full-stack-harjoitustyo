@@ -21,6 +21,20 @@ engine.onmessage = (message) => {
   if (message.startsWith('bestmove')) bestMove = message.substring(9,13) 
 
 }
+const getbestmove = () => {
+  return new Promise((resolve, reject) =>{
+    setTimeout(()=> {
+      console.log('BEST MOVE', bestMove)
+      if (bestMove) {
+        move = bestMove
+        bestMove = null
+      }
+      console.log('move',move)
+      resolve(move)
+    },3000)
+    
+  })
+}
 
 const JWT_SECRET = 'suusialas'
 const MONGODB_URI = 'mongodb+srv://fullstack:poalkj@cluster0.j1rcu.mongodb.net/chess?retryWrites=true&w=majority'
@@ -67,7 +81,7 @@ const typeDefs = gql`
   type Move {
     from: Int!
     to: Int!
-    time: Int!
+    time: Int
     promotion: String
   }
   type MoveUnit {
@@ -83,7 +97,7 @@ const typeDefs = gql`
   type Query {
     me: User
     allUsers: [User]
-    getComputerMove(fen: String): String 
+    
   }
   
 
@@ -142,6 +156,7 @@ const typeDefs = gql`
       blackId: String!
       winner: String!
     ): Game!
+    getComputerMove(fen: String): Move
   }
 
   type Subscription {
@@ -168,21 +183,7 @@ const resolvers = {
       console.log('context.currentUser',context.currentUser)
       return context.currentUser
     },
-    getComputerMove: (root, args) => {
-      let move
-      const fen = args.fen
-      engine.postMessage(`position ${fen}`)
-      engine.postMessage(`go`)
-      setTimeout(()=> {
-        console.log('BEST MOVE', bestMove)
-        if (bestMove) {
-          move = bestMove
-          bestMove = null
-        }
-        console.log('move',move)
-        return move
-      },3)
-    },
+    
   },
   Mutation: {
     createUser: async (root, args) => {
@@ -232,9 +233,9 @@ const resolvers = {
       console.log('userLoggedIn',user.username)
       console.log('usersLoggedIn',usersLoggedIn.map(user=>user.username))
 
-      const newEngeine = stockfish()
-      newEngine.onMessage = (message) => { console.log(username, message)}
-      engines.push(newEngine)
+      //const newEngeine = stockfish()
+      //newEngine.onMessage = (message) => { console.log(username, message)}
+      //engines.push(newEngine)
       return { value: jwt.sign(userForToken, JWT_SECRET)}
     },
     logout: (root, args, context) => {
@@ -340,7 +341,19 @@ const resolvers = {
         messageAdded: { writer, content }
       }
       return { writer, content }
-    }
+    },
+    getComputerMove: async (root, args) => {
+      console.log('args', args)
+      const fen = args.fen
+      console.log('fen:',fen)
+      engine.postMessage(`position fen ${fen}`)
+      engine.postMessage(`go`)
+      const fenMove = await getbestmove()
+      const from = (8-parseInt(fenMove[1]))*8 + fenMove.charCodeAt(0) - 97
+      const to = (8-parseInt(fenMove[3]))*8 + fenMove.charCodeAt(2) - 97
+      const move = { from, to }
+      return move
+    },
   },
   Subscription: {
     moveMade: {

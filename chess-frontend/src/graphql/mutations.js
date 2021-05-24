@@ -100,6 +100,15 @@ export const RESIGN = gql`
   }
 `
 
+export const GET_COMPUTER_MOVE = gql`
+  mutation getComputerMove($fen: String) {
+    getComputerMove(fen: $fen) {
+      from
+      to
+    }
+  }
+`
+
 
 
 
