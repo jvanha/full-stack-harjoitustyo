@@ -172,7 +172,7 @@ const resolvers = {
       let move
       const fen = args.fen
       engine.postMessage(`position ${fen}`)
-      console.log(engine.postMessage(`go`))
+      engine.postMessage(`go`)
       setTimeout(()=> {
         console.log('BEST MOVE', bestMove)
         if (bestMove) {
