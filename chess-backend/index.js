@@ -9,7 +9,7 @@ const stockfish = require('stockfish')
 const pubsub = new PubSub()
 const engine = stockfish()
 let usersLoggedIn = []
-let engines = []
+let engines = {}
 let bestMove
 
 engine.onmessage = (message) => {
