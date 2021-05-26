@@ -9,7 +9,6 @@ import { getAttackedSquares, isCheckMated, isDrawByInsufficientMaterial, isDrawB
 import { Button, Item, Label, Menu} from 'semantic-ui-react';
 import Chat from './Chat';
 import { deleteGameState, loadGameSettings, loadGameState, saveGameState } from '../localStorageService';
-import PromotionPortal from './PromotionPortal';
 import SettingsModal from './SettingsModal';
 import engine, { toFen } from '../engine';
 
@@ -294,7 +293,9 @@ const Game = ({ user }) => {
           const blackId = myColor === 'black' ? user.id : opponent.id
           const winner = myColor
           //only the winner creates a new game
-          createGame({ variables: { whiteId, blackId, winner } })
+          if (opponent.id !== 'computer') {
+            createGame({ variables: { whiteId, blackId, winner } })
+          }
           alert('You won')
           setPlayerToMove(null)
           setOpponentsClockRunning(false)
@@ -486,8 +487,8 @@ const Game = ({ user }) => {
     setShortCastleBlack(true)
     setLongCastleWhite(true)
     setShortCastleWhite(true)
-    setClock(600)
-    setOpponentsClock(600)
+    setClock(300)
+    setOpponentsClock(300)
     setOpponentsClockRunning(true)
     setChallengeWaiting(null)
           //setBoard(testBoard)
@@ -502,7 +503,7 @@ const Game = ({ user }) => {
     <div style={{ padding: 30, display: 'flex', flexDirection: 'row'}}>
       <div style={{ padding: 30}}>
       {toFen(board, longCastleWhite, shortCastleWhite, longCastleBlack, shortCastleBlack, enPassant)}
-      {(!opponent || opponent.id === 'computer') &&
+      {(user && (!opponent || opponent.id === 'computer')) &&
         <Button onClick={playComputer}>Play against computer</Button>
       }
         <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>

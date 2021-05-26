@@ -1,12 +1,22 @@
-import { useMutation } from '@apollo/client'
+import { useMutation, useSubscription } from '@apollo/client'
 import React, { useEffect, useState } from 'react'
 import { Button, Comment, Form } from 'semantic-ui-react'
 import { ADD_MESSAGE } from '../graphql/mutations'
+import { MESSAGE_ADDED } from '../graphql/subscriptions'
 
 const Chat = () => {
   const [ messages, setMessages ] = useState([])
   const [ message, setMessage ] = useState('')
   console.log(message)
+
+  useSubscription(MESSAGE_ADDED, {
+    onSubscriptionData: ({ subscriptionData}) => {
+      console.log('MESSAGE_ADDED subscriptionData',subscriptionData)
+      const addedMessage = subscriptionData.data.messageAdded
+      setMessages(messages.concat(addedMessage))
+    }
+  })
+
   const [ addMessage, result ] = useMutation(ADD_MESSAGE) 
   const submit = (event) => {
     event.preventDefault()
@@ -23,7 +33,7 @@ const Chat = () => {
   return (
     <Comment.Group minimal>
       {messages.map(message =>
-        <Comment>
+        <Comment key={message.content}>
           <Comment.Author>{message.writer.username}</Comment.Author>
           <Comment.Metadata>Just now</Comment.Metadata>
           <Comment.Text>{message.content}</Comment.Text>

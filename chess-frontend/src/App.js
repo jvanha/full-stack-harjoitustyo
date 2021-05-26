@@ -38,6 +38,21 @@ const App = () => {
     client.resetStore()
   }, [])
 */
+/*
+useSubscription(MESSAGE_ADDED, {
+  onSubscriptionData: ({ subscriptionData}) => {
+    console.log('MESSAGE_ADDED subscriptionData',subscriptionData)
+    const addedMessage = subscriptionData.data.messageAdded
+    const messagesInStorage = client.readQuery({ query: ALL_MESSAGES })
+    if (!usersInStorage.allUsers.map(user => user.id).includes(loggedInUser.id)) {
+      client.writeQuery({
+        query: ALL_USERS,
+        data: { allUsers: usersInStorage.allUsers.concat(loggedInUser)}
+      })
+    }
+  }
+})
+*/
   useSubscription(USER_LOGGED_IN, {
     onSubscriptionData: ({ subscriptionData}) => {
       console.log('USER_LOGGED_IN subscriptionData',subscriptionData)

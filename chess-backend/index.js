@@ -7,27 +7,30 @@ const bcrypt = require('bcrypt')
 const stockfish = require('stockfish')
 
 const pubsub = new PubSub()
-const engine = stockfish()
 let usersLoggedIn = []
-let engines = {}
-let bestMove
-
-engine.onmessage = (message) => {
+let engines = []
+let bestMoves = []
+const onMessage = (engine, message) => {
   console.log(message)
-  if (message.startsWith('uciok')) engine.postMessage('isready')
+  if (message.startsWith('uciok')) engine.engine.postMessage('isready')
   if (message.startsWith('readyok')) {
-    engine.postMessage('setoption name Skill Level value 1')
+    engine.engine.postMessage('setoption name Skill Level value 1')
   }
-  if (message.startsWith('bestmove')) bestMove = message.substring(9,13) 
+  if (message.startsWith('bestmove')) {
+    bestMoves = bestMoves.map(bestMove => bestMove.id == engine.id ? {id: bestMove.id, bestMove: message.substring(9,13)} : bestMove)
+  } 
 
 }
-const getbestmove = () => {
+
+const getbestmove = (id) => {
   return new Promise((resolve, reject) =>{
     setTimeout(()=> {
+      let move
+      const bestMove = bestMoves.find(bestMove => bestMove.id == id)
       console.log('BEST MOVE', bestMove)
-      if (bestMove) {
-        move = bestMove
-        bestMove = null
+      if (bestMove && bestMove.bestMove) {
+        move = bestMove.bestMove
+        bestMoves = bestMoves.map(bestMove => bestMove.id == id ? {bestMove: null, ...bestMove} : bestMove)
       }
       console.log('move',move)
       resolve(move)
@@ -97,6 +100,7 @@ const typeDefs = gql`
   type Query {
     me: User
     allUsers: [User]
+    allMessages: [Message]
     
   }
   
@@ -183,7 +187,9 @@ const resolvers = {
       console.log('context.currentUser',context.currentUser)
       return context.currentUser
     },
-    
+    allMessages: () => {
+      return []
+    }
   },
   Mutation: {
     createUser: async (root, args) => {
@@ -233,16 +239,37 @@ const resolvers = {
       console.log('userLoggedIn',user.username)
       console.log('usersLoggedIn',usersLoggedIn.map(user=>user.username))
 
-      //const newEngeine = stockfish()
-      //newEngine.onMessage = (message) => { console.log(username, message)}
-      //engines.push(newEngine)
+      const newEngine = stockfish()
+      const engine = {
+        id: user._id,
+        engine: newEngine,
+      }
+
+      newEngine.onmessage = (message) => onMessage(engine,message)
+      newEngine.postMessage('uci')
+      engines.push(engine)
+      const bestMove = {
+        id: user._id,
+        bestMove: null
+      }
+      bestMoves.push(bestMove)
       return { value: jwt.sign(userForToken, JWT_SECRET)}
     },
     logout: (root, args, context) => {
       const currentUser = context.currentUser
       console.log(currentUser.username,'logged out')
       usersLoggedIn = usersLoggedIn.filter(user => user.id !== currentUser.id)
-      usersLoggedIn.filter(user => user.id !== currentUser.id)
+      console.log('engines', engines)
+      const currentEngine = engines.find(engine => engine.id == currentUser.id)
+      console.log('currentEngine', currentEngine)
+      if (currentEngine) currentEngine.engine.postMessage("quit")
+      engines =  engines.filter(engine => {
+        console.log(engine)
+        console.log(engine.id, currentUser.id)
+        return engine.id != currentUser.id
+      })
+      console.log('engines', engines)
+      //usersLoggedIn.filter(user => user.id !== currentUser.id)
       pubsub.publish('USER_LOGGED_OUT', { userLoggedOut: currentUser})
       //console.log('usersLoggedIn', usersLoggedIn.map(user => user.username))
       return currentUser
@@ -340,18 +367,28 @@ const resolvers = {
       const payload = {
         messageAdded: { writer, content }
       }
+      console.log('addMessage')
+      console.log('payload', payload)
+      console.log()
+      pubsub.publish('MESSAGE_ADDED', payload)
       return { writer, content }
     },
-    getComputerMove: async (root, args) => {
+    getComputerMove: async (root, args, contex) => {
+      const currentUser = contex.currentUser 
       console.log('args', args)
       const fen = args.fen
       console.log('fen:',fen)
-      engine.postMessage(`position fen ${fen}`)
-      engine.postMessage(`go`)
-      const fenMove = await getbestmove()
+      const engine = engines.find(e => e.id == currentUser.id)
+      console.log(engine)
+      
+      engine.engine.postMessage(`position fen ${fen}`)
+      engine.engine.postMessage(`go`)
+      
+      const fenMove = await getbestmove(currentUser.id)
       const from = (8-parseInt(fenMove[1]))*8 + fenMove.charCodeAt(0) - 97
       const to = (8-parseInt(fenMove[3]))*8 + fenMove.charCodeAt(2) - 97
       const move = { from, to }
+      
       return move
     },
   },
@@ -410,6 +447,10 @@ const resolvers = {
     },
     userLoggedOut: {
       subscribe: () => pubsub.asyncIterator(['USER_LOGGED_OUT'])
+    },
+    messageAdded: {
+      subscribe: () => pubsub.asyncIterator(['MESSAGE_ADDED'])
+
     }
   }
 }
