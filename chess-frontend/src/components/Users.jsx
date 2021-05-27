@@ -1,13 +1,11 @@
-import { useApolloClient, useQuery, useSubscription } from '@apollo/client'
+import { useQuery } from '@apollo/client'
 import React from 'react'
 import { List } from 'semantic-ui-react'
 import { ALL_USERS } from '../graphql/queries'
-import { USER_LOGGED_IN, USER_LOGGED_OUT } from '../graphql/subscriptions'
 import User from './User'
 
 
 const Users = ({ challengeWaiting, setChallengeWaiting, me}) => {
-  const client = useApolloClient()
   const result = useQuery(ALL_USERS)
   //console.log('Users result',result)
   if (result.loading) return <div>loading users...</div>

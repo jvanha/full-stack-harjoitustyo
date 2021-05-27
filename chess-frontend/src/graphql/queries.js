@@ -11,8 +11,12 @@ export const ALL_USERS = gql`
 export const ALL_MESSAGES = gql`
   query allMessages {
     allMessages {
-      writer
+      id
+      writer {
+        username
+      }
       content
+      date
     }
   }
 `

@@ -21,6 +21,7 @@ export const LOGIN = gql`
   mutation login($username: String! $password: String!) {
     login(username: $username password: $password) {
       value
+      expiresIn
     }
   }
 `
@@ -87,10 +88,12 @@ export const MAKE_A_MOVE = gql`
 export const ADD_MESSAGE = gql`
   mutation addMessage($message: String!) {
     addMessage(message: $message) {
+      id
       writer {
         username
       }
       content
+      date
     }
   }
 `

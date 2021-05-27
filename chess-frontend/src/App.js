@@ -14,8 +14,8 @@ import MySideBar from './components/MySideBar'
 import RegistryModal from './components/RegistryModal'
 import UserDetails from './components/UserDetails'
 import { LOGOUT } from './graphql/mutations'
-import { ALL_USERS, ME } from './graphql/queries'
-import { USER_LOGGED_IN, USER_LOGGED_OUT } from './graphql/subscriptions'
+import { ALL_MESSAGES, ALL_USERS, ME } from './graphql/queries'
+import { MESSAGE_ADDED, USER_LOGGED_IN, USER_LOGGED_OUT } from './graphql/subscriptions'
 
 const App = () => {
   const history = useHistory()
@@ -31,6 +31,7 @@ const App = () => {
   
   const [getUser, meResult] = useLazyQuery(ME, { fetchPolicy: 'network-only' }) 
   const [ logout, logoutResult ] = useMutation(LOGOUT)
+  console.log('token',token)
 /*
   useEffect(() => {
     localStorage.clear()
@@ -38,21 +39,21 @@ const App = () => {
     client.resetStore()
   }, [])
 */
-/*
+
 useSubscription(MESSAGE_ADDED, {
   onSubscriptionData: ({ subscriptionData}) => {
     console.log('MESSAGE_ADDED subscriptionData',subscriptionData)
     const addedMessage = subscriptionData.data.messageAdded
     const messagesInStorage = client.readQuery({ query: ALL_MESSAGES })
-    if (!usersInStorage.allUsers.map(user => user.id).includes(loggedInUser.id)) {
+    if (!messagesInStorage.allMessages.map(message => message.id).includes(addedMessage.id)) {
       client.writeQuery({
-        query: ALL_USERS,
-        data: { allUsers: usersInStorage.allUsers.concat(loggedInUser)}
+        query: ALL_MESSAGES,
+        data: { allMessages: messagesInStorage.allMessages.concat(addedMessage)}
       })
     }
   }
 })
-*/
+
   useSubscription(USER_LOGGED_IN, {
     onSubscriptionData: ({ subscriptionData}) => {
       console.log('USER_LOGGED_IN subscriptionData',subscriptionData)
@@ -79,7 +80,14 @@ useSubscription(MESSAGE_ADDED, {
     }
   })
   useEffect(() => {
-    getUser()
+    if (token) {
+      console.log('token.expiresIn',token.expiresIn)
+      getUser()
+      setTimeout(() => {
+        logout()
+        setLoginModalOpen(true)
+      }, token.expiresIn*1000)
+    }
   },[token])
 
   useEffect(() => {

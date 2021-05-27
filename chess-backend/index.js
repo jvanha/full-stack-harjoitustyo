@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 const jwt = require('jsonwebtoken')
 const User = require('./models/user')
 const Game = require('./models/game')
+const Message = require('./models/message')
 const bcrypt = require('bcrypt')
 const stockfish = require('stockfish')
 
@@ -68,6 +69,7 @@ const typeDefs = gql`
   }
   type Token {
     value: String
+    expiresIn: Int
   }
   type Piece {
     pieceType: String!
@@ -78,8 +80,10 @@ const typeDefs = gql`
     piece: Piece
   }
   type Message {
+    id: String 
     writer: User!
-    content: String!
+    content: String
+    date: String
   }
   type Move {
     from: Int!
@@ -187,8 +191,11 @@ const resolvers = {
       console.log('context.currentUser',context.currentUser)
       return context.currentUser
     },
-    allMessages: () => {
-      return []
+    allMessages: async () => {
+      const messages = await Message.find({}).populate('writer')
+      console.log('messages', messages)
+      console.log()
+      return messages
     }
   },
   Mutation: {
@@ -253,7 +260,12 @@ const resolvers = {
         bestMove: null
       }
       bestMoves.push(bestMove)
-      return { value: jwt.sign(userForToken, JWT_SECRET)}
+      const token = { 
+        value: jwt.sign(userForToken, JWT_SECRET),
+        expiresIn: 60*60
+      }
+      console.log('token', token)
+      return token
     },
     logout: (root, args, context) => {
       const currentUser = context.currentUser
@@ -361,17 +373,26 @@ const resolvers = {
       console.log(args, 'resigned')
       return args.userId
     },
-    addMessage: (root, args, context) => {
-      const writer = context.currentUser
+    addMessage: async (root, args, context) => {
+      const writer = context.currentUser.id
       const content = args.message
+      const date = new Date
+      const message = new Message({
+        writer,
+        content,
+        date: date.toString()
+      })
+      
+      const savedMessage = await message.save()
+      const finalMessage = await Message.findById(savedMessage.id).populate('writer')
       const payload = {
-        messageAdded: { writer, content }
+        messageAdded: { finalMessage }
       }
-      console.log('addMessage')
+      console.log('savedMessage', savedMessage)
       console.log('payload', payload)
       console.log()
       pubsub.publish('MESSAGE_ADDED', payload)
-      return { writer, content }
+      return finalMessage
     },
     getComputerMove: async (root, args, contex) => {
       const currentUser = contex.currentUser 

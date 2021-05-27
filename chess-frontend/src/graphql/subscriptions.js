@@ -77,10 +77,12 @@ export const MOVE_MADE = gql`
 export const MESSAGE_ADDED = gql`
   subscription {
     messageAdded {
+      id
       writer {
         username
       }
       content
+      date
     }
   }
 `
