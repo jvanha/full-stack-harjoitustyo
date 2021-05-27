@@ -7,7 +7,6 @@ import { MESSAGE_ADDED } from '../graphql/subscriptions'
 const Chat = () => {
   const [ messages, setMessages ] = useState([])
   const [ message, setMessage ] = useState('')
-  console.log(message)
 
   useSubscription(MESSAGE_ADDED, {
     onSubscriptionData: ({ subscriptionData}) => {
