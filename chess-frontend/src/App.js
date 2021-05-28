@@ -10,7 +10,6 @@ import { Button, Divider, Header, Icon, Menu, Segment, Sidebar} from 'semantic-u
 import ChallengeForm from './components/ChallengeForm'
 import Game from './components/Game'
 import LoginModal from './components/LoginModal'
-import MySideBar from './components/MySideBar'
 import RegistryModal from './components/RegistryModal'
 import UserDetails from './components/UserDetails'
 import { LOGOUT } from './graphql/mutations'
@@ -31,8 +30,8 @@ const App = () => {
   
   const [getUser, meResult] = useLazyQuery(ME, { fetchPolicy: 'network-only' }) 
   const [ logout, logoutResult ] = useMutation(LOGOUT)
-  console.log('token',token)
-/*
+  
+  /*
   useEffect(() => {
     localStorage.clear()
     setToken(null)

@@ -5,7 +5,6 @@ import { ADD_MESSAGE } from '../graphql/mutations'
 import { ALL_MESSAGES } from '../graphql/queries'
 
 const Chat = () => {
-  const [ messages, setMessages ] = useState([])
   const [ message, setMessage ] = useState('')
   const client = useApolloClient()
   const allMessagesResult = useQuery(ALL_MESSAGES)

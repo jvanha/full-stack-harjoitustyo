@@ -6,11 +6,11 @@ import Users from './Users';
 import { ACCEPT_CHALLENGE, MAKE_A_MOVE, DECLINE_CHALLENGE, CREATE_GAME, RESIGN, GET_COMPUTER_MOVE } from './../graphql/mutations';
 import { CHALLENGE_ACCEPTED, CHALLENGE_CANCELLED, CHALLENGE_DECLINED, CHALLENGE_ISSUED, MOVE_MADE} from './../graphql/subscriptions';
 import { getAttackedSquares, isCheckMated, isDrawByInsufficientMaterial, isDrawByLackOflegalMoves, isInCheck } from './../utilFunctions'
-import { Button, Item, Label, Menu} from 'semantic-ui-react';
+import { Button, Label, Menu} from 'semantic-ui-react';
 import Chat from './Chat';
 import { deleteGameState, loadGameSettings, loadGameState, saveGameState } from '../localStorageService';
 import SettingsModal from './SettingsModal';
-import engine, { toFen } from '../engine';
+import { toFen } from '../fen';
 
 let squares = Array(64)//[...Array(64).keys()]
 let emptyBoard = Array(64)

@@ -192,10 +192,8 @@ const resolvers = {
       return context.currentUser
     },
     allMessages: async () => {
-      const messages = await Message.find({}).populate('writer')
-      console.log('messages', messages)
-      console.log()
-      return messages
+      const messages = await Message.find().sort({_id:-1}).limit(10).populate('writer')
+      return messages.reverse()
     }
   },
   Mutation: {
