@@ -20,6 +20,8 @@ const App = () => {
   const history = useHistory()
   const [loginModalOpen, setLoginModalOpen] = useState(false)
   const [registryModalOpen, setRegistryModalOpen] = useState(false)
+  const [ clockRunning, setClockRunning] = useState(false)
+  const [ opponentsClock, setOpponentsClock ] = useState(10)
 
   const [token, setToken] = useState(null)
   const [user, setUser] = useState(null)
