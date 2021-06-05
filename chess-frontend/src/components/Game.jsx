@@ -80,7 +80,15 @@ testBoard[14] = [14, { type: 'Q', color: 'white' }]
 const Game = ({ user }) => {
   
   const [ game, setGame ] = useState({
-    board: initBoard,
+    board: emptyBoard,
+    playerToMove: null,
+    shortCastleWhite: true,
+    shortCastleBlack: true,
+    longCastleWhite: true,
+    longCastleBlack: true,
+    enPassant: null,
+    clock: 0,
+    opponentsClock: 0,
   })
   const [ activeMenuItem, setActiveMenuItem ] = useState("players")
   const [ board, setBoard ] = useState(emptyBoard)
@@ -99,12 +107,12 @@ const Game = ({ user }) => {
   const [ clockRunning, setClockRunning] = useState(false)
   const [ opponentsClock, setOpponentsClock ] = useState(10)
   const [ opponentsClockRunning, setOpponentsClockRunning] = useState(false)
-  
+  const [ moves, setMoves] = useState([])
 
   const [ settingsModalOpen, setSettingsModalOpen ] = useState(false)
   const [ gameSettings, setGameSettings ] = useState({ autoQueen: false, showLegalMoves: false}) 
   const [ moveMade, setMoveMade ] = useState(null)
-  const [ nextComputerMove, setNextComputerMove ] = useState(null)
+
   const [ acceptChallenge, acceptChallengeResult ] = useMutation(ACCEPT_CHALLENGE)
   const [ declineChallenge, declineChallengeResult ] = useMutation(DECLINE_CHALLENGE)
   const [ makeAMove, makeAMoveResult ] = useMutation(MAKE_A_MOVE)
@@ -118,13 +126,14 @@ const Game = ({ user }) => {
       console.log('CHALLENGE ISSUED',subscriptionData)
       const challenger = subscriptionData.data.challengeIssued.opponents.challenger
       const timeControl = subscriptionData.data.challengeIssued.timeControl
+      const color = subscriptionData.data.challengeIssued.color
       const message = timeControl%60 
-        ? `You have been challenged for ${timeControl} second game by ${challenger.username}. Accept the challenge?`
-        : `You have been challenged for ${timeControl/60} minute game by ${challenger.username}. Accept the challenge?`
+        ? `You have been challenged for ${timeControl} second game by ${challenger.username} as ${color==='white' ? 'black' : 'white'}. Accept the challenge?`
+        : `You have been challenged for ${timeControl/60} minute game by ${challenger.username} as ${color==='white' ? 'black' : 'white'}. Accept the challenge?`
       console.log('challenger',challenger)
       if (window.confirm(message)) {
         console.log('challenger', challenger)
-        acceptChallenge({ variables: { username: challenger.username, id: challenger.id, timeControl }})
+        acceptChallenge({ variables: { username: challenger.username, id: challenger.id, timeControl, color }})
       } else {
         declineChallenge({ variables: { username: challenger.username, id: challenger.id }})
         console.log('YOU DECLINED THE CHALLENGE')
@@ -154,7 +163,7 @@ const Game = ({ user }) => {
         setOpponent(challenge.opponents.challenged)
         //setBoard(testBoard)
         setBoard(initBoard)
-        setMyColor('black')
+        setMyColor(challenge.color)
         setPlayerToMove('white')
       }
     }
@@ -177,13 +186,14 @@ const Game = ({ user }) => {
         const blackId = myColor === 'black' ? user.id : opponent.id
         const winner = myColor
         //only the winner creates a new game
-        createGame({ variables: { whiteId, blackId, winner } })
+        createGame({ variables: { input: { whiteId, blackId, winner, moves} }})
         alert('You won by timeout')
         setClockRunning(false)
         setPlayerToMove(null)
         deleteGameState()
 
       } else {
+        setMoves(moves.concat(move))
         setMoveMade(move)
         setClockRunning(true)
       }
@@ -200,8 +210,8 @@ const Game = ({ user }) => {
       console.log('gameState.board', gameState.board)
       setBoard(gameState.board)
       setMyColor(gameState.myColor)
-      setClock(gameState.clock)
-      setOpponentsClock(gameState.opponentsClock)
+      gameState.clockRunning ? setClock(gameState.clock-Math.floor((Date.now()-gameState.timeStamp) / 1000)) : setClock(gameState.clock)
+      gameState.opponentsClockRunning ? setOpponentsClock(gameState.opponentsClock-Math.floor((Date.now()-gameState.timeStamp) / 1000)) : setOpponentsClock(gameState.opponentsClock)
       setPlayerToMove(gameState.playerToMove)
       setOpponent(gameState.opponent)
       setLongCastleBlack(gameState.longCastleBlack)
@@ -220,6 +230,7 @@ const Game = ({ user }) => {
     }
     console.log('gameSettings', gameSettings)
   },[])
+  
   useEffect(() => {
     if (acceptChallengeResult.called && !acceptChallengeResult.loading) {
       //POTENTTIAALISESTI VÄÄRIN
@@ -228,7 +239,7 @@ const Game = ({ user }) => {
       setOpponent(challenge.opponents.challenger)
       setBoard(initBoard)
       //setBoard(testBoard)
-      setMyColor('white')
+      setMyColor(challenge.color==='white' ? 'black' : 'white')
       setClock(challenge.timeControl)
       setOpponentsClock(challenge.timeControl)
       setClockRunning(true)
@@ -294,7 +305,7 @@ const Game = ({ user }) => {
           const winner = myColor
           //only the winner creates a new game
           if (opponent.id !== 'computer') {
-            createGame({ variables: { whiteId, blackId, winner } })
+            createGame({ variables: { whiteId, blackId, winner, moves} })
           }
           alert('You won')
           setPlayerToMove(null)
@@ -316,7 +327,8 @@ const Game = ({ user }) => {
           enPassant,
           board,
           clockRunning,
-          opponentsClockRunning
+          opponentsClockRunning,
+          timeStamp: Date.now(),
         }
         
         saveGameState(gameState)
@@ -343,6 +355,7 @@ const Game = ({ user }) => {
       console.log('move', move)
       if (opponent && opponent.id === 'computer' && playerToMove === 'white') {
         setMoveMade({ ...move, promotion: 'Q'})
+        setOpponentsClockRunning(false)
         setClockRunning(true)
       }
     }
@@ -353,6 +366,7 @@ const Game = ({ user }) => {
       return
     }
     makeAMove({ variables: { userId: user.id, from, to, time: clock, promotion}})
+    setMoves(moves.concat({from, to, time: clock, promotion}))
   }
   
 
@@ -460,6 +474,7 @@ const Game = ({ user }) => {
       
       
     //YLIMÄäRäINEN?
+    /*
     if (myColor==='white') {
       if (isCheckMated('black', board, enPassant)) {
         createGame({
@@ -470,7 +485,7 @@ const Game = ({ user }) => {
           }})
       }
     }
-    
+    */
   }
   
   const handleShow = (color) => {

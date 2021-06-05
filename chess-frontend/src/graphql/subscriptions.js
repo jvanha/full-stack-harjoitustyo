@@ -26,6 +26,7 @@ export const CHALLENGE_ISSUED = gql`
         }
       }
       timeControl
+      color
     }
   }
 `
@@ -49,6 +50,7 @@ export const CHALLENGE_ACCEPTED = gql`
         }
       }
       timeControl
+      color
     }
   }
 `

@@ -66,6 +66,7 @@ const typeDefs = gql`
   type Challenge {
     opponents: Opponents!
     timeControl: Int!
+    color: String!
   }
   type Token {
     value: String
@@ -99,7 +100,10 @@ const typeDefs = gql`
     blackId: String!
     whiteId: String!
     winner: String!
+    moves: [Move]
   }
+
+  
 
   type Query {
     me: User
@@ -137,12 +141,14 @@ const typeDefs = gql`
       username: String!
       id: String!
       timeControl: Int
+      color: String
     ): Challenge!
     
     acceptChallenge(
       username: String!
       id: String!
       timeControl: Int
+      color: String
     ): Challenge!
     
     cancelChallenge(
@@ -159,11 +165,7 @@ const typeDefs = gql`
       message: String
     ): Message!
 
-    createGame(
-      whiteId: String!
-      blackId: String!
-      winner: String!
-    ): Game!
+    createGame(input: CreateGameInput): Game
     getComputerMove(fen: String): Move
   }
 
@@ -176,6 +178,19 @@ const typeDefs = gql`
     challengeAccepted(playerId: String): Challenge
     challengeDeclined(playerId: String): Opponents
     messageAdded: Message
+  }
+
+  input CreateGameInput {
+    whiteId: String!
+    blackId: String!
+    winner: String!
+    moves: [MoveInput]!
+  }
+  input MoveInput {
+    from: Int
+    to: Int
+    time: Int
+    promotion: String
   }
 
 `
@@ -209,11 +224,12 @@ const resolvers = {
     },
     createGame: async (root, args) => {
       console.log('createUser args', args)
-      const white = await User.findById(args.whiteId)
-      const black = await User.findById(args.blackId)
-      //console.log('black', black)
-      //console.log('white', white)
-      const game = new Game({ ...args })
+  
+      const white = await User.findById(args.input.whiteId)
+      const black = await User.findById(args.input.blackId)
+      console.log('black', black)
+      console.log('white', white)
+      const game = new Game({ ...args.input })
       console.log('white.games', white.games)
       white.games = white.games.concat(game._id)
       await white.save()
@@ -293,13 +309,14 @@ const resolvers = {
         username: currentUser.username,
         id: currentUser.id,
       }
-      const { username, id, timeControl } = args;
+      const { username, id, timeControl, color } = args;
       const challenge = {
         opponents: { 
           challenger,
           challenged: { username, id },
         },
         timeControl,
+        color,
       }
       const payload = { challengeIssued: { ...challenge } }
       pubsub.publish('CHALLENGE_ISSUED', payload)
@@ -330,13 +347,14 @@ const resolvers = {
         username: currentUser.username,
         id: currentUser.id,
       }
-      const { username, id, timeControl } = args;
+      const { username, id, timeControl, color } = args;
       const challenge = {
         opponents: { 
           challenger: { username, id },
           challenged,
         },
         timeControl,
+        color,
       }
       const payload = { challengeAccepted: {...challenge } }
       console.log('payload', payload)

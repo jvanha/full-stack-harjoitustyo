@@ -4,7 +4,7 @@ import ChallengeForm from './ChallengeForm'
 
 const ChallengeModal = ({ opponent, close, modalOpen, setChallengeWaiting }) => {
   return (
-    <Modal closeIcon open={modalOpen} onClose={close}>
+    <Modal size='tiny' closeIcon open={modalOpen} onClose={close}>
       <Modal.Header>Challenge {opponent.username}</Modal.Header>
       <Modal.Content>
         <ChallengeForm 

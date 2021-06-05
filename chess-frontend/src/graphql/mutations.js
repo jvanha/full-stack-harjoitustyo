@@ -9,14 +9,15 @@ export const CREATE_USER = gql`
   }
 `
 export const CREATE_GAME = gql`
-  mutation createGame($whiteId: String! $blackId: String! $winner: String!) {
-    createGame(whiteId: $whiteId blackId: $blackId winner: $winner) {
+  mutation createGame($input: CreateGameInput) {
+    createGame(input: $input) 
+  }
+`
+/*{
       whiteId
       blackId
       winner
-    }
-  }
-`
+    }*/
 export const LOGIN = gql`
   mutation login($username: String! $password: String!) {
     login(username: $username password: $password) {
@@ -34,8 +35,8 @@ export const LOGOUT = gql`
   }
 `
 export const CHALLENGE = gql`
-  mutation challenge($id: String! $username: String! $timeControl: Int) {
-    challenge(id: $id username: $username timeControl: $timeControl) {
+  mutation challenge($id: String! $username: String! $timeControl: Int $color: String) {
+    challenge(id: $id username: $username timeControl: $timeControl color: $color) {
       opponents {
         challenged {
           username
@@ -54,8 +55,8 @@ export const CANCEL_CHALLENGE = gql`
   }
 `
 export const ACCEPT_CHALLENGE = gql`
-  mutation acceptChallenge($id: String! $username: String! $timeControl: Int) {
-    acceptChallenge(id: $id username: $username timeControl: $timeControl) {
+  mutation acceptChallenge($id: String! $username: String! $timeControl: Int $color: String) {
+    acceptChallenge(id: $id username: $username timeControl: $timeControl color: $color) {
       opponents {
         challenger {
           username
@@ -63,6 +64,7 @@ export const ACCEPT_CHALLENGE = gql`
         }
       }
       timeControl
+      color
     }
   }
 `

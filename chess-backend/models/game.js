@@ -12,6 +12,10 @@ const schema = new mongoose.Schema({
   winner: {
     type: String,
     required: true,
+  },
+  moves: {
+    type: Array,
+    default: []
   }
 })
 

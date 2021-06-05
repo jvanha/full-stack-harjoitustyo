@@ -114,6 +114,7 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myC
     }
     
   },[props.moveMade])
+  
   const handleSelection = (square) => {
     if (myColor !== playerToMove) return
     const index = square[0]
