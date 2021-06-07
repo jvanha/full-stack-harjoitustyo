@@ -180,12 +180,13 @@ const Game = ({ user }) => {
     variables: { opponentId: opponent ? opponent.id : ''},
     onSubscriptionData: ({ subscriptionData }) => {
       console.log('MOVE MADE', subscriptionData)
-      const move = subscriptionData.data.moveMade.move
-      if (move.time === 0) {
+      const {from, to, time, promotion } = subscriptionData.data.moveMade.move
+      if (time === 0) {
         const whiteId = myColor === 'white' ? user.id : opponent.id
         const blackId = myColor === 'black' ? user.id : opponent.id
         const winner = myColor
         //only the winner creates a new game
+        console.log('moves',moves)
         createGame({ variables: { input: { whiteId, blackId, winner, moves} }})
         alert('You won by timeout')
         setClockRunning(false)
@@ -193,12 +194,12 @@ const Game = ({ user }) => {
         deleteGameState()
 
       } else {
-        setMoves(moves.concat(move))
-        setMoveMade(move)
+        setMoves(moves.concat({from, to, time, promotion}))
+        setMoveMade({from, to, time, promotion})
         setClockRunning(true)
       }
       setOpponentsClockRunning(false)
-      setOpponentsClock(move.time)
+      setOpponentsClock(time)
     } 
   })
   
@@ -305,7 +306,8 @@ const Game = ({ user }) => {
           const winner = myColor
           //only the winner creates a new game
           if (opponent.id !== 'computer') {
-            createGame({ variables: { whiteId, blackId, winner, moves} })
+            console.log('moves',moves)
+            createGame({ variables: { input: { whiteId, blackId, winner, moves} }})
           }
           alert('You won')
           setPlayerToMove(null)

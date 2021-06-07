@@ -49,7 +49,7 @@ useSubscription(MESSAGE_ADDED, {
     }
   }
 })
-
+  
   useSubscription(USER_LOGGED_IN, {
     onSubscriptionData: ({ subscriptionData}) => {
       console.log('USER_LOGGED_IN subscriptionData',subscriptionData)
@@ -102,12 +102,12 @@ useSubscription(MESSAGE_ADDED, {
   }, [logoutResult.data])
 
   useEffect(() => {
-    //console.log('meResult changed', meResult.data)
+    console.log('meResult changed', meResult.data)
     if (meResult.data && meResult.data.me) {
       //console.log('meResult.data.me',meResult.data.me)
       const itsme = meResult.data.me
       //console.log({ id: itsme.id, username: itsme.username })
-      setUser({ id: itsme.id, username: itsme.username })
+      setUser(itsme)
       //console.log('user', user)
       
     }

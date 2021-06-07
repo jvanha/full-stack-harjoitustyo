@@ -6,6 +6,8 @@ const Game = require('./models/game')
 const Message = require('./models/message')
 const bcrypt = require('bcrypt')
 const stockfish = require('stockfish')
+const game = require('./models/game')
+const user = require('./models/user')
 
 const pubsub = new PubSub()
 let usersLoggedIn = []
@@ -58,6 +60,7 @@ const typeDefs = gql`
     username: String!
     id: ID!
     registrationDate: String
+    games: [Game]
   }
   type Opponents {
     challenger: User!
@@ -97,6 +100,7 @@ const typeDefs = gql`
     move: Move!
   }
   type Game {
+    id: ID!
     blackId: String!
     whiteId: String!
     winner: String!
@@ -109,6 +113,8 @@ const typeDefs = gql`
     me: User
     allUsers: [User]
     allMessages: [Message]
+    game(id: String!): Game
+    user(id: String!): User
     
   }
   
@@ -209,6 +215,16 @@ const resolvers = {
     allMessages: async () => {
       const messages = await Message.find().sort({_id:-1}).limit(10).populate('writer')
       return messages.reverse()
+    },
+    game: async (root, args) => {
+      const id = args.id
+      return game.findById(id)
+    },
+    user: async (root, args) => {
+      const id = args.id
+      const u = await user.findById(id).populate('games')
+      console.log('user',u)
+      return u
     }
   },
   Mutation: {
@@ -502,16 +518,17 @@ const server = new ApolloServer({
       const decodedToken = jwt.verify(
         auth.substring(7), JWT_SECRET
       )
-      const currentUser = await User.findById(decodedToken.id)
-      //console.log('currentUser',currentUser)
+      const currentUser = await User.findById(decodedToken.id).populate('games')
+      console.log('currentUser',currentUser)
       return { 
         currentUser: {
           username: currentUser.username,
-          id: currentUser._id.toString()
+          id: currentUser._id.toString(),
+          games: currentUser.games
         }
       }
     }
-  }
+  },
 })
 
 server.listen().then(({ url, subscriptionsUrl }) => {

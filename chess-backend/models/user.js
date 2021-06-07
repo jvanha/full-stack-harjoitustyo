@@ -12,7 +12,7 @@ const schema = new mongoose.Schema({
   games: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Game'
+      ref: 'Game',
     }
   ] 
 })

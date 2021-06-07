@@ -10,14 +10,14 @@ export const CREATE_USER = gql`
 `
 export const CREATE_GAME = gql`
   mutation createGame($input: CreateGameInput) {
-    createGame(input: $input) 
-  }
-`
-/*{
+    createGame(input: $input) {
       whiteId
       blackId
       winner
-    }*/
+    }
+  }
+`
+
 export const LOGIN = gql`
   mutation login($username: String! $password: String!) {
     login(username: $username password: $password) {
