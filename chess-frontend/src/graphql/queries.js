@@ -28,7 +28,11 @@ export const ME = gql`
       id
       games {
         id
+        black {username}
+        white {username}
         winner
+        moves {from to}
+        date
       }
     }
   }

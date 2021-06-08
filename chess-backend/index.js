@@ -101,10 +101,11 @@ const typeDefs = gql`
   }
   type Game {
     id: ID!
-    blackId: String!
-    whiteId: String!
+    black: User!
+    white: User!
     winner: String!
     moves: [Move]
+    date: String
   }
 
   
@@ -222,7 +223,10 @@ const resolvers = {
     },
     user: async (root, args) => {
       const id = args.id
-      const u = await user.findById(id).populate('games')
+      const u = await user.findById(id).populate({
+        path: 'games',
+        populate: ['black', 'white']
+      })
       console.log('user',u)
       return u
     }
@@ -239,21 +243,32 @@ const resolvers = {
       return user.save()
     },
     createGame: async (root, args) => {
-      console.log('createUser args', args)
-  
-      const white = await User.findById(args.input.whiteId)
-      const black = await User.findById(args.input.blackId)
+      console.log('createGame args', args)
+      const { blackId, whiteId, winner, moves } = args.input
+      const white = await User.findById(whiteId)
+      const black = await User.findById(blackId)
       console.log('black', black)
       console.log('white', white)
-      const game = new Game({ ...args.input })
+      const date = new Date
+      const newGame = {
+        black: blackId,
+        white: whiteId,
+        winner,
+        moves,
+        date: date.toDateString()
+      }
+      console.log('newGame', newGame)
+      const game = new Game({ ...newGame })
+      console.log('game', game)
       console.log('white.games', white.games)
       white.games = white.games.concat(game._id)
       await white.save()
       console.log('black.games', black.games)
       black.games = black.games.concat(game._id)
       await black.save()
-
-      return game.save()
+      const savedGame = await game.save()
+      console.log('savedGame', savedGame)
+      return savedGame
     },
     login: async (root, args) => {
       const { username, password } = args
@@ -518,7 +533,12 @@ const server = new ApolloServer({
       const decodedToken = jwt.verify(
         auth.substring(7), JWT_SECRET
       )
-      const currentUser = await User.findById(decodedToken.id).populate('games')
+      const currentUser = await User
+        .findById(decodedToken.id)
+        .populate({
+          path: 'games',
+          populate: ['black', 'white']
+        })
       console.log('currentUser',currentUser)
       return { 
         currentUser: {

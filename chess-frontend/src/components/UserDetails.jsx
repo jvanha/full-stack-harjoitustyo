@@ -1,5 +1,5 @@
 import React from 'react'
-import { Container, Header, List } from 'semantic-ui-react'
+import { Container, Header, List, Table } from 'semantic-ui-react'
 
 const UserDetails = ({ user }) => {
   console.log(user)
@@ -8,20 +8,26 @@ const UserDetails = ({ user }) => {
     <Container>
       <Header>{user.username}</Header>
       <p>{user.id}</p>
-      <List>
-        <List.Header>
-          My Games
-        </List.Header>
-        {user.games ?
-        user.games.map(game => (
-          <List.Item key={game.id}>
-            {game.winner}  
-          </List.Item>
-        ))
-        :
-        <div>no games</div>
-        }
-      </List>
+      <Table selectable compact >
+        <Table.Header>
+          <Table.Row>
+            <Table.HeaderCell>Players</Table.HeaderCell>
+            <Table.HeaderCell>Result</Table.HeaderCell>
+            <Table.HeaderCell>Moves</Table.HeaderCell>
+            <Table.HeaderCell>Date</Table.HeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {user.games.map(game => (
+            <Table.Row key={game.id} onClick={()=>console.log('click!')}>
+              <Table.Cell><div>{game.white.username}</div><div>{game.black.username}</div></Table.Cell>
+              <Table.Cell><div>{game.winner==='white'?1:0}</div><div>{game.winner==='black'?1:0}</div></Table.Cell>
+              <Table.Cell>{game.moves.length}</Table.Cell>
+              <Table.Cell>{game.date}</Table.Cell>
+            </Table.Row>
+          ))}
+        </Table.Body>
+      </Table>
     </Container>
     </div>
   ) 
