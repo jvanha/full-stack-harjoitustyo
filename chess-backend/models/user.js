@@ -14,7 +14,7 @@ const schema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Game',
     }
-  ] 
+  ],
 })
 
 module.exports = mongoose.model('User', schema)

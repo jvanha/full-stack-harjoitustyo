@@ -1,5 +1,5 @@
 import React from 'react'
-import { Container, Header, List, Table } from 'semantic-ui-react'
+import { Button, Container, Header, List, Table } from 'semantic-ui-react'
 
 const UserDetails = ({ user }) => {
   console.log(user)
@@ -10,6 +10,7 @@ const UserDetails = ({ user }) => {
       <p>{user.id}</p>
       <Table selectable compact >
         <Table.Header>
+          My Games
           <Table.Row>
             <Table.HeaderCell>Players</Table.HeaderCell>
             <Table.HeaderCell>Result</Table.HeaderCell>
