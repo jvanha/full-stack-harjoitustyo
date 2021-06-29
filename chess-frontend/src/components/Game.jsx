@@ -11,6 +11,7 @@ import Chat from './Chat';
 import { deleteGameState, loadGameSettings, loadGameState, saveGameState } from '../localStorageService';
 import SettingsModal from './SettingsModal';
 import { toFen } from '../fen';
+import { ME } from '../graphql/queries';
 
 let squares = Array(64)//[...Array(64).keys()]
 let emptyBoard = Array(64)
@@ -116,7 +117,9 @@ const Game = ({ user }) => {
   const [ acceptChallenge, acceptChallengeResult ] = useMutation(ACCEPT_CHALLENGE)
   const [ declineChallenge, declineChallengeResult ] = useMutation(DECLINE_CHALLENGE)
   const [ makeAMove, makeAMoveResult ] = useMutation(MAKE_A_MOVE)
-  const [ createGame, createGameResult ] = useMutation(CREATE_GAME)
+  const [ createGame, createGameResult ] = useMutation(CREATE_GAME, {
+    refetchQueries: [  {query: ME} ],
+  })
   const [ resign ] = useMutation(RESIGN)
   const [ getComputerMove, getComputerMoveResult ] = useMutation(GET_COMPUTER_MOVE)
   

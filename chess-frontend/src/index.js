@@ -8,8 +8,8 @@ import { WebSocketLink } from '@apollo/client/link/ws'
 import { getMainDefinition } from '@apollo/client/utilities';
 import { setContext } from 'apollo-link-context'
 import 'semantic-ui-css/semantic.min.css'
-import { BrowserRouter, Router, useHistory } from 'react-router-dom';
-//var stockfish =  require('stockfish')
+import { BrowserRouter } from 'react-router-dom';
+
 
 const authLink = setContext((_, { headers }) => {
   const token = localStorage.getItem('chess-user-token')

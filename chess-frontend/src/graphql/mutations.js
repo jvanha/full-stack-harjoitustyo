@@ -11,8 +11,6 @@ export const CREATE_USER = gql`
 export const CREATE_GAME = gql`
   mutation createGame($input: CreateGameInput) {
     createGame(input: $input) {
-      whiteId
-      blackId
       winner
     }
   }

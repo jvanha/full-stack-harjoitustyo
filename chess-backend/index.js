@@ -107,9 +107,7 @@ const typeDefs = gql`
     moves: [Move]
     date: String
   }
-
   
-
   type Query {
     me: User
     allUsers: [User]
@@ -119,7 +117,6 @@ const typeDefs = gql`
     
   }
   
-
   type Mutation {
     createUser(
       username: String!
@@ -456,6 +453,7 @@ const resolvers = {
       const from = (8-parseInt(fenMove[1]))*8 + fenMove.charCodeAt(0) - 97
       const to = (8-parseInt(fenMove[3]))*8 + fenMove.charCodeAt(2) - 97
       const move = { from, to }
+      
       
       return move
     },
