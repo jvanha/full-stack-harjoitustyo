@@ -22,16 +22,16 @@ const authLink = setContext((_, { headers }) => {
   }
 })
 const wsLink = new WebSocketLink({
-  //uri: 'ws://localhost:4000/graphql',
-  uri: 'ws://pure-eyrie-91692.herokuapp.com/graphql',
+  uri: 'ws://localhost:4000/graphql',
+  //uri: 'ws://pure-eyrie-91692.herokuapp.com/graphql',
   options: {
     reconnect: true
   }
 })
 
 const httpLink = new HttpLink({
-  //uri: 'http://localhost:4000',
-  uri: 'https://pure-eyrie-91692.herokuapp.com/',
+  uri: 'http://localhost:4000',
+  //uri: 'https://pure-eyrie-91692.herokuapp.com/',
 })
 
 const splitLink = split(({query}) => {
