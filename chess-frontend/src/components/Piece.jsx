@@ -9,8 +9,8 @@ const testPieceStyle = {
   borderColor: 'blue',
   borderStyle: 'solid',
 }
-const draggedPieceStyle = {
-
+const draggingStyle = {
+  visibility:'hidden'
 }
 const pieceStyle = {
   display: 'flex',
@@ -26,7 +26,7 @@ const imgStyle = {
   height: '90%',
   width: '90%',
 }
-const Piece = ({ piece, moving, reversedBoard }) => {
+const Piece = ({ piece, moving, reversedBoard, handleDragStart, position, dragging }) => {
   if (moving) console.log('moving', moving)
   //const src = piece.color + piece.type + '.png'
   /*
@@ -53,10 +53,11 @@ const Piece = ({ piece, moving, reversedBoard }) => {
     y = -y
     x = -x
   }
- 
   return (
-    <div 
-      style={{ ...pieceStyle,transform: `translate(${x}px, ${y}px)` }}
+     <div
+      draggable
+      onDragStart={(e) => handleDragStart(e,position)} 
+      style={dragging === position ? draggingStyle : { ...pieceStyle,transform: `translate(${x}px, ${y}px)`}}
       >
       <img style={imgStyle} src={`${piece.color}${piece.type}.png`} alt='' />
     </div>
@@ -64,3 +65,5 @@ const Piece = ({ piece, moving, reversedBoard }) => {
 }
 
 export default Piece
+
+//, visibility: dragging === position?'hidden':'visible'

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { useEffect } from 'react'
 import { useState } from 'react'
 import { legalMoves } from '../utilFunctions'
@@ -31,7 +31,10 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myC
   const [ tempSquare, setTempSquare ] = useState(null)
   const [ promotion, setPromotion ] = useState(null)
   const [ movingPiece, setMovingPiece ] = useState(null)
-
+  const [ dragging, setDragging ] = useState(null)
+  
+  const dragObject = useRef()
+  
   useEffect(() => {
     if (playerToMove === 'white') {
       setValidMoves(legalMoves(selectedSquare, board, props.longCastleWhite, props.shortCastleWhite, enPassant))
@@ -104,6 +107,29 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myC
       
   }
   
+  const handleDragStart = (event, position) => {
+    console.log(event)
+    console.log(position)
+    dragObject.current = event.target
+    dragObject.current.addEventListener('dragend', handleDragEnd)
+    setTimeout(() => {
+      setDragging(position)
+    },0)
+    
+    handleSelection(board[position])
+  }
+  const handleDragEnter = (event, position) => {
+
+  }
+  const handleDragEnd = () => {
+    console.log('drag end')
+    dragObject.current.removeEventListener('dragend', handleDragEnd)
+    setDragging(null)
+    setSelectedSquare(null)
+  }
+  const handleDrop = (event, position) => {
+    handleSelection(board[position])
+  } 
   
   return (
     <div style={myColor === "black" ? boardStyleReversed : boardStyle}>
@@ -118,6 +144,10 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myC
           settings={gameSettings}
           movingPiece={movingPiece}
           reversed={myColor === 'black'}
+          handleDragStart = {handleDragStart}
+          dragging={dragging}
+          handleDragEnter={handleDragEnter}
+          handleDrop={handleDrop}
         />   
       ))}
       <PromotionPortal 

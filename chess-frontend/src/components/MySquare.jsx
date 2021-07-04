@@ -10,7 +10,20 @@ const squareStyle = {
 }
 
 
-const MySquare = ({ content, handleSelection, selectedSquare, validMoves, attackedSquares, settings, movingPiece, reversed }) => {
+const MySquare = ({
+  content,
+  handleSelection,
+  selectedSquare,
+  validMoves,
+  attackedSquares,
+  settings,
+  movingPiece,
+  reversed,
+  handleDragStart,
+  handleDragEnter,
+  handleDrop,
+  dragging }) => {
+    
   const index = content[0]
   let color = ((index + Math.floor(index/8))%2)===0 ? '#f58a42' : '#52170d'
 
@@ -29,12 +42,18 @@ const MySquare = ({ content, handleSelection, selectedSquare, validMoves, attack
       id={index}
       style={{ ...squareStyle, backgroundColor: color}} 
       onClick={() => handleSelection(content)}
+      onDragEnter={(e) => handleDragEnter(e, content[0])}
+      onDrop={(e) => handleDrop(e, content[0])}
     >
       {content[1] &&
-        <Piece 
-          piece={content[1]} 
+        <Piece
+          draggable
+          piece={content[1]}
+          position={content[0]}
           moving={(movingPiece && content[0] === movingPiece.from) ? movingPiece : null}
           reversedBoard={reversed}
+          handleDragStart={handleDragStart}
+          dragging={dragging}
         />}
       
     </div>
