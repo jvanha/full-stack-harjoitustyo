@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { Button, Checkbox, Modal } from 'semantic-ui-react'
+import React from 'react'
+import { Modal } from 'semantic-ui-react'
 import Settings from './Settings'
 
 const SettingsModal = ({ close, modalOpen, settings, setSettings }) => {

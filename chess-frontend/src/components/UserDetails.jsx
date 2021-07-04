@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button, Container, Header, List, Table } from 'semantic-ui-react'
+import { Container, Header, Table } from 'semantic-ui-react'
 
 const UserDetails = ({ user }) => {
   console.log(user)

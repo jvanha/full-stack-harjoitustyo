@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Checkbox, Form, Segment } from 'semantic-ui-react'
+import { Button, Checkbox, Form } from 'semantic-ui-react'
 import { saveGameSettings } from '../localStorageService'
 
 const Settings = ({settings, close, setSettings}) => {

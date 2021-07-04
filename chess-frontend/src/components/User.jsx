@@ -1,7 +1,7 @@
 import { useMutation } from '@apollo/client'
 import React, { useEffect, useState } from 'react'
 import { Button, List } from 'semantic-ui-react'
-import { CHALLENGE, CANCEL_CHALLENGE } from '../graphql/mutations'
+import { CANCEL_CHALLENGE } from '../graphql/mutations'
 import ChallengeModal from './ChallengeModal'
 
 const User = ({ user, me, challengeWaiting, setChallengeWaiting }) => {
