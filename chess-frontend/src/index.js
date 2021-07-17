@@ -11,6 +11,8 @@ import 'semantic-ui-css/semantic.min.css'
 import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux'
 import { createStore} from 'redux'
+import gameReducer from './reducers/gameReducer';
+
 
 
 const authLink = setContext((_, { headers }) => {
@@ -49,12 +51,16 @@ const client = new ApolloClient({
   link: splitLink
 })
 
+const store = createStore(gameReducer);
+
 
 ReactDOM.render(
   <ApolloProvider client={client}>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <Provider store={store}>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </Provider>
   </ApolloProvider>,
   document.getElementById('root')
 );

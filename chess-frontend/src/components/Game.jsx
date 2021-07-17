@@ -12,6 +12,8 @@ import { deleteGameState, loadGameSettings, loadGameState, saveGameState } from 
 import SettingsModal from './SettingsModal';
 import { toFen } from '../fen';
 import { ME } from '../graphql/queries';
+import { useDispatch } from 'react-redux';
+import { setGameState } from '../reducers/gameReducer';
 
 let squares = Array(64)//[...Array(64).keys()]
 let emptyBoard = Array(64)
@@ -79,7 +81,8 @@ testBoard[11] = [11, { type: 'P', color: 'white' }]
 testBoard[14] = [14, { type: 'Q', color: 'white' }]
 
 const Game = ({ user }) => {
-  
+  const dispatch = useDispatch()
+  /*
   const [ game, setGame ] = useState({
     board: emptyBoard,
     playerToMove: null,
@@ -90,7 +93,7 @@ const Game = ({ user }) => {
     enPassant: null,
     clock: 0,
     opponentsClock: 0,
-  })
+  })*/
   const [ activeMenuItem, setActiveMenuItem ] = useState("players")
   const [ board, setBoard ] = useState(emptyBoard)
   const [ attackedSquares, setAttackedSquares ] = useState(null)
@@ -335,7 +338,7 @@ const Game = ({ user }) => {
           opponentsClockRunning,
           timeStamp: Date.now(),
         }
-        
+        dispatch(setGameState(gameState))
         saveGameState(gameState)
       }
     }
