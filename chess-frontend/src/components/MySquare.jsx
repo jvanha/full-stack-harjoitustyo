@@ -23,7 +23,7 @@ const MySquare = ({
   handleDragEnter,
   handleDrop,
   dragging }) => {
-    
+
   const index = content[0]
   let color = ((index + Math.floor(index/8))%2)===0 ? '#f58a42' : '#52170d'
 
@@ -44,6 +44,7 @@ const MySquare = ({
       onClick={() => handleSelection(content)}
       onDragEnter={(e) => handleDragEnter(e, content[0])}
       onDrop={(e) => handleDrop(e, content[0])}
+      onDragOver={(e) => {e.preventDefault()}}
     >
       {content[1] &&
         <Piece
