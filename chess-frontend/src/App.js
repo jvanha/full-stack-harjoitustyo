@@ -75,6 +75,7 @@ useSubscription(MESSAGE_ADDED, {
       })
     }
   })
+  
   useEffect(() => {
     if (token) {
       console.log('token.expiresIn',token.expiresIn)
