@@ -10,8 +10,9 @@ import { setContext } from 'apollo-link-context'
 import 'semantic-ui-css/semantic.min.css'
 import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux'
-import { createStore} from 'redux'
+import { combineReducers, createStore} from 'redux'
 import gameReducer from './reducers/gameReducer';
+import userReducer from './reducers/userReducer';
 
 
 
@@ -51,6 +52,10 @@ const client = new ApolloClient({
   link: splitLink
 })
 
+const reducer = combineReducers({
+  game: gameReducer,
+  user: userReducer
+})
 const store = createStore(gameReducer);
 
 

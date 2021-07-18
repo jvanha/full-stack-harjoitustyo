@@ -311,6 +311,7 @@ const Game = ({ user }) => {
           const blackId = myColor === 'black' ? user.id : opponent.id
           const winner = myColor
           //only the winner creates a new game
+          console.log('YOU WON, opponent.id:',opponent.id)
           if (opponent.id !== 'computer') {
             console.log('moves',moves)
             createGame({ variables: { input: { whiteId, blackId, winner, moves} }})
