@@ -343,6 +343,7 @@ const Game = ({ user }) => {
         saveGameState(gameState)
       }
     }
+    //TÄSSÄ ON VIRHE
     console.log(opponent, playerToMove)
     if (opponent && opponent.id === 'computer' && playerToMove === 'white') {
       const fen = toFen(board, playerToMove, longCastleWhite, shortCastleWhite, longCastleBlack, shortCastleBlack, enPassant)

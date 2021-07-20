@@ -56,7 +56,7 @@ const reducer = combineReducers({
   game: gameReducer,
   user: userReducer
 })
-const store = createStore(gameReducer);
+const store = createStore(reducer);
 
 
 ReactDOM.render(
