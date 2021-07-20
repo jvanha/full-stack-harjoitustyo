@@ -1,5 +1,6 @@
 import { useApolloClient, useLazyQuery, useMutation, useSubscription } from '@apollo/client'
 import React, { useEffect, useState } from 'react'
+import { useDispatch } from 'react-redux'
 import {
   Route,
   Switch,
@@ -15,8 +16,10 @@ import UserDetails from './components/UserDetails'
 import { LOGOUT } from './graphql/mutations'
 import { ALL_MESSAGES, ALL_USERS, ME } from './graphql/queries'
 import { MESSAGE_ADDED, USER_LOGGED_IN, USER_LOGGED_OUT } from './graphql/subscriptions'
+import { setUser2 } from './reducers/userReducer'
 
 const App = () => {
+  const dispatch = useDispatch()
   const history = useHistory()
   const [loginModalOpen, setLoginModalOpen] = useState(false)
   const [registryModalOpen, setRegistryModalOpen] = useState(false)
@@ -109,6 +112,7 @@ useSubscription(MESSAGE_ADDED, {
       const itsme = meResult.data.me
       //console.log({ id: itsme.id, username: itsme.username })
       setUser(itsme)
+      dispatch(setUser2(meResult.data.me))
       //console.log('user', user)
       
     }

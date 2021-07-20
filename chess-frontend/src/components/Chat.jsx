@@ -17,7 +17,9 @@ const Chat = () => {
     
     setMessage('')
   }
+  /*
   useEffect(()=>{
+    console.log('result.data changed', result.data)
     if (result.data) {
       const addedMessage = result.data.addMessage
       const messagesInStorage = client.readQuery({ query: ALL_MESSAGES })
@@ -27,6 +29,7 @@ const Chat = () => {
       })
     }
   },[result.data])
+  */
   const time = (date) => {
     const commentDate = new Date(date)
     const elapsed = Date.now() - commentDate
@@ -40,7 +43,7 @@ const Chat = () => {
     return 'Just now'
   }
   if (allMessagesResult.loading) return <div>loading...</div>
-  console.log('allMessagesResult', allMessagesResult)
+  console.log('allMessagesResult',allMessagesResult)
   return (
     <Comment.Group size='mini'>
       {allMessagesResult.data && allMessagesResult.data.allMessages.map(message =>

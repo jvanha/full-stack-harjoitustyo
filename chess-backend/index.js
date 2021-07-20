@@ -182,6 +182,7 @@ const typeDefs = gql`
     challengeAccepted(playerId: String): Challenge
     challengeDeclined(playerId: String): Opponents
     messageAdded: Message
+    opponentResigned(opponentId: String): String
   }
 
   input CreateGameInput {
@@ -212,6 +213,7 @@ const resolvers = {
     },
     allMessages: async () => {
       const messages = await Message.find().sort({_id:-1}).limit(10).populate('writer')
+      console.log('messages',messages)
       return messages.reverse()
     },
     game: async (root, args) => {
@@ -414,7 +416,12 @@ const resolvers = {
       return move
     },
     resign: (root, args) => {
+      console.log('resign args', args)
       console.log(args, 'resigned')
+      const opponentId = args.userId
+      const payload = { opponentResigned: opponentId }
+      console.log('resign payload', payload)
+      pubsub.publish('OPPONENT_RESIGNED',payload)
       return args.userId
     },
     addMessage: async (root, args, context) => {
@@ -435,7 +442,7 @@ const resolvers = {
       console.log('savedMessage', savedMessage)
       console.log('payload', payload)
       console.log()
-      pubsub.publish('MESSAGE_ADDED', payload)
+      pubsub.publish('MESSAGE_ADDED', { messageAdded: finalMessage })
       return finalMessage
     },
     getComputerMove: async (root, args, contex) => {
@@ -515,8 +522,19 @@ const resolvers = {
       subscribe: () => pubsub.asyncIterator(['USER_LOGGED_OUT'])
     },
     messageAdded: {
-      subscribe: () => pubsub.asyncIterator(['MESSAGE_ADDED'])
-
+      subscribe: () => {
+        console.log('MESAGE ADDED')
+        return pubsub.asyncIterator(['MESSAGE_ADDED'])
+      }
+    },
+    opponentResigned: {
+      subscribe: withFilter(() => pubsub.asyncIterator(['OPPONENT_RESIGNED']), (payload, variables) => {
+        console.log('opponent resigned')
+        console.log('payload', payload)
+        console.log('variables', variables)
+        console.log()
+        return payload.opponentResigned === variables.opponentId
+      })
     }
   }
 }

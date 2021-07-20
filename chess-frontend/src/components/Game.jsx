@@ -4,7 +4,7 @@ import Board from './Board'
 import Clock from './Clock';
 import Users from './Users';
 import { ACCEPT_CHALLENGE, MAKE_A_MOVE, DECLINE_CHALLENGE, CREATE_GAME, RESIGN, GET_COMPUTER_MOVE } from './../graphql/mutations';
-import { CHALLENGE_ACCEPTED, CHALLENGE_CANCELLED, CHALLENGE_DECLINED, CHALLENGE_ISSUED, MOVE_MADE} from './../graphql/subscriptions';
+import { CHALLENGE_ACCEPTED, CHALLENGE_CANCELLED, CHALLENGE_DECLINED, CHALLENGE_ISSUED, MOVE_MADE, OPPONENT_RESIGNED } from './../graphql/subscriptions';
 import { getAttackedSquares, isCheckMated, isDrawByInsufficientMaterial, isDrawByLackOflegalMoves, isInCheck } from './../utilFunctions'
 import { Button, Label, Menu} from 'semantic-ui-react';
 import Chat from './Chat';
@@ -208,7 +208,25 @@ const Game = ({ user }) => {
       setOpponentsClock(time)
     } 
   })
-  
+
+  useSubscription(OPPONENT_RESIGNED, {
+    variables: { opponentId: opponent ? opponent.id : ''},
+    onSubscriptionData: ({ subscriptionData }) => {
+      console.log('OPPONENT RESIGNED',subscriptionData)
+      const whiteId = myColor === 'white' ? user.id : opponent.id
+      const blackId = myColor === 'black' ? user.id : opponent.id
+      const winner = myColor
+      //only the winner creates a new game
+      console.log('moves',moves)
+      createGame({ variables: { input: { whiteId, blackId, winner, moves} }})
+      alert("You won by resignation")
+      setClockRunning(false)
+      setOpponentsClockRunning(false)
+      setPlayerToMove(null)
+      deleteGameState()
+    }
+  })
+
   useEffect(() => {
     
     const gameState = loadGameState()
@@ -320,6 +338,7 @@ const Game = ({ user }) => {
           setPlayerToMove(null)
           setOpponentsClockRunning(false)
           deleteGameState()
+          return;
         }
       } else {
         const gameState = {
@@ -343,7 +362,7 @@ const Game = ({ user }) => {
         saveGameState(gameState)
       }
     }
-    //TÄSSÄ ON VIRHE
+
     console.log(opponent, playerToMove)
     if (opponent && opponent.id === 'computer' && playerToMove === 'white') {
       const fen = toFen(board, playerToMove, longCastleWhite, shortCastleWhite, longCastleBlack, shortCastleBlack, enPassant)
@@ -505,7 +524,14 @@ const Game = ({ user }) => {
       setAttackedSquares(null)
     }
   }
-
+  const handleResignation = () => {
+    resign({ variables: { userId: user.id}})
+    alert('You resigned')
+    setPlayerToMove(null)
+    setClockRunning(false)
+    setOpponentsClockRunning(false)
+    deleteGameState()
+  }
   const playComputer = () => {
     setOpponent({ username: 'Computer', id: 'computer'})
     setLongCastleBlack(true)
@@ -604,7 +630,7 @@ const Game = ({ user }) => {
           && <Chat/>
         }
         {activeMenuItem === 'game' && user
-          && <Button onClick={()=>resign({ variables: { userId: user.id}})}>Resign</Button>
+          && <Button onClick={handleResignation}>Resign</Button>
         } 
       </div>
       <SettingsModal

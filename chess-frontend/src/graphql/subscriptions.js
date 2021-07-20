@@ -88,3 +88,9 @@ export const MESSAGE_ADDED = gql`
     }
   }
 `
+export const OPPONENT_RESIGNED = gql`
+  subscription opponentResigned($opponentId: String!) {
+    opponentResigned(opponentId: $opponentId)
+    
+  }
+`

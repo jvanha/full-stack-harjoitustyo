@@ -6,6 +6,8 @@ const gameReducer = (state = {}, action) => {
     case 'SET_BOARD':
       const board = action.data.board
       return { board, ...state }
+    default:
+      return state
   }
 }
 

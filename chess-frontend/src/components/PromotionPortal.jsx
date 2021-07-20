@@ -2,6 +2,12 @@ import React from 'react'
 import { Portal, Segment } from 'semantic-ui-react'
 import Piece from './Piece'
 
+const imgStyle = {
+  marginTop: 5, 
+  height: '90%',
+  width: '90%',
+}
+
 const PromotionPortal = ({ open, handleClose, color, setPromotion }) => {
   const select = (type) => {
     setPromotion(type)
@@ -18,16 +24,16 @@ const PromotionPortal = ({ open, handleClose, color, setPromotion }) => {
         }}
       >
       <div onClick={()=>select('Q')}>
-      <Piece piece={{ type: 'Q', color}}/>
+        <img style={imgStyle} src={`${color}${'Q'}.png`} alt='' />
       </div>
       <div onClick={()=>select('N')}>
-      <Piece piece={{ type: 'N', color}}/>
+      <img style={imgStyle} src={`${color}${'N'}.png`} alt='' />
       </div>
       <div onClick={()=>select('B')}>
-      <Piece piece={{ type: 'B', color}}/>
+      <img style={imgStyle} src={`${color}${'B'}.png`} alt='' />
       </div>
       <div onClick={()=>select('R')}>
-      <Piece piece={{ type: 'R', color}}/>
+      <img style={imgStyle} src={`${color}${'R'}.png`} alt='' />
       </div>
 
       
