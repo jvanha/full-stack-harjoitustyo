@@ -303,7 +303,6 @@ const Game = ({ user }) => {
   }, [clock])
 
   useEffect(() => {
-    //VAATII KORJAUSTA
     if (myColor) {
       if (isDrawByLackOflegalMoves(playerToMove, board, enPassant)) {
         alert('Draw')
