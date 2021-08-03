@@ -37,46 +37,72 @@ initBoard[62] = [62, { type: 'N', color: 'white' }]
 initBoard[63] = [63, { type: 'R', color: 'white' }]
 
 const initialState = {
-  myColor: 'white',
-  playerToMove: null,
-  clock: 0,
-  opponentsClock: 0,
+  color: 'white',
+  whiteClock: 0,
+  blackClock: 0,
   board: initBoard,
   opponent: null,
-  longCastleBlack: true,
-  longCastleWhite: true,
-  shortCastleBlack: true,
-  shortCastleWhite: true,
-  enPassant: null,
-  clockRunning: false,
-  opponentsClockRunning: false,
+  moves: [{from: 48, to: 40, time: 10, promotion: null}],
+  counter: 0
 }
 
-const gameReducer = (state = initialState, action) => {
+const replayReducer = (state = initialState, action) => {
   console.log(action)
+  const { board, color, moves, counter, ...rest } = state
+  
   switch (action.type) {
-    case 'SET_GAME':
+    case 'SET_REPLAY':
       return action.data
     case 'SET_BOARD':
-      const board = action.data.board
-      return { board, ...state }
+      return { 
+        board: action.data.board,
+        ...state 
+      }
+    case 'NEXT':
+      if (!moves || counter === moves.length) return state
+      const { from, to, time, promotion } = moves[counter]
+      const squareFrom = board[from]
+      const newBoard = board.map(square => {
+        if (square[0] === from) return [square[0], null]
+        if (square[0] === to) {
+          if (promotion) return [square[0], { type: promotion, color}]
+          return [square[0], {type: squareFrom[1].type, color}]
+        }
+        return square
+      })
+      console.log('newBoard', newBoard)
+      return {
+        ...state,
+        board: newBoard,
+        color: color==='white' ? 'black': 'white',
+        counter: counter + 1,
+        
+      }
     default:
       return state
   }
 }
 
-export const setGameState = (newGameState) =>{
+export const setReplayState = (newReplayState) =>{
   return {
-    type: 'SET_GAME',
-    data: newGameState,
+    type: 'SET_REPLAY',
+    data: newReplayState,
   }
 }
 
-export const setBoard = (board) => {
+export const setReplayBoard = (board) => {
   return {
     type: 'SET_BOARD',
     data: board,
   }
 }
 
-export default gameReducer
+export const nextPos = () => {
+  console.log('nextPos')
+  return {
+    type: 'NEXT',
+    data: null
+  }
+}
+
+export default replayReducer

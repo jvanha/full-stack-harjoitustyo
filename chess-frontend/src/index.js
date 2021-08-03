@@ -13,6 +13,7 @@ import { Provider } from 'react-redux'
 import { combineReducers, createStore} from 'redux'
 import gameReducer from './reducers/gameReducer';
 import userReducer from './reducers/userReducer';
+import replayReducer from './reducers/replayReducer';
 
 
 
@@ -54,7 +55,8 @@ const client = new ApolloClient({
 
 const reducer = combineReducers({
   game: gameReducer,
-  user: userReducer
+  user: userReducer,
+  replay: replayReducer
 })
 const store = createStore(reducer);
 

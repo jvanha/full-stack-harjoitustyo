@@ -1,6 +1,7 @@
 import React, { useRef } from 'react'
 import { useEffect } from 'react'
 import { useState } from 'react'
+import { useSelector } from 'react-redux'
 import { legalMoves } from '../utilFunctions'
 import MySquare from './MySquare'
 import PromotionPortal from './PromotionPortal'
@@ -130,6 +131,7 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myC
   const handleDrop = (event, position) => {
     handleSelection(board[position])
   } 
+  
   
   return (
     <div style={myColor === "black" ? boardStyleReversed : boardStyle}>

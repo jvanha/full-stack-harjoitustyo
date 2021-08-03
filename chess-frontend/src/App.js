@@ -12,6 +12,7 @@ import ChallengeForm from './components/ChallengeForm'
 import Game from './components/Game'
 import LoginModal from './components/LoginModal'
 import RegistryModal from './components/RegistryModal'
+import ReplayBoard from './components/ReplayBoard'
 import UserDetails from './components/UserDetails'
 import { LOGOUT } from './graphql/mutations'
 import { ALL_MESSAGES, ALL_USERS, ME } from './graphql/queries'
@@ -143,6 +144,10 @@ useSubscription(MESSAGE_ADDED, {
               Rules
             </Menu.Item>
           }
+          <Menu.Item as='a' onClick={() => history.push('/replay')}>
+            <Icon name='chess'/>
+            Replay
+          </Menu.Item>
           <Divider />
           <div>
             {user
@@ -178,6 +183,9 @@ useSubscription(MESSAGE_ADDED, {
               </Route>
               <Route path='/play'>
                 <Game user={user}/>
+              </Route>
+              <Route path='/replay'>
+                <ReplayBoard/>
               </Route>
               <Route path='/'>
                 <Segment inverted>

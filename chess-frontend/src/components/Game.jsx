@@ -230,8 +230,10 @@ const Game = ({ user }) => {
   useEffect(() => {
     
     const gameState = loadGameState()
+    
     console.log('gameState', gameState)
     if (gameState) {
+      dispatch(setGameState(gameState))
       console.log('gameState.board', gameState.board)
       setBoard(gameState.board)
       setMyColor(gameState.myColor)
@@ -345,7 +347,6 @@ const Game = ({ user }) => {
           playerToMove,
           clock,
           opponentsClock,
-          board,
           opponent,
           longCastleBlack,
           longCastleWhite,
@@ -356,8 +357,9 @@ const Game = ({ user }) => {
           clockRunning,
           opponentsClockRunning,
           timeStamp: Date.now(),
+          moves,
         }
-        dispatch(setGameState(gameState))
+        
         saveGameState(gameState)
       }
     }
@@ -579,8 +581,6 @@ const Game = ({ user }) => {
           gameSettings={gameSettings}
           moveMade={moveMade}
           makeAMove={handleMoveMaking}
-
-
         />
         <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
           { user &&

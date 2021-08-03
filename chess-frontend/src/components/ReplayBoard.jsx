@@ -1,9 +1,9 @@
 import React from 'react'
 import { useEffect } from 'react'
 import { useState } from 'react'
-import { legalMoves } from '../utilFunctions'
+import { useDispatch, useSelector } from 'react-redux'
+import { nextPos } from '../reducers/replayReducer'
 import MySquare from './MySquare'
-import PromotionPortal from './PromotionPortal'
 
 const boardStyle = {
   paddingTop: 5,
@@ -24,13 +24,15 @@ const boardStyleReversed = {
 }
 
 
-const ReplayBoard = ({ moves }) => {
-  const [ board, setBoard ] = useState()
+const ReplayBoard = () => {
+  const [ reversed, setReversed ] = useState(false)
   const [ tempSquare, setTempSquare ] = useState(null)
   const [ promotion, setPromotion ] = useState(null)
   const [ movingPiece, setMovingPiece ] = useState(null)
-
-
+  const { board, moves, counter, ...rest } = useSelector(state => state.replay)
+  console.log('board',board)
+  const dispatch = useDispatch()
+  
   useEffect(() => {
     console.log('useEffect on movingPiece', movingPiece)
     if (tempSquare && movingPiece) {
@@ -42,35 +44,40 @@ const ReplayBoard = ({ moves }) => {
     }
     
   }, [movingPiece])
-  
-  useEffect(() => {
-    console.log('props.moveMade',props.moveMade)
-    if (props.moveMade) {
-      const {from, to, promotion} = props.moveMade
-      if (from && to && promotion) {
-        setMovingPiece({from, to})
-        setTimeout(() => {
-          movePiece(from,to,promotion)
-          setMovingPiece(null)
-          setPromotion(null)
-        },0)
-      }
+
+  const nextPosition = () => {
+    console.log('next position')
+    const {from, to, promotion} = moves[counter]
+    if (from && to) {
+      setMovingPiece({from, to})
+      setTimeout(() => {
+        dispatch(nextPos())
+        setMovingPiece(null)
+        setPromotion(null)
+      },0)
     }
-    
-  },[props.moveMade])
+  }
+
+  const previousPosition = () => {
+
+  }
+
   
   return (
-    <div style={myColor === "black" ? boardStyleReversed : boardStyle}>
-      {board.map(element => (
-        <MySquare
-          key={element[0]}
-          content={element}
-          selectedSquare={selectedSquare}
-          movingPiece={movingPiece}
-          reversed={myColor === 'black'}
-        />   
-      ))}
+    <div>
+      {board && <div style={reversed ? boardStyleReversed : boardStyle}>
+        {board.map(element => (
+          <MySquare
+            key={element[0]}
+            content={element}
+            movingPiece={movingPiece}
+            reversed={reversed}
+          />   
+        ))}
+      </div>}
+      <button onClick={nextPosition}>Next</button>
     </div>
+
   )
 }
 
