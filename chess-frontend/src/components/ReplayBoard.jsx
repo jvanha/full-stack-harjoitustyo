@@ -59,7 +59,7 @@ const ReplayBoard = () => {
   }
 
   const previousPosition = () => {
-
+    console.log('previous position')
   }
 
   
@@ -76,6 +76,7 @@ const ReplayBoard = () => {
         ))}
       </div>}
       <button onClick={nextPosition}>Next</button>
+      <button onClick={previousPosition}>Previous</button>
     </div>
 
   )
