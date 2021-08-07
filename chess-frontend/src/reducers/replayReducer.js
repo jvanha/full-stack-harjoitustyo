@@ -42,14 +42,21 @@ const initialState = {
   blackClock: 0,
   board: initBoard,
   opponent: null,
-  moves: [{from: 48, to: 40, time: 10, promotion: null}],
+  moves: [
+    {from: 48, to: 40, time: 10, promotion: null, takenPiece: null},
+    {from: 1, to: 18, time: 11, promotion: null, takenPiece: null},
+    {from: 40, to: 32, time: 12, promotion: null, takenPiece: null},
+    {from: 0, to: 1, time: 13, promotion: null, takenPiece: null},
+    {from: 32, to: 24, time: 15, promotion: null, takenPiece: null},
+    {from: 18, to: 24, time: 11, promotion: null, takenPiece: { type: 'P', color: 'white' }},
+  ],
   counter: 0
 }
 
 const replayReducer = (state = initialState, action) => {
   console.log(action)
   const { board, color, moves, counter, ...rest } = state
-  
+  console.log('moves',moves)
   switch (action.type) {
     case 'SET_REPLAY':
       return action.data
@@ -58,10 +65,12 @@ const replayReducer = (state = initialState, action) => {
         board: action.data.board,
         ...state 
       }
-    case 'NEXT':
+    case 'NEXT': {
+      
       if (!moves || counter === moves.length) return state
       const { from, to, time, promotion } = moves[counter]
       const squareFrom = board[from]
+      console.log('squareFrom', squareFrom)
       const newBoard = board.map(square => {
         if (square[0] === from) return [square[0], null]
         if (square[0] === to) {
@@ -78,6 +87,28 @@ const replayReducer = (state = initialState, action) => {
         counter: counter + 1,
         
       }
+    }
+    case 'PREVIOUS': {
+      if (!moves || counter === 0) return state
+      const { from, to, time, promotion, takenPiece } = moves[counter - 1]
+      const activeColor = color==='white' ? 'black': 'white'
+      const squareTo = board[to]
+      console.log('squareTo', squareTo)
+      const newBoard = board.map(square => {
+        if (square[0] === to) return [square[0], takenPiece]
+        if (square[0] === from) {
+          if (promotion) return [square[0], { type: 'P', color: activeColor}]
+          return [square[0], { type: squareTo[1].type, color: activeColor}]
+        }
+        return square
+      })
+      return {
+        ...state,
+        board: newBoard,
+        color: activeColor,
+        counter: counter - 1,
+      }
+    }
     default:
       return state
   }
@@ -86,7 +117,7 @@ const replayReducer = (state = initialState, action) => {
 export const setReplayState = (newReplayState) =>{
   return {
     type: 'SET_REPLAY',
-    data: newReplayState,
+    data: {...initialState, ...newReplayState},
   }
 }
 
@@ -101,6 +132,14 @@ export const nextPos = () => {
   console.log('nextPos')
   return {
     type: 'NEXT',
+    data: null
+  }
+}
+
+export const prevPos = () => {
+  console.log('nextPos')
+  return {
+    type: 'PREVIOUS',
     data: null
   }
 }

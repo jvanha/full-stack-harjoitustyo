@@ -1,8 +1,22 @@
 import React from 'react'
+import { useDispatch } from 'react-redux'
+import { useHistory } from 'react-router-dom'
 import { Container, Header, Table } from 'semantic-ui-react'
+import { setReplayState } from '../reducers/replayReducer'
 
 const UserDetails = ({ user }) => {
   console.log(user)
+  const history = useHistory()
+  const dispatch = useDispatch()
+  const handleShow = (game) => {
+    const replayState = {
+      moves: game.moves
+    }
+    dispatch(setReplayState(replayState))
+    history.push('/replay')
+    
+  }
+  
   return (
     <div style={{ backgroundColor: 'white'}}>
     <Container>
@@ -25,6 +39,7 @@ const UserDetails = ({ user }) => {
               <Table.Cell><div>{game.winner==='white'?1:0}</div><div>{game.winner==='black'?1:0}</div></Table.Cell>
               <Table.Cell>{game.moves.length}</Table.Cell>
               <Table.Cell>{game.date}</Table.Cell>
+              <Table.Cell as='a' onClick={() => handleShow(game)}>show</Table.Cell>
             </Table.Row>
           ))}
         </Table.Body>

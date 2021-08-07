@@ -2,7 +2,7 @@ import React from 'react'
 import { useEffect } from 'react'
 import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { nextPos } from '../reducers/replayReducer'
+import { nextPos, prevPos } from '../reducers/replayReducer'
 import MySquare from './MySquare'
 
 const boardStyle = {
@@ -47,8 +47,9 @@ const ReplayBoard = () => {
 
   const nextPosition = () => {
     console.log('next position')
-    const {from, to, promotion} = moves[counter]
-    if (from && to) {
+    
+    if (counter < moves.length) {
+      const {from, to, promotion} = moves[counter]
       setMovingPiece({from, to})
       setTimeout(() => {
         dispatch(nextPos())
@@ -60,6 +61,15 @@ const ReplayBoard = () => {
 
   const previousPosition = () => {
     console.log('previous position')
+    if(counter > 0) {
+      const {from, to, promotion } = moves[counter-1]
+      setMovingPiece({ from: to, to: from })
+      setTimeout(() => {
+        dispatch(prevPos())
+        setMovingPiece(null)
+        setPromotion(null)
+      },0)
+    }
   }
 
   

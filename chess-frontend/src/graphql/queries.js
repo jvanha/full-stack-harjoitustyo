@@ -31,7 +31,12 @@ export const ME = gql`
         black {username}
         white {username}
         winner
-        moves {from to}
+        moves {
+          from
+          to
+          promotion
+          takenPiece {type color}
+        }
         date
       }
     }

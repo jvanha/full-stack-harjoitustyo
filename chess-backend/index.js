@@ -76,7 +76,7 @@ const typeDefs = gql`
     expiresIn: Int
   }
   type Piece {
-    pieceType: String!
+    type: String!
     color: String!
   }
   type Square {
@@ -94,6 +94,7 @@ const typeDefs = gql`
     to: Int!
     time: Int
     promotion: String
+    takenPiece: Piece
   }
   type MoveUnit {
     userId: String
@@ -196,9 +197,16 @@ const typeDefs = gql`
     to: Int
     time: Int
     promotion: String
+    takenPiece: PieceInput
+
+  }
+  input PieceInput {
+    type: String!
+    color: String!
   }
 
 `
+
 
 const resolvers = {
   Query: {

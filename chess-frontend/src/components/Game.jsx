@@ -200,7 +200,7 @@ const Game = ({ user }) => {
         deleteGameState()
 
       } else {
-        setMoves(moves.concat({from, to, time, promotion}))
+        setMoves(moves.concat({from, to, time, promotion, takenPiece: board[to][1]}))
         setMoveMade({from, to, time, promotion})
         setClockRunning(true)
       }
@@ -396,7 +396,7 @@ const Game = ({ user }) => {
       return
     }
     makeAMove({ variables: { userId: user.id, from, to, time: clock, promotion}})
-    setMoves(moves.concat({from, to, time: clock, promotion}))
+    setMoves(moves.concat({from, to, time: clock, promotion, takenPiece: board[to][1]}))
   }
   
 
