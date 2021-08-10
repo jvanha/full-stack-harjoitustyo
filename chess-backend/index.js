@@ -418,8 +418,8 @@ const resolvers = {
       const payload = {
         moveMade: { userId, move }
       }
-      //console.log('makeAMove resolver')
-      //console.log('payload', payload)
+      console.log('makeAMove resolver')
+      console.log('payload', payload)
       pubsub.publish('MOVE_MADE', payload)
       return move
     },
@@ -476,10 +476,10 @@ const resolvers = {
   Subscription: {
     moveMade: {
       subscribe: withFilter(() => pubsub.asyncIterator(['MOVE_MADE']), (payload, variables) => {
-        //console.log('move made')
-        //console.log('payload', payload)
-        //console.log('variables', variables)
-        //console.log()
+        console.log('move made')
+        console.log('payload', payload)
+        console.log('variables', variables)
+        console.log()
         return payload.moveMade.userId === variables.opponentId
       })
     },

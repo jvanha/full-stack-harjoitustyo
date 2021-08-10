@@ -57,9 +57,13 @@ const gameReducer = (state = initialState, action) => {
   switch (action.type) {
     case 'SET_GAME':
       return action.data
-    case 'SET_BOARD':
+    case 'SET_BOARD': {
       const board = action.data.board
       return { board, ...state }
+    }
+    case 'UPDATE_GAME': {
+      return {...state, ...action.data}
+    }
     default:
       return state
   }
@@ -72,6 +76,12 @@ export const setGameState = (newGameState) =>{
   }
 }
 
+export const updateGameState = (fields) => {
+  return {
+    type: 'UPDATE_GAME',
+    data: fields
+  }
+}
 export const setBoard = (board) => {
   return {
     type: 'SET_BOARD',

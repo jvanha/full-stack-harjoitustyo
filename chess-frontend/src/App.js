@@ -14,9 +14,9 @@ import LoginModal from './components/LoginModal'
 import RegistryModal from './components/RegistryModal'
 import ReplayBoard from './components/ReplayBoard'
 import UserDetails from './components/UserDetails'
-import { LOGOUT } from './graphql/mutations'
+import { ACCEPT_CHALLENGE, DECLINE_CHALLENGE, LOGOUT } from './graphql/mutations'
 import { ALL_MESSAGES, ALL_USERS, ME } from './graphql/queries'
-import { MESSAGE_ADDED, USER_LOGGED_IN, USER_LOGGED_OUT } from './graphql/subscriptions'
+import { CHALLENGE_ISSUED, MESSAGE_ADDED, USER_LOGGED_IN, USER_LOGGED_OUT } from './graphql/subscriptions'
 import { setUser2 } from './reducers/userReducer'
 
 const App = () => {
@@ -31,6 +31,8 @@ const App = () => {
 
   const [getUser, meResult] = useLazyQuery(ME, { fetchPolicy: 'network-only' }) 
   const [ logout, logoutResult ] = useMutation(LOGOUT)
+  const [ acceptChallenge, acceptChallengeResult ] = useMutation(ACCEPT_CHALLENGE)
+  const [ declineChallenge, declineChallengeResult ] = useMutation(DECLINE_CHALLENGE)
   
   /*
   useEffect(() => {
@@ -79,6 +81,29 @@ useSubscription(MESSAGE_ADDED, {
       })
     }
   })
+  useSubscription(CHALLENGE_ISSUED, {
+    variables: { playerId: user ? user.id : ''},
+    onSubscriptionData: ({ subscriptionData }) => {
+      console.log('App CHALLENGE ISSUED',subscriptionData)
+      /*
+      console.log('CHALLENGE ISSUED',subscriptionData)
+      const challenger = subscriptionData.data.challengeIssued.opponents.challenger
+      const timeControl = subscriptionData.data.challengeIssued.timeControl
+      const color = subscriptionData.data.challengeIssued.color
+      const message = timeControl%60 
+        ? `You have been challenged for ${timeControl} second game by ${challenger.username} as ${color==='white' ? 'black' : 'white'}. Accept the challenge?`
+        : `You have been challenged for ${timeControl/60} minute game by ${challenger.username} as ${color==='white' ? 'black' : 'white'}. Accept the challenge?`
+      console.log('challenger',challenger)
+      if (window.confirm(message)) {
+        console.log('challenger', challenger)
+        acceptChallenge({ variables: { username: challenger.username, id: challenger.id, timeControl, color }})
+      } else {
+        declineChallenge({ variables: { username: challenger.username, id: challenger.id }})
+        console.log('YOU DECLINED THE CHALLENGE')
+      }
+      */
+    }
+  })
   
   useEffect(() => {
     if (token) {
@@ -118,6 +143,22 @@ useSubscription(MESSAGE_ADDED, {
       
     }
   }, [meResult])
+
+  useEffect(() => {
+    if (acceptChallengeResult.called && !acceptChallengeResult.loading) {
+      /*
+      console.log('acceptChallengeResult',acceptChallengeResult)
+      const challenge = acceptChallengeResult.data.acceptChallenge
+      setOpponent(challenge.opponents.challenger)
+      setMyColor(challenge.color==='white' ? 'black' : 'white')
+      setClock(challenge.timeControl)
+      setOpponentsClock(challenge.timeControl)
+      setClockRunning(true)
+      setPlayerToMove('white')
+      setBoard(initBoard)
+      */
+    }
+  }, [acceptChallengeResult.data])
 
   const date = new Date()
   return (

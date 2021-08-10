@@ -168,9 +168,9 @@ const Game = ({ user }) => {
         setChallengeWaiting(null)
         setOpponent(challenge.opponents.challenged)
         //setBoard(testBoard)
-        setBoard(initBoard)
         setMyColor(challenge.color)
         setPlayerToMove('white')
+        setBoard(initBoard) //set board last
       }
     }
   })
@@ -187,6 +187,7 @@ const Game = ({ user }) => {
     onSubscriptionData: ({ subscriptionData }) => {
       console.log('MOVE MADE', subscriptionData)
       const {from, to, time, promotion } = subscriptionData.data.moveMade.move
+      console.log('PROMOTION', promotion)
       if (time === 0) {
         const whiteId = myColor === 'white' ? user.id : opponent.id
         const blackId = myColor === 'black' ? user.id : opponent.id
@@ -264,13 +265,13 @@ const Game = ({ user }) => {
       console.log('acceptChallengeResult',acceptChallengeResult)
       const challenge = acceptChallengeResult.data.acceptChallenge
       setOpponent(challenge.opponents.challenger)
-      setBoard(initBoard)
       //setBoard(testBoard)
       setMyColor(challenge.color==='white' ? 'black' : 'white')
       setClock(challenge.timeControl)
       setOpponentsClock(challenge.timeControl)
       setClockRunning(true)
       setPlayerToMove('white')
+      setBoard(initBoard)
       console.log('Game on!')
     }
   }, [acceptChallengeResult.data])
@@ -306,6 +307,7 @@ const Game = ({ user }) => {
 
   useEffect(() => {
     if (myColor) {
+      console.log(playerToMove, board, enPassant, '++++++++++++++++++++')
       if (isDrawByLackOflegalMoves(playerToMove, board, enPassant)) {
         alert('Draw')
         setPlayerToMove(null)
@@ -395,8 +397,22 @@ const Game = ({ user }) => {
     if (opponent && opponent.id === 'computer') {
       return
     }
-    makeAMove({ variables: { userId: user.id, from, to, time: clock, promotion}})
-    setMoves(moves.concat({from, to, time: clock, promotion, takenPiece: board[to][1]}))
+    const promoted = board[from][1].type === 'P' && (Math.floor(to/8) === 0 || Math.floor(to/8) === 7)
+
+    makeAMove({ variables: {
+      userId: user.id,
+      from, to,
+      time: clock,
+      promotion: promoted ? promotion : null, 
+    }})
+
+    setMoves(moves.concat({
+      from,
+      to,
+      time: clock,
+      promotion: promoted ? promotion : null, 
+      takenPiece: board[to][1]
+    }))
   }
   
 
@@ -526,7 +542,9 @@ const Game = ({ user }) => {
     }
   }
   const handleResignation = () => {
-    resign({ variables: { userId: user.id}})
+    if (opponent && !opponent.id === 'computer') {
+      resign({ variables: { userId: user.id}})
+    }
     alert('You resigned')
     setPlayerToMove(null)
     setClockRunning(false)

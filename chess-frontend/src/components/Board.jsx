@@ -71,7 +71,7 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myC
     console.log('props.moveMade',props.moveMade)
     if (props.moveMade) {
       const {from, to, promotion} = props.moveMade
-      if (from && to && promotion) {
+      if (from && to) {
         setMovingPiece({from, to})
         setTimeout(() => {
           movePiece(from,to,promotion)
