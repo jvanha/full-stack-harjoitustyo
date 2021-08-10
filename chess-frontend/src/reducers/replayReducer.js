@@ -55,8 +55,6 @@ const initialState = {
 
 const replayReducer = (state = initialState, action) => {
   console.log(action)
-  const { board, color, moves, counter, ...rest } = state
-  console.log('moves',moves)
   switch (action.type) {
     case 'SET_REPLAY':
       return action.data
@@ -66,7 +64,7 @@ const replayReducer = (state = initialState, action) => {
         ...state 
       }
     case 'NEXT': {
-      
+      const { board, color, moves, counter, ...rest } = state
       if (!moves || counter === moves.length) return state
       const { from, to, time, promotion } = moves[counter]
       const squareFrom = board[from]
@@ -89,6 +87,7 @@ const replayReducer = (state = initialState, action) => {
       }
     }
     case 'PREVIOUS': {
+      const { board, color, moves, counter, ...rest } = state
       if (!moves || counter === 0) return state
       const { from, to, time, promotion, takenPiece } = moves[counter - 1]
       const activeColor = color==='white' ? 'black': 'white'
