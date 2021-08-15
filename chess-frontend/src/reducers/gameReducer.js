@@ -76,10 +76,10 @@ export const setGameState = (newGameState) =>{
   }
 }
 
-export const updateGameState = (fields) => {
+export const updateGameState = (params) => {
   return {
     type: 'UPDATE_GAME',
-    data: fields
+    data: params
   }
 }
 export const setBoard = (board) => {
