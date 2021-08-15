@@ -51,10 +51,44 @@ const initialState = {
   clockRunning: false,
   opponentsClockRunning: false,
 }
+const checkIfCastled = (to, board, longCastleBlack, longCastleWhite, shortCastleBlack, shortCastleWhite) => {
+  if (longCastleWhite && to === 58) {
+    return board.map(square => {
+      if (square[0] === 59) return [59, { type: 'R', color: 'white'}]
+      if (square[0] === 56) return [56, null]
+      return square
+    })
+  }
+  if (shortCastleWhite && to === 62) {
+    return board.map(square => {
+      if (square[0] === 61) return [61, { type: 'R', color: 'white'}]
+      if (square[0] === 63) return [63, null]
+      return square
+    })
+  }
+  if (longCastleBlack && to === 2) {
+    return board.map(square => {
+      if (square[0] === 3) return [3, { type: 'R', color: 'black'}]
+      if (square[0] === 0) return [0, null]
+      return square
+    }) 
+  }
+  if (shortCastleBlack && to === 6) {
+    return board.map(square => {
+      if (square[0] === 5) return [5, { type: 'R', color: 'black'}]
+      if (square[0] === 7) return [7, null]
+      return square
+    })
+  }
+  return board
+}
 
 const gameReducer = (state = initialState, action) => {
-  console.log(action)
+  console.log('gameReducer',action)
   switch (action.type) {
+    case 'INIT_GAME': {
+      return {...initialState, ...action.data}
+    }
     case 'SET_GAME':
       return action.data
     case 'SET_BOARD': {
@@ -64,8 +98,105 @@ const gameReducer = (state = initialState, action) => {
     case 'UPDATE_GAME': {
       return {...state, ...action.data}
     }
+    case 'MOVE_PIECE': {
+      const {
+        board,
+        clock,
+        opponentsClock,
+        playerToMove,
+        myColor,
+        enPassant,
+        longCastleBlack,
+        shortCastleBlack,
+        longCastleWhite,
+        shortCastleWhite,
+        ...rest
+      } = state
+
+      const { from, to, promotion } = action.data
+      const promoted = state.board[from][1].type === 'P' && (Math.floor(to/8) === 0 || Math.floor(to/8) === 7)
+      const myTurn = playerToMove === myColor
+
+      const squareFrom = board[from]
+      const type = squareFrom[1].type
+
+      const newMove = {
+        ...action.data,
+        time: myTurn ? clock : opponentsClock,
+        promotion: promoted ? promotion : null, 
+        takenPiece: board[to][1]
+      }
+      const newBoard = board.map(square => {
+        if (square[0] === to) {
+          if (type === 'P' && (square[0] < 8 || square[0] > 55))
+            return [to, { type: promotion, color: playerToMove }] 
+          return [to, squareFrom[1]]
+        }
+        if (square[0] === from) return [from, null]
+        if (to === enPassant && square[0] === Math.floor(from/8)*8 + to%8)
+          return [square[0], null]
+        return square
+      })
+
+      if (type==='K') {
+        return {
+          moves: [
+            ...state.moves,
+            newMove,
+          ],
+          board: checkIfCastled(playerToMove, to, newBoard, longCastleBlack, longCastleWhite, shortCastleBlack, shortCastleWhite),
+          longCastleBlack: playerToMove === 'black' ? false : longCastleBlack,
+          shortCastleBlack: playerToMove === 'black' ? false : shortCastleBlack,
+          longCastleWhite: playerToMove === 'white' ? false : longCastleBlack,
+          shortCastleWhite: playerToMove === 'white' ? false : shortCastleBlack,
+          opponentsClockRunning: myTurn,
+          clockRunning: !myTurn,
+          enPassant: null,
+          ...state
+        }
+      }
+      if (type === 'R') {
+        return {
+          moves: [
+            ...state.moves,
+            newMove,
+          ],
+          board: checkIfCastled(playerToMove, to, newBoard, longCastleBlack, longCastleWhite, shortCastleBlack, shortCastleWhite),
+          longCastleBlack: playerToMove === 'black' && squareFrom[0] === 0 ? false : longCastleBlack,
+          shortCastleBlack: playerToMove === 'black' && squareFrom[0] === 7 ? false : shortCastleBlack,
+          longCastleWhite: playerToMove === 'white' && squareFrom[0] === 56 ? false : longCastleBlack,
+          shortCastleWhite: playerToMove === 'white' && squareFrom[0] === 63 ? false : shortCastleBlack,
+          opponentsClockRunning: myTurn,
+          clockRunning: !myTurn,
+          enPassant: null,
+          ...state
+        }
+      }
+      
+      return {
+        moves: [
+          ...state.moves,
+          {
+            ...action.data,
+            time: myTurn ? clock : opponentsClock,
+            promotion: promoted ? promotion : null, 
+            takenPiece: board[to][1]
+          }
+        ],
+        opponentsClockRunning: myTurn,
+        clockRunning: !myTurn,
+        ...state 
+      }
+    }
     default:
       return state
+  }
+}
+
+export const initGame = (params) => {
+  return {
+    type: 'INIT_GAME',
+    data: params,
   }
 }
 
@@ -76,7 +207,7 @@ export const setGameState = (newGameState) =>{
   }
 }
 
-export const updateGameState = (params) => {
+export const updateGame = (params) => {
   return {
     type: 'UPDATE_GAME',
     data: params
@@ -86,6 +217,12 @@ export const setBoard = (board) => {
   return {
     type: 'SET_BOARD',
     data: board,
+  }
+}
+export const movePiece = (move) => {
+  return {
+    type: 'MOVE_PIECE',
+    data: move,
   }
 }
 

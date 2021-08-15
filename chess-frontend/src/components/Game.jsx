@@ -187,13 +187,11 @@ const Game = ({ user }) => {
     onSubscriptionData: ({ subscriptionData }) => {
       console.log('MOVE MADE', subscriptionData)
       const {from, to, time, promotion } = subscriptionData.data.moveMade.move
-      console.log('PROMOTION', promotion)
       if (time === 0) {
         const whiteId = myColor === 'white' ? user.id : opponent.id
         const blackId = myColor === 'black' ? user.id : opponent.id
         const winner = myColor
         //only the winner creates a new game
-        console.log('moves',moves)
         createGame({ variables: { input: { whiteId, blackId, winner, moves} }})
         alert('You won by timeout')
         setClockRunning(false)
@@ -442,12 +440,14 @@ const Game = ({ user }) => {
       return square
     })
     if (!isInCheck(color, newBoard))
+      
       if (type === 'K') {
         if (color === 'white') {
-          setLongCastleWhite(false)
+          setLongCastleWhite(false) 
           setShortCastleWhite(false)
           setPlayerToMove(playerToMove === 'white' ? 'black' : 'white')
           setEnpassant(null)
+          // Castling rook move
           if (longCastleWhite && to === 58) {
             setBoard(newBoard.map(square => {
               if (square[0] === 59) return [59, { type: 'R', color: 'white'}]
@@ -458,7 +458,7 @@ const Game = ({ user }) => {
             return 
           }
           else if (shortCastleWhite && to === 62) {
-            setPlayerToMove(playerToMove === 'white' ? 'black' : 'white')
+            setPlayerToMove(playerToMove === 'white' ? 'black' : 'white') //toistoa
             setEnpassant(null)
             setBoard(newBoard.map(square => {
               if (square[0] === 61) return [61, { type: 'R', color: 'white'}]
@@ -470,7 +470,8 @@ const Game = ({ user }) => {
           }
           
         } else {
-          setLongCastleBlack(false)
+          
+          setLongCastleBlack(false) 
           setShortCastleBlack(false)
           setPlayerToMove(playerToMove === 'white' ? 'black' : 'white')
           setEnpassant(null)
@@ -484,7 +485,7 @@ const Game = ({ user }) => {
             return 
           }
           else if (shortCastleBlack && to === 6) {
-            setPlayerToMove(playerToMove === 'white' ? 'black' : 'white')
+            setPlayerToMove(playerToMove === 'white' ? 'black' : 'white') //toistoa
             setEnpassant(null)
             setBoard(newBoard.map(square => {
               if (square[0] === 5) return [5, { type: 'R', color: 'black'}]

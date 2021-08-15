@@ -1,6 +1,6 @@
 import { useApolloClient, useLazyQuery, useMutation, useSubscription } from '@apollo/client'
 import React, { useEffect, useState } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import {
   Route,
   Switch,
@@ -16,11 +16,14 @@ import ReplayBoard from './components/ReplayBoard'
 import UserDetails from './components/UserDetails'
 import { ACCEPT_CHALLENGE, DECLINE_CHALLENGE, LOGOUT } from './graphql/mutations'
 import { ALL_MESSAGES, ALL_USERS, ME } from './graphql/queries'
-import { CHALLENGE_ISSUED, MESSAGE_ADDED, USER_LOGGED_IN, USER_LOGGED_OUT } from './graphql/subscriptions'
+import { CHALLENGE_ISSUED, MESSAGE_ADDED, MOVE_MADE, USER_LOGGED_IN, USER_LOGGED_OUT } from './graphql/subscriptions'
+import { updateGame } from './reducers/gameReducer'
 import { setUser2 } from './reducers/userReducer'
 
 const App = () => {
   const dispatch = useDispatch()
+  const game = useSelector(state => state.game)
+  const reduxuser = useSelector(state => state.user)
   const history = useHistory()
   const [loginModalOpen, setLoginModalOpen] = useState(false)
   const [registryModalOpen, setRegistryModalOpen] = useState(false)
@@ -33,7 +36,6 @@ const App = () => {
   const [ logout, logoutResult ] = useMutation(LOGOUT)
   const [ acceptChallenge, acceptChallengeResult ] = useMutation(ACCEPT_CHALLENGE)
   const [ declineChallenge, declineChallengeResult ] = useMutation(DECLINE_CHALLENGE)
-  
   /*
   useEffect(() => {
     localStorage.clear()
@@ -81,12 +83,11 @@ useSubscription(MESSAGE_ADDED, {
       })
     }
   })
+
   useSubscription(CHALLENGE_ISSUED, {
     variables: { playerId: user ? user.id : ''},
     onSubscriptionData: ({ subscriptionData }) => {
       console.log('App CHALLENGE ISSUED',subscriptionData)
-      /*
-      console.log('CHALLENGE ISSUED',subscriptionData)
       const challenger = subscriptionData.data.challengeIssued.opponents.challenger
       const timeControl = subscriptionData.data.challengeIssued.timeControl
       const color = subscriptionData.data.challengeIssued.color
@@ -94,15 +95,49 @@ useSubscription(MESSAGE_ADDED, {
         ? `You have been challenged for ${timeControl} second game by ${challenger.username} as ${color==='white' ? 'black' : 'white'}. Accept the challenge?`
         : `You have been challenged for ${timeControl/60} minute game by ${challenger.username} as ${color==='white' ? 'black' : 'white'}. Accept the challenge?`
       console.log('challenger',challenger)
-      if (window.confirm(message)) {
+      if (window.confirm(`(App) ${message}`)) {
         console.log('challenger', challenger)
         acceptChallenge({ variables: { username: challenger.username, id: challenger.id, timeControl, color }})
       } else {
         declineChallenge({ variables: { username: challenger.username, id: challenger.id }})
         console.log('YOU DECLINED THE CHALLENGE')
       }
-      */
     }
+  })
+
+  useSubscription(MOVE_MADE, {
+    variables: { opponentId: game.opponent ? game.opponent.id : ''},
+    onSubscriptionData: ({ subscriptionData }) => {
+      console.log('(App) MOVE MADE', subscriptionData)
+      const {from, to, time, promotion } = subscriptionData.data.moveMade.move  
+      const {board, myColor, moves, opponent, ...rest } = game 
+      if (time === 0) {
+        const whiteId = myColor === 'white' ? user.id : opponent.id
+        const blackId = myColor === 'black' ? user.id : opponent.id
+        const winner = myColor
+        
+        //only the winner creates a new game
+        //createGame({ variables: { input: { whiteId, blackId, winner, moves} }})
+        alert('(App) You won by timeout')
+        dispatch(updateGame({
+          clockRunning: false,
+          playerToMove: null,
+          opponentsClockRunning: false,
+          opponentsClock: time
+        }))
+        //deleteGameState()
+
+      } else {
+        //setMoves(moves.concat({from, to, time, promotion, takenPiece: board[to][1]}))
+        //setMoveMade({from, to, time, promotion})
+        dispatch(updateGame({
+          moves: moves.concat({from, to, time, promotion, takenPiece: board[to][1]}),
+          clockRunning: true,
+          opponentsClockRunning: false,
+          opponentsClock: time
+        }))
+      }
+    } 
   })
   
   useEffect(() => {
@@ -145,10 +180,14 @@ useSubscription(MESSAGE_ADDED, {
   }, [meResult])
 
   useEffect(() => {
+    console.log('(App) useEfect')
     if (acceptChallengeResult.called && !acceptChallengeResult.loading) {
-      /*
-      console.log('acceptChallengeResult',acceptChallengeResult)
+      
+      console.log('(App) acceptChallengeResult',acceptChallengeResult)
       const challenge = acceptChallengeResult.data.acceptChallenge
+      const opponent = challenge.opponents.challenger
+      const timeControl = challenge.timeControl
+      /*
       setOpponent(challenge.opponents.challenger)
       setMyColor(challenge.color==='white' ? 'black' : 'white')
       setClock(challenge.timeControl)
@@ -157,6 +196,16 @@ useSubscription(MESSAGE_ADDED, {
       setPlayerToMove('white')
       setBoard(initBoard)
       */
+      console.log('(App) opponent', opponent)
+      dispatch(updateGame({
+        opponent,
+        clock: timeControl,
+        opponentsClock: timeControl,
+        clockRunning: true,
+        opponentsClockRunning: true,
+        playerToMove: 'white',
+      }))
+
     }
   }, [acceptChallengeResult.data])
 

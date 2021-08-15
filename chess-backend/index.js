@@ -531,7 +531,6 @@ const resolvers = {
     },
     messageAdded: {
       subscribe: () => {
-        console.log('MESAGE ADDED')
         return pubsub.asyncIterator(['MESSAGE_ADDED'])
       }
     },
