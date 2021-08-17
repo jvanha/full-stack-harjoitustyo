@@ -1,5 +1,6 @@
 import { useQuery } from '@apollo/client'
 import React from 'react'
+import { useSelector } from 'react-redux'
 import { List } from 'semantic-ui-react'
 import { ALL_USERS } from '../graphql/queries'
 import User from './User'
@@ -7,6 +8,7 @@ import User from './User'
 
 const Users = ({ challengeWaiting, setChallengeWaiting, me}) => {
   const result = useQuery(ALL_USERS)
+  const pendingChallenge = useSelector(state => state.challenge)
   //console.log('Users result',result)
   if (result.loading) return <div>loading users...</div>
   if (!result.data || !result.data.allUsers || result.data.allUsers.length === 0)
@@ -22,7 +24,7 @@ const Users = ({ challengeWaiting, setChallengeWaiting, me}) => {
           <User 
             key={user.id}
             user={user}
-            challengeWaiting={challengeWaiting}
+            challengeWaiting={pendingChallenge}
             setChallengeWaiting={setChallengeWaiting}
             me={me}
           />

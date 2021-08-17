@@ -7,7 +7,7 @@ const userReducer = (state=null, action) => {
     }
 }
 
-export const setUser2 = (user) => {
+export const setUserRedux = (user) => {
   return {
     type: 'SET_USER',
     data: user

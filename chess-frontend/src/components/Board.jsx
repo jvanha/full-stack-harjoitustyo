@@ -1,7 +1,8 @@
 import React, { useRef } from 'react'
 import { useEffect } from 'react'
 import { useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { movePieceRedux } from '../reducers/gameReducer'
 import { legalMoves } from '../utilFunctions'
 import MySquare from './MySquare'
 import PromotionPortal from './PromotionPortal'
@@ -36,6 +37,8 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myC
   
   const dragObject = useRef()
   
+  const dispatch = useDispatch()
+
   useEffect(() => {
     if (playerToMove === 'white') {
       setValidMoves(legalMoves(selectedSquare, board, props.longCastleWhite, props.shortCastleWhite, enPassant))
@@ -62,6 +65,11 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myC
         setPromotion(null)
         setTempSquare(null)
         setSelectedSquare(null)
+        dispatch(movePieceRedux({                   //REDUX
+          from: selectedSquare[0],
+          to: tempSquare[0],
+          promotion: promotion?promotion:'Q'
+        }))
       },0)
     }
     
@@ -77,6 +85,8 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myC
           movePiece(from,to,promotion)
           setMovingPiece(null)
           setPromotion(null)
+
+          dispatch(movePieceRedux({ from, to, promotion}))    //REDUX
         },0)
       }
     }

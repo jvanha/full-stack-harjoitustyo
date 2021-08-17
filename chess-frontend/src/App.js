@@ -16,14 +16,16 @@ import ReplayBoard from './components/ReplayBoard'
 import UserDetails from './components/UserDetails'
 import { ACCEPT_CHALLENGE, DECLINE_CHALLENGE, LOGOUT } from './graphql/mutations'
 import { ALL_MESSAGES, ALL_USERS, ME } from './graphql/queries'
-import { CHALLENGE_ISSUED, MESSAGE_ADDED, MOVE_MADE, USER_LOGGED_IN, USER_LOGGED_OUT } from './graphql/subscriptions'
-import { updateGame } from './reducers/gameReducer'
-import { setUser2 } from './reducers/userReducer'
+import { CHALLENGE_ACCEPTED, CHALLENGE_DECLINED, CHALLENGE_ISSUED, MESSAGE_ADDED, MOVE_MADE, USER_LOGGED_IN, USER_LOGGED_OUT } from './graphql/subscriptions'
+import { clearChallenge } from './reducers/challengeReducer'
+import { initGame, updateGame } from './reducers/gameReducer'
+import { setUserRedux } from './reducers/userReducer'
 
 const App = () => {
   const dispatch = useDispatch()
   const game = useSelector(state => state.game)
   const reduxuser = useSelector(state => state.user)
+  const pendingChallenge = useSelector(state => state.challenge)
   const history = useHistory()
   const [loginModalOpen, setLoginModalOpen] = useState(false)
   const [registryModalOpen, setRegistryModalOpen] = useState(false)
@@ -63,7 +65,7 @@ useSubscription(MESSAGE_ADDED, {
       console.log('USER_LOGGED_IN subscriptionData',subscriptionData)
       const loggedInUser = subscriptionData.data.userLoggedIn
       const usersInStorage = client.readQuery({ query: ALL_USERS })
-      if (!usersInStorage.allUsers.map(user => user.id).includes(loggedInUser.id)) {
+      if (usersInStorage && !usersInStorage.allUsers.map(user => user.id).includes(loggedInUser.id)) {
         client.writeQuery({
           query: ALL_USERS,
           data: { allUsers: usersInStorage.allUsers.concat(loggedInUser)}
@@ -85,7 +87,7 @@ useSubscription(MESSAGE_ADDED, {
   })
 
   useSubscription(CHALLENGE_ISSUED, {
-    variables: { playerId: user ? user.id : ''},
+    variables: { playerId: reduxuser ? reduxuser.id : ''},
     onSubscriptionData: ({ subscriptionData }) => {
       console.log('App CHALLENGE ISSUED',subscriptionData)
       const challenger = subscriptionData.data.challengeIssued.opponents.challenger
@@ -102,6 +104,34 @@ useSubscription(MESSAGE_ADDED, {
         declineChallenge({ variables: { username: challenger.username, id: challenger.id }})
         console.log('YOU DECLINED THE CHALLENGE')
       }
+    }
+  })
+
+  useSubscription(CHALLENGE_ACCEPTED, {
+    variables: { playerId: reduxuser ? reduxuser.id : ''},
+    onSubscriptionData: ({ subscriptionData }) => {
+      console.log('subscriptionData', subscriptionData)
+      const challenge = subscriptionData.data.challengeAccepted
+      if (pendingChallenge === challenge.opponents.challenged.id) {
+        //dispatch(clearChallenge())              TESTING
+        dispatch(initGame({
+          opponent: challenge.opponents.challenged,
+          myColor: challenge.color,
+          clock: challenge.timeControl,
+          opponentsClock: challenge.timeControl,
+          opponentsClockRunning: true,
+
+        }))
+      }
+    }
+  })
+  
+  useSubscription(CHALLENGE_DECLINED, {
+    variables: { playerId: user ? user.id : ''},
+    onSubscriptionData: ({ subscriptionData }) => {
+      console.log('(App) CHALLENGE DECLINED',subscriptionData)
+      alert("(App) Your challenge has been declined")
+      dispatch(clearChallenge())
     }
   })
 
@@ -139,6 +169,8 @@ useSubscription(MESSAGE_ADDED, {
       }
     } 
   })
+
+
   
   useEffect(() => {
     if (token) {
@@ -173,7 +205,7 @@ useSubscription(MESSAGE_ADDED, {
       const itsme = meResult.data.me
       //console.log({ id: itsme.id, username: itsme.username })
       setUser(itsme)
-      dispatch(setUser2(meResult.data.me))
+      dispatch(setUserRedux(meResult.data.me))
       //console.log('user', user)
       
     }
@@ -197,7 +229,7 @@ useSubscription(MESSAGE_ADDED, {
       setBoard(initBoard)
       */
       console.log('(App) opponent', opponent)
-      dispatch(updateGame({
+      dispatch(initGame({
         opponent,
         clock: timeControl,
         opponentsClock: timeControl,

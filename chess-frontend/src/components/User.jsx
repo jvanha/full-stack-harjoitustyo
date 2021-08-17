@@ -1,17 +1,22 @@
 import { useMutation } from '@apollo/client'
 import React, { useEffect, useState } from 'react'
+import { useDispatch } from 'react-redux'
 import { Button, List } from 'semantic-ui-react'
 import { CANCEL_CHALLENGE } from '../graphql/mutations'
+import { clearChallenge, setChallengePending } from '../reducers/challengeReducer'
 import ChallengeModal from './ChallengeModal'
 
 const User = ({ user, me, challengeWaiting, setChallengeWaiting }) => {
   const [ cancelChallenge, cancelChallengeResult] = useMutation(CANCEL_CHALLENGE)
   const [challengeModalOpen, setChallengeModalOpen] = useState(false)
 
+  const dispatch = useDispatch()
+
   useEffect(() => {
     if (cancelChallengeResult.called && !cancelChallengeResult.loading) {
       console.log('cancelChallenge result data',cancelChallengeResult.data)
-      setChallengeWaiting(null)
+      //setChallengeWaiting(null)
+      dispatch(clearChallenge())              //REDUX
     }
     
   }, [cancelChallengeResult.data])

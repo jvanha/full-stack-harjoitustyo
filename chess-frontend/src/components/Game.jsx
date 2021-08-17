@@ -12,8 +12,8 @@ import { deleteGameState, loadGameSettings, loadGameState, saveGameState } from 
 import SettingsModal from './SettingsModal';
 import { toFen } from '../fen';
 import { ME } from '../graphql/queries';
-import { useDispatch } from 'react-redux';
-import { setGameState } from '../reducers/gameReducer';
+import { useDispatch, useSelector } from 'react-redux';
+import { setGameState, updateGame, movePieceRedux } from '../reducers/gameReducer';
 
 let squares = Array(64)//[...Array(64).keys()]
 let emptyBoard = Array(64)
@@ -82,6 +82,7 @@ testBoard[14] = [14, { type: 'Q', color: 'white' }]
 
 const Game = ({ user }) => {
   const dispatch = useDispatch()
+  const pendingChallenge = useSelector(state => state.challenge) //JUST FOR TESTING
   /*
   const [ game, setGame ] = useState({
     board: emptyBoard,
@@ -95,8 +96,8 @@ const Game = ({ user }) => {
     opponentsClock: 0,
   })*/
   const [ activeMenuItem, setActiveMenuItem ] = useState("players")
+  
   const [ board, setBoard ] = useState(emptyBoard)
-  const [ attackedSquares, setAttackedSquares ] = useState(null)
   const [ playerToMove, setPlayerToMove ] = useState(null)
   const [ longCastleWhite, setLongCastleWhite ] = useState(true)
   const [ shortCastleWhite, setShortCastleWhite ] = useState(true)
@@ -105,13 +106,15 @@ const Game = ({ user }) => {
   const [ enPassant, setEnpassant ] = useState(null)
   const [ opponent, setOpponent ] = useState(null)
   const [ myColor, setMyColor ] = useState(null)
-  const [ challengeWaiting, setChallengeWaiting ] = useState(null)
-  const [ cancelledChallenge, setCancelledChallenge ] = useState(null)
   const [ clock, setClock ] = useState(10)
   const [ clockRunning, setClockRunning] = useState(false)
   const [ opponentsClock, setOpponentsClock ] = useState(10)
   const [ opponentsClockRunning, setOpponentsClockRunning] = useState(false)
   const [ moves, setMoves] = useState([])
+  
+  const [ challengeWaiting, setChallengeWaiting ] = useState(null)
+  const [ cancelledChallenge, setCancelledChallenge ] = useState(null)
+  const [ attackedSquares, setAttackedSquares ] = useState(null)
 
   const [ settingsModalOpen, setSettingsModalOpen ] = useState(false)
   const [ gameSettings, setGameSettings ] = useState({ autoQueen: false, showLegalMoves: false}) 
@@ -158,13 +161,15 @@ const Game = ({ user }) => {
   useSubscription(CHALLENGE_ACCEPTED, {
     variables: { playerId: user ? user.id : ''},
     onSubscriptionData: ({ subscriptionData }) => {
-      console.log('challengeWaiting',challengeWaiting)
+      console.log('pendingChallenge',pendingChallenge)
       console.log('subscriptionData', subscriptionData)
       const challenge = subscriptionData.data.challengeAccepted
-      if (challengeWaiting === challenge.opponents.challenged.id) {
+      if (pendingChallenge === challenge.opponents.challenged.id) { //challengeWaiting is UNDEFINED from now on
+        const myTurn = challenge.color === 'white'
         setClock(challenge.timeControl)
         setOpponentsClock(challenge.timeControl)
-        setOpponentsClockRunning(true)
+        setOpponentsClockRunning(!myTurn)
+        setClockRunning(myTurn)
         setChallengeWaiting(null)
         setOpponent(challenge.opponents.challenged)
         //setBoard(testBoard)
@@ -230,7 +235,7 @@ const Game = ({ user }) => {
     
     const gameState = loadGameState()
     
-    console.log('gameState', gameState)
+    console.log('Load gameState', gameState)
     if (gameState) {
       dispatch(setGameState(gameState))
       console.log('gameState.board', gameState.board)
@@ -262,12 +267,14 @@ const Game = ({ user }) => {
       //POTENTTIAALISESTI VÄÄRIN
       console.log('acceptChallengeResult',acceptChallengeResult)
       const challenge = acceptChallengeResult.data.acceptChallenge
+      const myTurn = challenge.color === 'black'
       setOpponent(challenge.opponents.challenger)
       //setBoard(testBoard)
       setMyColor(challenge.color==='white' ? 'black' : 'white')
       setClock(challenge.timeControl)
       setOpponentsClock(challenge.timeControl)
-      setClockRunning(true)
+      setClockRunning(myTurn)
+      setOpponentsClockRunning(!myTurn)
       setPlayerToMove('white')
       setBoard(initBoard)
       console.log('Game on!')
@@ -294,17 +301,19 @@ const Game = ({ user }) => {
 
   useEffect(() => {
     if (clock < 0) {
+      alert('you lost by timeout')
+      setClock(0)
       makeAMove({ variables: { userId: user.id, from: 0, to: 0, time: 0}})
       setClockRunning(false)
-      setClock(0)
-      alert('you lost by timeout')
       setPlayerToMove(null)
       deleteGameState()
+      const gameState = loadGameState()
+      console.log('deleted gamestate', gameState)
     }
   }, [clock])
 
   useEffect(() => {
-    if (myColor) {
+    if (myColor && playerToMove) {
       console.log(playerToMove, board, enPassant, '++++++++++++++++++++')
       if (isDrawByLackOflegalMoves(playerToMove, board, enPassant)) {
         alert('Draw')
@@ -359,7 +368,7 @@ const Game = ({ user }) => {
           timeStamp: Date.now(),
           moves,
         }
-        
+        console.log('SAVING gameState', gameState)
         saveGameState(gameState)
       }
     }
@@ -391,6 +400,9 @@ const Game = ({ user }) => {
     }
   }, [getComputerMoveResult.data])
  
+  
+  
+  // THIS WILL BE REDUNDANT
   const handleMoveMaking = (from, to, promotion) => {
     if (opponent && opponent.id === 'computer') {
       return
@@ -550,6 +562,11 @@ const Game = ({ user }) => {
     setPlayerToMove(null)
     setClockRunning(false)
     setOpponentsClockRunning(false)
+    dispatch(updateGame({                     //update gamestate
+      playerToMove: null,
+      clockRunning: false,
+      opponentsClockRunning: false,
+    }))
     deleteGameState()
   }
   const playComputer = () => {

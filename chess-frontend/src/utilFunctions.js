@@ -299,7 +299,6 @@ export const isDrawByInsufficientMaterial = (board) => {
     }
       
   }
-  console.log('isDrawByInsufficientMaterial', pieces)
   return false
 }
 

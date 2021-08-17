@@ -14,6 +14,7 @@ import { combineReducers, createStore} from 'redux'
 import gameReducer from './reducers/gameReducer';
 import userReducer from './reducers/userReducer';
 import replayReducer from './reducers/replayReducer';
+import challengeReducer from './reducers/challengeReducer';
 
 
 
@@ -56,7 +57,8 @@ const client = new ApolloClient({
 const reducer = combineReducers({
   game: gameReducer,
   user: userReducer,
-  replay: replayReducer
+  replay: replayReducer,
+  challenge: challengeReducer,
 })
 const store = createStore(reducer);
 

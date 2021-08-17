@@ -50,6 +50,7 @@ const initialState = {
   enPassant: null,
   clockRunning: false,
   opponentsClockRunning: false,
+  moves: [],
 }
 const checkIfCastled = (to, board, longCastleBlack, longCastleWhite, shortCastleBlack, shortCastleWhite) => {
   if (longCastleWhite && to === 58) {
@@ -174,11 +175,12 @@ const gameReducer = (state = initialState, action) => {
       }
       
       return {
+        board: newBoard,
         moves: [
           ...state.moves,
           {
             ...action.data,
-            time: myTurn ? clock : opponentsClock,
+            time: myTurn ? clock : opponentsClock,   //What if the clocks are not in sync at this point?
             promotion: promoted ? promotion : null, 
             takenPiece: board[to][1]
           }
@@ -219,7 +221,7 @@ export const setBoard = (board) => {
     data: board,
   }
 }
-export const movePiece = (move) => {
+export const movePieceRedux = (move) => {
   return {
     type: 'MOVE_PIECE',
     data: move,

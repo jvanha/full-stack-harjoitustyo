@@ -1,7 +1,9 @@
 import { useMutation } from '@apollo/client'
 import React, { useEffect, useState } from 'react'
+import { useDispatch } from 'react-redux'
 import { Button, Dropdown, Form } from 'semantic-ui-react'
 import { CANCEL_CHALLENGE, CHALLENGE } from '../graphql/mutations'
+import { setChallengePending } from '../reducers/challengeReducer'
 
 const timeOptions = [
   { key: 0, text: '10 sec', value: 10},
@@ -20,26 +22,18 @@ const ChallengeForm = ({ opponent, setChallengeWaiting, close }) => {
   const [ timeControl, setTimeControl ] = useState(300)
   const [ color, setColor ] = useState('white') 
   const [ challenge, challengeResult ] = useMutation(CHALLENGE)
-  const [ cancelChallenge, cancelChallengeResult] = useMutation(CANCEL_CHALLENGE)
+
+  const dispatch = useDispatch()
 
   useEffect(() => {
     if (challengeResult.called && !challengeResult.loading) {
       console.log('challenge result data',challengeResult.data)
-      setChallengeWaiting(opponent.id)
+      //setChallengeWaiting(opponent.id)
+      dispatch(setChallengePending(opponent.id))              //REDUX
       close()
     }
     
   }, [challengeResult.data])
-
-  useEffect(() => {
-    if (cancelChallengeResult.called && !cancelChallengeResult.loading) {
-      console.log('cancelChallenge result data',cancelChallengeResult.data)
-      setChallengeWaiting(null)
-    }
-    
-  }, [cancelChallengeResult.data])
-
-  console.log(timeControl)
 
   const submit = (event) => {
     event.preventDefault()
