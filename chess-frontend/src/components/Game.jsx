@@ -172,7 +172,6 @@ const Game = ({ user }) => {
         setClockRunning(myTurn)
         setChallengeWaiting(null)
         setOpponent(challenge.opponents.challenged)
-        //setBoard(testBoard)
         setMyColor(challenge.color)
         setPlayerToMove('white')
         setBoard(initBoard) //set board last
