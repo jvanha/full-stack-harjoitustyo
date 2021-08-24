@@ -1,12 +1,13 @@
 import { useMutation } from '@apollo/client'
 import React, { useEffect, useState } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { Button, List } from 'semantic-ui-react'
 import { CANCEL_CHALLENGE } from '../graphql/mutations'
 import { clearChallenge, setChallengePending } from '../reducers/challengeReducer'
 import ChallengeModal from './ChallengeModal'
 
-const User = ({ user, me, challengeWaiting, setChallengeWaiting }) => {
+const User = ({ user, me }) => {
+  const pendingChallenge = useSelector(state => state.challenge)
   const [ cancelChallenge, cancelChallengeResult] = useMutation(CANCEL_CHALLENGE)
   const [challengeModalOpen, setChallengeModalOpen] = useState(false)
 
@@ -15,7 +16,6 @@ const User = ({ user, me, challengeWaiting, setChallengeWaiting }) => {
   useEffect(() => {
     if (cancelChallengeResult.called && !cancelChallengeResult.loading) {
       console.log('cancelChallenge result data',cancelChallengeResult.data)
-      //setChallengeWaiting(null)
       dispatch(clearChallenge())              //REDUX
     }
     
@@ -31,14 +31,14 @@ const User = ({ user, me, challengeWaiting, setChallengeWaiting }) => {
       {me && me.id !== user.id
         &&
         <List.Content floated='right'>
-          {challengeWaiting === user.id 
+          {pendingChallenge=== user.id 
             && 
             <>
               <span style={{ margin: 5, color: 'green'}}>waiting</span>
               <Button compact onClick={handleCancel}>cancel</Button>
             </>
           }
-          {!challengeWaiting
+          {!pendingChallenge
             && <Button compact onClick={() => setChallengeModalOpen(true)}>challence</Button>
           }
         </List.Content>
@@ -55,7 +55,6 @@ const User = ({ user, me, challengeWaiting, setChallengeWaiting }) => {
         modalOpen={challengeModalOpen}
         close={() => setChallengeModalOpen(false)}
         opponent={user}
-        setChallengeWaiting={setChallengeWaiting}
       /> 
     </List.Item>
   )

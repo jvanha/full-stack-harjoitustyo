@@ -18,9 +18,7 @@ const LoginForm = ({ setToken, close }) => {
   
   useEffect(() => {
     if (result.data) {
-      console.log(result.data)
       const token = result.data.login
-      console.log(token)
       localStorage.setItem('chess-user-token', token.value)
       setToken(token)
       history.push('/')
@@ -61,8 +59,6 @@ const LoginForm = ({ setToken, close }) => {
           Login
         </Button>
       </Form.Group>
-      
-      
     </Form>
   )
 }

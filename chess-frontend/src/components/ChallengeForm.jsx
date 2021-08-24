@@ -18,7 +18,7 @@ const colorOptions = [
   { key: 1, text: 'White', value: 'white' },
   { key: 2, text: 'Random', value: 'random'},
 ]
-const ChallengeForm = ({ opponent, setChallengeWaiting, close }) => {
+const ChallengeForm = ({ opponent, close }) => {
   const [ timeControl, setTimeControl ] = useState(300)
   const [ color, setColor ] = useState('white') 
   const [ challenge, challengeResult ] = useMutation(CHALLENGE)
@@ -28,7 +28,6 @@ const ChallengeForm = ({ opponent, setChallengeWaiting, close }) => {
   useEffect(() => {
     if (challengeResult.called && !challengeResult.loading) {
       console.log('challenge result data',challengeResult.data)
-      //setChallengeWaiting(opponent.id)
       dispatch(setChallengePending(opponent.id))              //REDUX
       close()
     }

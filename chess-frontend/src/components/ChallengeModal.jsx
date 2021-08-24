@@ -2,7 +2,7 @@ import React from 'react'
 import { Modal } from 'semantic-ui-react'
 import ChallengeForm from './ChallengeForm'
 
-const ChallengeModal = ({ opponent, close, modalOpen, setChallengeWaiting}) => {
+const ChallengeModal = ({ opponent, close, modalOpen }) => {
   return (
     <Modal size='tiny' closeIcon open={modalOpen} onClose={close}>
       <Modal.Header>Challenge {opponent.username}</Modal.Header>
@@ -10,7 +10,6 @@ const ChallengeModal = ({ opponent, close, modalOpen, setChallengeWaiting}) => {
         <ChallengeForm 
           close={close} 
           opponent={opponent}
-          setChallengeWaiting={setChallengeWaiting}
         />
       </Modal.Content>
     </Modal>

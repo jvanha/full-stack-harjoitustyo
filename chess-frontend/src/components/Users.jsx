@@ -6,9 +6,8 @@ import { ALL_USERS } from '../graphql/queries'
 import User from './User'
 
 
-const Users = ({ challengeWaiting, setChallengeWaiting, me}) => {
+const Users = ({ me }) => {
   const result = useQuery(ALL_USERS)
-  const pendingChallenge = useSelector(state => state.challenge)
   //console.log('Users result',result)
   if (result.loading) return <div>loading users...</div>
   if (!result.data || !result.data.allUsers || result.data.allUsers.length === 0)
@@ -24,8 +23,6 @@ const Users = ({ challengeWaiting, setChallengeWaiting, me}) => {
           <User 
             key={user.id}
             user={user}
-            challengeWaiting={pendingChallenge}
-            setChallengeWaiting={setChallengeWaiting}
             me={me}
           />
         )}

@@ -27,27 +27,11 @@ const imgStyle = {
   width: '90%',
 }
 const Piece = ({ piece, moving, reversedBoard, handleDragStart, position, dragging }) => {
-  if (moving) console.log('moving', moving)
-  //const src = piece.color + piece.type + '.png'
-  /*
-  return (
-    <div 
-      style={dragging?draggedPieceStyle:{...testPieceStyle, borderColor, backgroundColor: piece.color, color: piece.color==='black' ? 'white' : 'black'}}
-      draggable
-      onDragStart={(event) => handleSelect(event)}
-      onDragEnd={handleDragEnd}
-      >
-      
-      
-    </div>
-  )
-  */
   let x = 0
   let y = 0
   if (moving) {
     y = -((Math.floor(moving.from/8)-Math.floor(moving.to/8))*63)
     x = -(moving.from%8-moving.to%8)*63
-    console.log('moving', x, y)
   }
   if (reversedBoard) {
     y = -y
@@ -65,5 +49,3 @@ const Piece = ({ piece, moving, reversedBoard, handleDragStart, position, draggi
 }
 
 export default Piece
-
-//, visibility: dragging === position?'hidden':'visible'

@@ -13,7 +13,7 @@ import SettingsModal from './SettingsModal';
 import { toFen } from '../fen';
 import { ME } from '../graphql/queries';
 import { useDispatch, useSelector } from 'react-redux';
-import { setGameState, updateGame, movePieceRedux } from '../reducers/gameReducer';
+import { setGameState, updateGame, movePieceRedux, initGame } from '../reducers/gameReducer';
 
 let squares = Array(64)//[...Array(64).keys()]
 let emptyBoard = Array(64)
@@ -83,6 +83,8 @@ testBoard[14] = [14, { type: 'Q', color: 'white' }]
 const Game = ({ user }) => {
   const dispatch = useDispatch()
   const pendingChallenge = useSelector(state => state.challenge) //JUST FOR TESTING
+  const game = useSelector(state => state.game)
+  
   /*
   const [ game, setGame ] = useState({
     board: emptyBoard,
@@ -113,7 +115,7 @@ const Game = ({ user }) => {
   const [ moves, setMoves] = useState([])
   
   const [ challengeWaiting, setChallengeWaiting ] = useState(null)
-  const [ cancelledChallenge, setCancelledChallenge ] = useState(null)
+
   const [ attackedSquares, setAttackedSquares ] = useState(null)
 
   const [ settingsModalOpen, setSettingsModalOpen ] = useState(false)
@@ -154,7 +156,6 @@ const Game = ({ user }) => {
     onSubscriptionData: ({ subscriptionData }) => {
       console.log('CHALLENGE CANCELLED',subscriptionData)
       const challenger = subscriptionData.data.challengeCancelled.challenger
-      setCancelledChallenge(challenger.id)
       alert(`${challenger.username} has cancelled their challenge`)
     }
   })
@@ -170,7 +171,7 @@ const Game = ({ user }) => {
         setOpponentsClock(challenge.timeControl)
         setOpponentsClockRunning(!myTurn)
         setClockRunning(myTurn)
-        setChallengeWaiting(null)
+
         setOpponent(challenge.opponents.challenged)
         setMyColor(challenge.color)
         setPlayerToMove('white')
@@ -178,14 +179,15 @@ const Game = ({ user }) => {
       }
     }
   })
+
   useSubscription(CHALLENGE_DECLINED, {
     variables: { playerId: user ? user.id : ''},
     onSubscriptionData: ({ subscriptionData }) => {
       console.log('CHALLENGE DECLINED',subscriptionData)
       alert("Your challenge has been declined")
-      setChallengeWaiting(null)
     }
   })
+
   useSubscription(MOVE_MADE, {
     variables: { opponentId: opponent ? opponent.id : ''},
     onSubscriptionData: ({ subscriptionData }) => {
@@ -375,7 +377,6 @@ const Game = ({ user }) => {
     console.log(opponent, playerToMove)
     if (opponent && opponent.id === 'computer' && playerToMove === 'white') {
       const fen = toFen(board, playerToMove, longCastleWhite, shortCastleWhite, longCastleBlack, shortCastleBlack, enPassant)
-      console.log('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
       console.log('fen',fen)
       if (fen) {
         const variables = { fen }
@@ -387,12 +388,12 @@ const Game = ({ user }) => {
   }, [board])
 
   useEffect(() => {
-    console.log(getComputerMoveResult)
+    console.log('getComputerMoveResult',getComputerMoveResult)
     if (getComputerMoveResult.called && !getComputerMoveResult.loading) {
       const move = getComputerMoveResult.data.getComputerMove
       console.log('move', move)
       if (opponent && opponent.id === 'computer' && playerToMove === 'white') {
-        setMoveMade({ ...move, promotion: 'Q'})
+        setMoveMade({ ...move, promotion: 'Q'})                                     //VIIIIIIIIRRRRRRRHE
         setOpponentsClockRunning(false)
         setClockRunning(true)
       }
@@ -529,21 +530,6 @@ const Game = ({ user }) => {
       }
       setPlayerToMove(playerToMove === 'white' ? 'black' : 'white')
       setBoard(newBoard)
-      
-      
-    //YLIMÄäRäINEN?
-    /*
-    if (myColor==='white') {
-      if (isCheckMated('black', board, enPassant)) {
-        createGame({
-          variables: {
-            whiteId: user.id,
-            blackId: opponent.id,
-            winner: 'white'
-          }})
-      }
-    }
-    */
   }
   
   const handleShow = (color) => {
@@ -569,6 +555,13 @@ const Game = ({ user }) => {
     deleteGameState()
   }
   const playComputer = () => {
+    dispatch(initGame({                                               //REDUX
+      opponent: { username: 'Computer', id: 'computer'},
+      clock: 300,
+      opponentsClock: 300,
+      opponentsClockRunning: true,
+      myColor: 'black',
+    }))
     setOpponent({ username: 'Computer', id: 'computer'})
     setLongCastleBlack(true)
     setShortCastleBlack(true)
@@ -606,13 +599,6 @@ const Game = ({ user }) => {
           board={board} 
           movePiece={movePiece}
           attackedSquares={attackedSquares}
-          playerToMove={playerToMove}
-          longCastleBlack={longCastleBlack}
-          longCastleWhite={longCastleWhite}
-          shortCastleBlack={shortCastleBlack}
-          shortCastleWhite={shortCastleWhite}
-          enPassant={enPassant}
-          myColor={myColor}
           gameSettings={gameSettings}
           moveMade={moveMade}
           makeAMove={handleMoveMaking}
@@ -655,8 +641,6 @@ const Game = ({ user }) => {
         </Menu>
         {activeMenuItem === 'players'
           && <Users 
-          challengeWaiting={challengeWaiting}
-          setChallengeWaiting={setChallengeWaiting}
           me={user}
           /> 
         }

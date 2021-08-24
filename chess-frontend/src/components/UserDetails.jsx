@@ -5,7 +5,6 @@ import { Container, Header, Table } from 'semantic-ui-react'
 import { setReplayState } from '../reducers/replayReducer'
 
 const UserDetails = ({ user }) => {
-  console.log(user)
   const history = useHistory()
   const dispatch = useDispatch()
   const handleShow = (game) => {

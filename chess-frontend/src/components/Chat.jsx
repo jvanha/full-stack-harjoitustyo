@@ -6,30 +6,16 @@ import { ALL_MESSAGES } from '../graphql/queries'
 
 const Chat = () => {
   const [ message, setMessage ] = useState('')
-  const client = useApolloClient()
   const allMessagesResult = useQuery(ALL_MESSAGES)
-  //console.log('Users result',result)
-  const [ addMessage, result ] = useMutation(ADD_MESSAGE) 
+
+  const [ addMessage ] = useMutation(ADD_MESSAGE) 
 
   const submit = (event) => {
     event.preventDefault()
     addMessage({variables: { message }})
-    
     setMessage('')
   }
-  /*
-  useEffect(()=>{
-    console.log('result.data changed', result.data)
-    if (result.data) {
-      const addedMessage = result.data.addMessage
-      const messagesInStorage = client.readQuery({ query: ALL_MESSAGES })
-      client.writeQuery({
-        query: ALL_MESSAGES,
-        data: { allMessages: messagesInStorage.allMessages.concat(addedMessage)}
-      })
-    }
-  },[result.data])
-  */
+
   const time = (date) => {
     const commentDate = new Date(date)
     const elapsed = Date.now() - commentDate
@@ -43,7 +29,7 @@ const Chat = () => {
     return 'Just now'
   }
   if (allMessagesResult.loading) return <div>loading...</div>
-  console.log('allMessagesResult',allMessagesResult)
+
   return (
     <Comment.Group size='mini'>
       {allMessagesResult.data && allMessagesResult.data.allMessages.map(message =>

@@ -26,7 +26,9 @@ const boardStyleReversed = {
 }
 
 
-const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myColor, gameSettings, makeAMove, ...props}) => {
+const Board = ({ movePiece, attackedSquares, gameSettings, makeAMove, ...props}) => {
+  const game = useSelector(state => state.game)
+  const { board, myColor, enPassant, playerToMove } = game
   const [ selectedSquare, setSelectedSquare ] = useState(null)
   const [ validMoves, setValidMoves ] = useState([])
   const [ promotionPortalOpen, setPromotionPortalOpen ] = useState(false)
@@ -41,10 +43,10 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myC
 
   useEffect(() => {
     if (playerToMove === 'white') {
-      setValidMoves(legalMoves(selectedSquare, board, props.longCastleWhite, props.shortCastleWhite, enPassant))
+      setValidMoves(legalMoves(selectedSquare, board, game.longCastleWhite, game.shortCastleWhite, enPassant))
     }
     else {
-      setValidMoves(legalMoves(selectedSquare, board, props.longCastleBlack, props.shortCastleBlack, enPassant))
+      setValidMoves(legalMoves(selectedSquare, board, game.longCastleBlack, game.shortCastleBlack, enPassant))
     }
     
   },[selectedSquare, board])
@@ -119,8 +121,7 @@ const Board = ({ board, movePiece, attackedSquares, playerToMove, enPassant, myC
   }
   
   const handleDragStart = (event, position) => {
-    console.log(event)
-    console.log(position)
+    console.log('drag start')
     dragObject.current = event.target
     dragObject.current.addEventListener('dragend', handleDragEnd)
     setTimeout(() => {

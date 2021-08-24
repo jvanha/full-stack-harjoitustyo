@@ -1,7 +1,5 @@
 import React from 'react'
 import { Icon, Label } from 'semantic-ui-react'
-const clockStyle = {
-}
 
 const trimTime = (n) => {
   if (n<10) {

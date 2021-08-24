@@ -1,6 +1,6 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
-import { Container, Menu, MenuHeader, Segment, Sidebar } from 'semantic-ui-react'
+import { Menu, } from 'semantic-ui-react'
 
 const MySideBar = () => {
   const history = useHistory()

@@ -111,7 +111,6 @@ const gameReducer = (state = initialState, action) => {
         shortCastleBlack,
         longCastleWhite,
         shortCastleWhite,
-        ...rest
       } = state
 
       const { from, to, promotion } = action.data
@@ -120,7 +119,7 @@ const gameReducer = (state = initialState, action) => {
 
       const squareFrom = board[from]
       const type = squareFrom[1].type
-
+      const nextPlayerToMove = playerToMove === 'white' ? 'black' : 'white'
       const newMove = {
         ...action.data,
         time: myTurn ? clock : opponentsClock,
@@ -141,6 +140,7 @@ const gameReducer = (state = initialState, action) => {
 
       if (type==='K') {
         return {
+          ...state,
           moves: [
             ...state.moves,
             newMove,
@@ -153,11 +153,12 @@ const gameReducer = (state = initialState, action) => {
           opponentsClockRunning: myTurn,
           clockRunning: !myTurn,
           enPassant: null,
-          ...state
+          playerToMove: nextPlayerToMove,
         }
       }
       if (type === 'R') {
         return {
+          ...state,
           moves: [
             ...state.moves,
             newMove,
@@ -170,11 +171,12 @@ const gameReducer = (state = initialState, action) => {
           opponentsClockRunning: myTurn,
           clockRunning: !myTurn,
           enPassant: null,
-          ...state
+          playerToMove: nextPlayerToMove,
         }
       }
-      
+
       return {
+        ...state,
         board: newBoard,
         moves: [
           ...state.moves,
@@ -187,7 +189,7 @@ const gameReducer = (state = initialState, action) => {
         ],
         opponentsClockRunning: myTurn,
         clockRunning: !myTurn,
-        ...state 
+        playerToMove: nextPlayerToMove,
       }
     }
     default:

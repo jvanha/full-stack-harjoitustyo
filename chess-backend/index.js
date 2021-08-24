@@ -465,6 +465,7 @@ const resolvers = {
       engine.engine.postMessage(`go`)
       
       const fenMove = await getbestmove(currentUser.id)
+      console.log('fenMove', fenMove)
       const from = (8-parseInt(fenMove[1]))*8 + fenMove.charCodeAt(0) - 97
       const to = (8-parseInt(fenMove[3]))*8 + fenMove.charCodeAt(2) - 97
       const move = { from, to }

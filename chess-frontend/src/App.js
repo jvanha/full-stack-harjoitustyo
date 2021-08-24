@@ -114,12 +114,14 @@ useSubscription(MESSAGE_ADDED, {
       const challenge = subscriptionData.data.challengeAccepted
       if (pendingChallenge === challenge.opponents.challenged.id) {
         //dispatch(clearChallenge())              TESTING
+        const myTurn = challenge.color === 'white'
         dispatch(initGame({
           opponent: challenge.opponents.challenged,
           myColor: challenge.color,
           clock: challenge.timeControl,
+          clockRunning: myTurn,
           opponentsClock: challenge.timeControl,
-          opponentsClockRunning: true,
+          opponentsClockRunning: !myTurn,
 
         }))
       }
@@ -236,6 +238,7 @@ useSubscription(MESSAGE_ADDED, {
         clockRunning: true,
         opponentsClockRunning: true,
         playerToMove: 'white',
+        myColor: challenge.color==='white' ? 'black' : 'white',
       }))
 
     }
