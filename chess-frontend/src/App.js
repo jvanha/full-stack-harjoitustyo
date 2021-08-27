@@ -19,16 +19,18 @@ import { ALL_MESSAGES, ALL_USERS, ME } from './graphql/queries'
 import { CHALLENGE_ACCEPTED, CHALLENGE_DECLINED, CHALLENGE_ISSUED, MESSAGE_ADDED, MOVE_MADE, USER_LOGGED_IN, USER_LOGGED_OUT } from './graphql/subscriptions'
 import { clearChallenge } from './reducers/challengeReducer'
 import { initGame, updateGame } from './reducers/gameReducer'
-import { setUserRedux } from './reducers/userReducer'
+import { clearUser, setUserRedux } from './reducers/userReducer'
 
 const App = () => {
   const dispatch = useDispatch()
   const game = useSelector(state => state.game)
-  const reduxuser = useSelector(state => state.user)
+  const reduxuser = useSelector(state => state.user.user)
   const pendingChallenge = useSelector(state => state.challenge)
   const history = useHistory()
   const [loginModalOpen, setLoginModalOpen] = useState(false)
   const [registryModalOpen, setRegistryModalOpen] = useState(false)
+  const [clock, setClock] = useState(300)
+  const [opponentsClock, setOpponentsClock] = useState(300)
 
   const [token, setToken] = useState(null)
   //const [user, setUser] = useState(null)
@@ -113,8 +115,9 @@ useSubscription(MESSAGE_ADDED, {
       console.log('subscriptionData', subscriptionData)
       const challenge = subscriptionData.data.challengeAccepted
       if (pendingChallenge === challenge.opponents.challenged.id) {
-        //dispatch(clearChallenge())              TESTING
-        const myTurn = challenge.color === 'white'
+        console.log('LETS PLAY!')
+        //dispatch(clearChallenge())
+        const myTurn = challenge.color === 'black'
         dispatch(initGame({
           opponent: challenge.opponents.challenged,
           myColor: challenge.color,
@@ -122,14 +125,14 @@ useSubscription(MESSAGE_ADDED, {
           clockRunning: myTurn,
           opponentsClock: challenge.timeControl,
           opponentsClockRunning: !myTurn,
-
+          playerToMove: 'white'
         }))
       }
     }
   })
   
   useSubscription(CHALLENGE_DECLINED, {
-    variables: { playerId: user ? user.id : ''},
+    variables: { playerId: reduxuser ? reduxuser.id : ''},
     onSubscriptionData: ({ subscriptionData }) => {
       console.log('(App) CHALLENGE DECLINED',subscriptionData)
       alert("(App) Your challenge has been declined")
@@ -144,8 +147,8 @@ useSubscription(MESSAGE_ADDED, {
       const {from, to, time, promotion } = subscriptionData.data.moveMade.move  
       const {board, myColor, moves, opponent, ...rest } = game 
       if (time === 0) {
-        const whiteId = myColor === 'white' ? user.id : opponent.id
-        const blackId = myColor === 'black' ? user.id : opponent.id
+        const whiteId = myColor === 'white' ? reduxuser.id : opponent.id
+        const blackId = myColor === 'black' ? reduxuser.id : opponent.id
         const winner = myColor
         
         //only the winner creates a new game
@@ -237,9 +240,29 @@ useSubscription(MESSAGE_ADDED, {
         playerToMove: 'white',
         myColor: challenge.color==='white' ? 'black' : 'white',
       }))
-
+      setClock(timeControl)                                         //TRY TO MOVE TO REDUX 
+      setOpponentsClock(timeControl)
     }
   }, [acceptChallengeResult.data])
+
+  useEffect(() => {
+    if (game.clockRunning) {
+      const interval = setInterval(() => {
+        setClock(clock => clock - 1)                                  //KESKEN??
+      }, 1000)
+      return () => clearInterval(interval)
+    }
+  }, [game.clockRunning])
+
+  useEffect(() => {
+    if (game.opponentsClockRunning) {
+      const interval = setInterval(() => {
+        setOpponentsClock(opponentsClock => opponentsClock - 1)     //KESKEN??
+      }, 1000)
+      return () => clearInterval(interval)
+    }
+  }, [game.opponentsClockRunning])
+
 
   const date = new Date()
   return (
@@ -295,7 +318,7 @@ useSubscription(MESSAGE_ADDED, {
               <Route path='/home'>
                 {reduxuser 
                   ? 
-                  <UserDetails user={user}/>
+                  <UserDetails user={reduxuser}/>
                   :
                   <Segment inverted>
                     <Header>tervetuloa</Header>
@@ -304,7 +327,7 @@ useSubscription(MESSAGE_ADDED, {
                 }
               </Route>
               <Route path='/play'>
-                <Game user={user}/>
+                <Game user={reduxuser} clocks={{ clock, opponentsClock }}/>
               </Route>
               <Route path='/replay'>
                 <ReplayBoard/>

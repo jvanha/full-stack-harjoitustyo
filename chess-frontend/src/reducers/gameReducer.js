@@ -192,6 +192,9 @@ const gameReducer = (state = initialState, action) => {
         playerToMove: nextPlayerToMove,
       }
     }
+    case 'DECREMENT_CLOCK': {
+      return {...state, clock: state.clock-1}
+    }
     default:
       return state
   }
@@ -227,6 +230,12 @@ export const movePieceRedux = (move) => {
   return {
     type: 'MOVE_PIECE',
     data: move,
+  }
+}
+
+export const decrementClock = () => {
+  return {
+    type: 'DECREMENT_CLOCK',
   }
 }
 

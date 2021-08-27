@@ -13,7 +13,7 @@ import SettingsModal from './SettingsModal';
 import { toFen } from '../fen';
 import { ME } from '../graphql/queries';
 import { useDispatch, useSelector } from 'react-redux';
-import { setGameState, updateGame, movePieceRedux, initGame } from '../reducers/gameReducer';
+import { setGameState, updateGame, movePieceRedux, initGame, decrementClock } from '../reducers/gameReducer';
 
 let squares = Array(64)//[...Array(64).keys()]
 let emptyBoard = Array(64)
@@ -84,6 +84,7 @@ const Game = ({ user }) => {
   const dispatch = useDispatch()
   const pendingChallenge = useSelector(state => state.challenge) //JUST FOR TESTING
   const game = useSelector(state => state.game)
+  //const user = useSelector(state => state.user.user)
   
   /*
   const [ game, setGame ] = useState({
@@ -166,7 +167,7 @@ const Game = ({ user }) => {
       console.log('subscriptionData', subscriptionData)
       const challenge = subscriptionData.data.challengeAccepted
       if (pendingChallenge === challenge.opponents.challenged.id) { //challengeWaiting is UNDEFINED from now on
-        const myTurn = challenge.color === 'white'
+        const myTurn = challenge.color === 'black'
         setClock(challenge.timeControl)
         setOpponentsClock(challenge.timeControl)
         setOpponentsClockRunning(!myTurn)
@@ -283,13 +284,14 @@ const Game = ({ user }) => {
   }, [acceptChallengeResult.data])
 
   useEffect(() => {
-    if (clockRunning) {
+    if (game.clockRunning) {
       const interval = setInterval(() => {
         setClock(clock => clock - 1)
+        dispatch(decrementClock())
       }, 1000)
       return () => clearInterval(interval)
     }
-  }, [clockRunning])
+  }, [game.clockRunning])
 
   useEffect(() => {
     if (opponentsClockRunning) {
@@ -303,13 +305,14 @@ const Game = ({ user }) => {
   useEffect(() => {
     if (clock < 0) {
       alert('you lost by timeout')
-      setClock(0)
+      setClock(clock => 0)
       makeAMove({ variables: { userId: user.id, from: 0, to: 0, time: 0}})
       setClockRunning(false)
       setPlayerToMove(null)
       deleteGameState()
       const gameState = loadGameState()
       console.log('deleted gamestate', gameState)
+      console.log("clock", clock)
     }
   }, [clock])
 
@@ -611,8 +614,8 @@ const Game = ({ user }) => {
           </Label>
           }
           <Clock time={clock}/>
-
         </div>
+        
         {!attackedSquares && <button onClick={() => handleShow('black')}>show black's attack</button>}
         {!attackedSquares && <button onClick={() => handleShow('white')}>show white's attack</button>}
         {attackedSquares && <button onClick={() => handleShow('')}>hide attack</button>}
