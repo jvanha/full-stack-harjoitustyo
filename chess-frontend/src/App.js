@@ -31,7 +31,7 @@ const App = () => {
   const [registryModalOpen, setRegistryModalOpen] = useState(false)
 
   const [token, setToken] = useState(null)
-  const [user, setUser] = useState(null)
+  //const [user, setUser] = useState(null)
   const client = useApolloClient()
 
   const [getUser, meResult] = useLazyQuery(ME, { fetchPolicy: 'network-only' }) 
@@ -194,7 +194,8 @@ useSubscription(MESSAGE_ADDED, {
     if (logoutResult.called && !logoutResult.loading) {
       //console.log('CLEAR LOCAL STORAGE')
       localStorage.clear()
-      setUser(null)
+      //setUser(null)
+      dispatch(clearUser())
       client.resetStore()
     }
     
@@ -203,13 +204,9 @@ useSubscription(MESSAGE_ADDED, {
   useEffect(() => {
     console.log('meResult changed', meResult.data)
     if (meResult.data && meResult.data.me) {
-      //console.log('meResult.data.me',meResult.data.me)
       const itsme = meResult.data.me
-      //console.log({ id: itsme.id, username: itsme.username })
-      setUser(itsme)
+      //setUser(itsme)
       dispatch(setUserRedux(meResult.data.me))
-      //console.log('user', user)
-      
     }
   }, [meResult])
 
@@ -263,7 +260,7 @@ useSubscription(MESSAGE_ADDED, {
             <Icon name='chess'/>
             Play
           </Menu.Item>
-          {user && 
+          {reduxuser && 
             <Menu.Item as='a' onClick={() => history.push('/rules')}>
               <Icon name='chess board'/>
               Rules
@@ -275,7 +272,7 @@ useSubscription(MESSAGE_ADDED, {
           </Menu.Item>
           <Divider />
           <div>
-            {user
+            {reduxuser
               ? <Button inverted onClick={logout}>Logout</Button>
               : <Button.Group compact>
                   <Button inverted onClick={() => setLoginModalOpen(true)}>login</Button>
@@ -296,7 +293,7 @@ useSubscription(MESSAGE_ADDED, {
                 <ChallengeForm />
               </Route>
               <Route path='/home'>
-                {user 
+                {reduxuser 
                   ? 
                   <UserDetails user={user}/>
                   :
