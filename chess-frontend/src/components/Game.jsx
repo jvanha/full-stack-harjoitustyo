@@ -291,7 +291,7 @@ const Game = ({ user }) => {
       }, 1000)
       return () => clearInterval(interval)
     }
-  }, [game.clockRunning])
+  }, [clockRunning])
 
   useEffect(() => {
     if (opponentsClockRunning) {
