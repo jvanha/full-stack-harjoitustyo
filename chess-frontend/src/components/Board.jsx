@@ -1,7 +1,9 @@
+import { useMutation } from '@apollo/client'
 import React, { useRef } from 'react'
 import { useEffect } from 'react'
 import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { MAKE_A_MOVE } from '../graphql/mutations'
 import { movePieceRedux } from '../reducers/gameReducer'
 import { legalMoves } from '../utilFunctions'
 import MySquare from './MySquare'
@@ -26,8 +28,10 @@ const boardStyleReversed = {
 }
 
 
-const Board = ({ movePiece, attackedSquares, gameSettings, makeAMove, ...props}) => {
+const Board = ({ clock, attackedSquares, gameSettings, ...props}) => {
+  const dispatch = useDispatch()
   const game = useSelector(state => state.game)
+  const user = useSelector(state => state.user.user)
   const { board, myColor, enPassant, playerToMove } = game
   const [ selectedSquare, setSelectedSquare ] = useState(null)
   const [ validMoves, setValidMoves ] = useState([])
@@ -39,7 +43,8 @@ const Board = ({ movePiece, attackedSquares, gameSettings, makeAMove, ...props})
   
   const dragObject = useRef()
   
-  const dispatch = useDispatch()
+  const [ makeAMove ] = useMutation(MAKE_A_MOVE)
+  
 
   useEffect(() => {
     if (playerToMove === 'white') {
@@ -58,11 +63,20 @@ const Board = ({ movePiece, attackedSquares, gameSettings, makeAMove, ...props})
   }, [promotion])
 
   useEffect(() => {
-    console.log('useEffect on movingPiece', movingPiece)
     if (tempSquare && movingPiece) {
-      makeAMove(selectedSquare[0], tempSquare[0], promotion?promotion:'Q')
+      const from = selectedSquare[0]
+      const to = tempSquare[0]
+      const promoted = game.board[from][1].type === 'P' && (Math.floor(to/8) === 0 || Math.floor(to/8) === 7)
+      makeAMove({ variables: {
+        userId: user.id,
+        from,
+        to,
+        time: clock,
+        promotion: promoted ? promotion : null, 
+      }})
+
       setTimeout(() => {
-        movePiece(selectedSquare[0], tempSquare[0], promotion?promotion:'Q')
+        //movePiece(selectedSquare[0], tempSquare[0], promotion?promotion:'Q')
         setMovingPiece(null)
         setPromotion(null)
         setTempSquare(null)
@@ -84,7 +98,7 @@ const Board = ({ movePiece, attackedSquares, gameSettings, makeAMove, ...props})
       if (from && to) {
         setMovingPiece({from, to})
         setTimeout(() => {
-          movePiece(from,to,promotion)
+          //movePiece(from,to,promotion)
           setMovingPiece(null)
           setPromotion(null)
 

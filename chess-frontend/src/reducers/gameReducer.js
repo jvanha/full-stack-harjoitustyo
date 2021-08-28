@@ -37,6 +37,7 @@ initBoard[62] = [62, { type: 'N', color: 'white' }]
 initBoard[63] = [63, { type: 'R', color: 'white' }]
 
 const initialState = {
+  gameOn: false,
   myColor: 'white',
   playerToMove: null,
   clock: 0,
@@ -88,7 +89,7 @@ const gameReducer = (state = initialState, action) => {
   console.log('gameReducer',action)
   switch (action.type) {
     case 'INIT_GAME': {
-      return {...initialState, ...action.data}
+      return {...initialState, ...action.data, gameOn: true }
     }
     case 'SET_GAME':
       return action.data
@@ -113,7 +114,7 @@ const gameReducer = (state = initialState, action) => {
         shortCastleWhite,
       } = state
 
-      const { from, to, promotion } = action.data
+      const { from, to, time, promotion } = action.data
       const promoted = state.board[from][1].type === 'P' && (Math.floor(to/8) === 0 || Math.floor(to/8) === 7)
       const myTurn = playerToMove === myColor
 
@@ -122,7 +123,7 @@ const gameReducer = (state = initialState, action) => {
       const nextPlayerToMove = playerToMove === 'white' ? 'black' : 'white'
       const newMove = {
         ...action.data,
-        time: myTurn ? clock : opponentsClock,
+        time,
         promotion: promoted ? promotion : null, 
         takenPiece: board[to][1]
       }
@@ -182,7 +183,7 @@ const gameReducer = (state = initialState, action) => {
           ...state.moves,
           {
             ...action.data,
-            time: myTurn ? clock : opponentsClock,   //What if the clocks are not in sync at this point?
+            time,   //What if the clocks are not in sync at this point?
             promotion: promoted ? promotion : null, 
             takenPiece: board[to][1]
           }
@@ -194,6 +195,15 @@ const gameReducer = (state = initialState, action) => {
     }
     case 'DECREMENT_CLOCK': {
       return {...state, clock: state.clock-1}
+    }
+    case 'END_GAME': {
+      return {
+        ...state,
+        playerToMove: null,
+        clockRunning: false,
+        opponentsClockRunning: false,
+        ...action.data
+      }
     }
     default:
       return state
@@ -236,6 +246,13 @@ export const movePieceRedux = (move) => {
 export const decrementClock = () => {
   return {
     type: 'DECREMENT_CLOCK',
+  }
+}
+
+export const endGame = (data) => {
+  return {
+    type: 'END_GAME',
+    data
   }
 }
 

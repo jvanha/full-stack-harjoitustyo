@@ -13,7 +13,7 @@ import SettingsModal from './SettingsModal';
 import { toFen } from '../fen';
 import { ME } from '../graphql/queries';
 import { useDispatch, useSelector } from 'react-redux';
-import { setGameState, updateGame, movePieceRedux, initGame, decrementClock } from '../reducers/gameReducer';
+import { setGameState, updateGame, movePieceRedux, initGame, decrementClock, endGame } from '../reducers/gameReducer';
 
 let squares = Array(64)//[...Array(64).keys()]
 let emptyBoard = Array(64)
@@ -80,24 +80,11 @@ testBoard[63] = [63, { type: 'K', color: 'white' }]
 testBoard[11] = [11, { type: 'P', color: 'white' }]
 testBoard[14] = [14, { type: 'Q', color: 'white' }]
 
-const Game = ({ user }) => {
+const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
   const dispatch = useDispatch()
   const pendingChallenge = useSelector(state => state.challenge) //JUST FOR TESTING
   const game = useSelector(state => state.game)
-  //const user = useSelector(state => state.user.user)
-  
-  /*
-  const [ game, setGame ] = useState({
-    board: emptyBoard,
-    playerToMove: null,
-    shortCastleWhite: true,
-    shortCastleBlack: true,
-    longCastleWhite: true,
-    longCastleBlack: true,
-    enPassant: null,
-    clock: 0,
-    opponentsClock: 0,
-  })*/
+
   const [ activeMenuItem, setActiveMenuItem ] = useState("players")
   
   const [ board, setBoard ] = useState(emptyBoard)
@@ -109,14 +96,7 @@ const Game = ({ user }) => {
   const [ enPassant, setEnpassant ] = useState(null)
   const [ opponent, setOpponent ] = useState(null)
   const [ myColor, setMyColor ] = useState(null)
-  const [ clock, setClock ] = useState(10)
-  const [ clockRunning, setClockRunning] = useState(false)
-  const [ opponentsClock, setOpponentsClock ] = useState(10)
-  const [ opponentsClockRunning, setOpponentsClockRunning] = useState(false)
   const [ moves, setMoves] = useState([])
-  
-  const [ challengeWaiting, setChallengeWaiting ] = useState(null)
-
   const [ attackedSquares, setAttackedSquares ] = useState(null)
 
   const [ settingsModalOpen, setSettingsModalOpen ] = useState(false)
@@ -126,9 +106,7 @@ const Game = ({ user }) => {
   const [ acceptChallenge, acceptChallengeResult ] = useMutation(ACCEPT_CHALLENGE)
   const [ declineChallenge, declineChallengeResult ] = useMutation(DECLINE_CHALLENGE)
   const [ makeAMove, makeAMoveResult ] = useMutation(MAKE_A_MOVE)
-  const [ createGame, createGameResult ] = useMutation(CREATE_GAME, {
-    refetchQueries: [  {query: ME} ],
-  })
+  
   const [ resign ] = useMutation(RESIGN)
   const [ getComputerMove, getComputerMoveResult ] = useMutation(GET_COMPUTER_MOVE)
   
@@ -152,86 +130,6 @@ const Game = ({ user }) => {
       }
     }
   })
-  useSubscription(CHALLENGE_CANCELLED, {
-    variables: { playerId: user ? user.id : ''},
-    onSubscriptionData: ({ subscriptionData }) => {
-      console.log('CHALLENGE CANCELLED',subscriptionData)
-      const challenger = subscriptionData.data.challengeCancelled.challenger
-      alert(`${challenger.username} has cancelled their challenge`)
-    }
-  })
-  useSubscription(CHALLENGE_ACCEPTED, {
-    variables: { playerId: user ? user.id : ''},
-    onSubscriptionData: ({ subscriptionData }) => {
-      console.log('pendingChallenge',pendingChallenge)
-      console.log('subscriptionData', subscriptionData)
-      const challenge = subscriptionData.data.challengeAccepted
-      if (pendingChallenge === challenge.opponents.challenged.id) { //challengeWaiting is UNDEFINED from now on
-        const myTurn = challenge.color === 'black'
-        setClock(challenge.timeControl)
-        setOpponentsClock(challenge.timeControl)
-        setOpponentsClockRunning(!myTurn)
-        setClockRunning(myTurn)
-
-        setOpponent(challenge.opponents.challenged)
-        setMyColor(challenge.color)
-        setPlayerToMove('white')
-        setBoard(initBoard) //set board last
-      }
-    }
-  })
-
-  useSubscription(CHALLENGE_DECLINED, {
-    variables: { playerId: user ? user.id : ''},
-    onSubscriptionData: ({ subscriptionData }) => {
-      console.log('CHALLENGE DECLINED',subscriptionData)
-      alert("Your challenge has been declined")
-    }
-  })
-
-  useSubscription(MOVE_MADE, {
-    variables: { opponentId: opponent ? opponent.id : ''},
-    onSubscriptionData: ({ subscriptionData }) => {
-      console.log('MOVE MADE', subscriptionData)
-      const {from, to, time, promotion } = subscriptionData.data.moveMade.move
-      if (time === 0) {
-        const whiteId = myColor === 'white' ? user.id : opponent.id
-        const blackId = myColor === 'black' ? user.id : opponent.id
-        const winner = myColor
-        //only the winner creates a new game
-        createGame({ variables: { input: { whiteId, blackId, winner, moves} }})
-        alert('You won by timeout')
-        setClockRunning(false)
-        setPlayerToMove(null)
-        deleteGameState()
-
-      } else {
-        setMoves(moves.concat({from, to, time, promotion, takenPiece: board[to][1]}))
-        setMoveMade({from, to, time, promotion})
-        setClockRunning(true)
-      }
-      setOpponentsClockRunning(false)
-      setOpponentsClock(time)
-    } 
-  })
-
-  useSubscription(OPPONENT_RESIGNED, {
-    variables: { opponentId: opponent ? opponent.id : ''},
-    onSubscriptionData: ({ subscriptionData }) => {
-      console.log('OPPONENT RESIGNED',subscriptionData)
-      const whiteId = myColor === 'white' ? user.id : opponent.id
-      const blackId = myColor === 'black' ? user.id : opponent.id
-      const winner = myColor
-      //only the winner creates a new game
-      console.log('moves',moves)
-      createGame({ variables: { input: { whiteId, blackId, winner, moves} }})
-      alert("You won by resignation")
-      setClockRunning(false)
-      setOpponentsClockRunning(false)
-      setPlayerToMove(null)
-      deleteGameState()
-    }
-  })
 
   useEffect(() => {
     
@@ -239,19 +137,12 @@ const Game = ({ user }) => {
     
     console.log('Load gameState', gameState)
     if (gameState) {
-      dispatch(setGameState(gameState))
-      console.log('gameState.board', gameState.board)
-      setBoard(gameState.board)
-      setMyColor(gameState.myColor)
-      gameState.clockRunning ? setClock(gameState.clock-Math.floor((Date.now()-gameState.timeStamp) / 1000)) : setClock(gameState.clock)
-      gameState.opponentsClockRunning ? setOpponentsClock(gameState.opponentsClock-Math.floor((Date.now()-gameState.timeStamp) / 1000)) : setOpponentsClock(gameState.opponentsClock)
-      setPlayerToMove(gameState.playerToMove)
-      setOpponent(gameState.opponent)
-      setLongCastleBlack(gameState.longCastleBlack)
-      setLongCastleWhite(gameState.longCastleWhite)
-      setShortCastleBlack(gameState.shortCastleBlack)
-      setShortCastleWhite(gameState.shortCastleWhite)
-      setEnpassant(gameState.enPassant)
+      dispatch(updateGame({
+        ...gameState,
+        clock: gameState.clockRunning ? gameState.clock-Math.floor((Date.now()-gameState.timeStamp) / 1000) : gameState.clock,
+        opponentsClockRunning: gameState.opponentsClockRunning ? gameState.opponentsClock-Math.floor((Date.now()-gameState.timeStamp) / 1000) : gameState.opponentsClock
+      }))
+      //dispatch(setGameState(gameState))
       setClockRunning(gameState.clockRunning)
       setOpponentsClockRunning(gameState.opponentsClockRunning)
     }
@@ -263,56 +154,14 @@ const Game = ({ user }) => {
     }
     console.log('gameSettings', gameSettings)
   },[])
-  
-  useEffect(() => {
-    if (acceptChallengeResult.called && !acceptChallengeResult.loading) {
-      //POTENTTIAALISESTI VÄÄRIN
-      console.log('acceptChallengeResult',acceptChallengeResult)
-      const challenge = acceptChallengeResult.data.acceptChallenge
-      const myTurn = challenge.color === 'black'
-      setOpponent(challenge.opponents.challenger)
-      //setBoard(testBoard)
-      setMyColor(challenge.color==='white' ? 'black' : 'white')
-      setClock(challenge.timeControl)
-      setOpponentsClock(challenge.timeControl)
-      setClockRunning(myTurn)
-      setOpponentsClockRunning(!myTurn)
-      setPlayerToMove('white')
-      setBoard(initBoard)
-      console.log('Game on!')
-    }
-  }, [acceptChallengeResult.data])
-
-  useEffect(() => {
-    if (game.clockRunning) {
-      const interval = setInterval(() => {
-        setClock(clock => clock - 1)
-        dispatch(decrementClock())
-      }, 1000)
-      return () => clearInterval(interval)
-    }
-  }, [clockRunning])
-
-  useEffect(() => {
-    if (opponentsClockRunning) {
-      const interval = setInterval(() => {
-        setOpponentsClock(opponentsClock => opponentsClock - 1)
-      }, 1000)
-      return () => clearInterval(interval)
-    }
-  }, [opponentsClockRunning])
 
   useEffect(() => {
     if (clock < 0) {
       alert('you lost by timeout')
-      setClock(clock => 0)
-      makeAMove({ variables: { userId: user.id, from: 0, to: 0, time: 0}})
-      setClockRunning(false)
-      setPlayerToMove(null)
+      setClock(0)
+      dispatch(endGame())
+      makeAMove({ variables: { userId: user.id, from: 0, to: 0, time: 0 } })
       deleteGameState()
-      const gameState = loadGameState()
-      console.log('deleted gamestate', gameState)
-      console.log("clock", clock)
     }
   }, [clock])
 
@@ -346,7 +195,7 @@ const Game = ({ user }) => {
           console.log('YOU WON, opponent.id:',opponent.id)
           if (opponent.id !== 'computer') {
             console.log('moves',moves)
-            createGame({ variables: { input: { whiteId, blackId, winner, moves} }})
+            //createGame({ variables: { input: { whiteId, blackId, winner, moves} }})
           }
           alert('You won')
           setPlayerToMove(null)
@@ -356,28 +205,15 @@ const Game = ({ user }) => {
         }
       } else {
         const gameState = {
-          myColor,
-          playerToMove,
-          clock,
-          opponentsClock,
-          opponent,
-          longCastleBlack,
-          longCastleWhite,
-          shortCastleBlack,
-          shortCastleWhite,
-          enPassant,
-          board,
-          clockRunning,
-          opponentsClockRunning,
+          ...game,
           timeStamp: Date.now(),
-          moves,
         }
         console.log('SAVING gameState', gameState)
         saveGameState(gameState)
       }
     }
 
-    console.log(opponent, playerToMove)
+
     if (opponent && opponent.id === 'computer' && playerToMove === 'white') {
       const fen = toFen(board, playerToMove, longCastleWhite, shortCastleWhite, longCastleBlack, shortCastleBlack, enPassant)
       console.log('fen',fen)
@@ -388,7 +224,7 @@ const Game = ({ user }) => {
       }
     }
  
-  }, [board])
+  }, [game.board])
 
   useEffect(() => {
     console.log('getComputerMoveResult',getComputerMoveResult)
@@ -428,7 +264,7 @@ const Game = ({ user }) => {
     }))
   }
   
-
+/*
   const movePiece = (from, to, promotion) => {
     if (opponent && playerToMove === myColor) {
       setClockRunning(false)
@@ -439,7 +275,7 @@ const Game = ({ user }) => {
     console.log(to)
     console.log(board)
 
-    const squareFrom = board[from]
+    const squareFrom = game.board[from]
     const color = squareFrom[1].color
     const type = squareFrom[1].type
     
@@ -534,7 +370,7 @@ const Game = ({ user }) => {
       setPlayerToMove(playerToMove === 'white' ? 'black' : 'white')
       setBoard(newBoard)
   }
-  
+  */
   const handleShow = (color) => {
     if (attackedSquares == null) {
       setAttackedSquares(getAttackedSquares(board, color))
@@ -543,13 +379,12 @@ const Game = ({ user }) => {
     }
   }
   const handleResignation = () => {
-    if (opponent && !opponent.id === 'computer') {
+
+    if (game.opponent && game.opponent.id !== 'computer') {
+      console.log('resign', user.id)
       resign({ variables: { userId: user.id}})
     }
     alert('You resigned')
-    setPlayerToMove(null)
-    setClockRunning(false)
-    setOpponentsClockRunning(false)
     dispatch(updateGame({                     //update gamestate
       playerToMove: null,
       clockRunning: false,
@@ -573,7 +408,6 @@ const Game = ({ user }) => {
     setClock(300)
     setOpponentsClock(300)
     setOpponentsClockRunning(true)
-    setChallengeWaiting(null)
           //setBoard(testBoard)
     setMyColor('black')
     setPlayerToMove('white')
@@ -586,25 +420,23 @@ const Game = ({ user }) => {
     <div style={{ padding: 30, display: 'flex', flexDirection: 'row'}}>
       <div style={{ padding: 30}}>
       {toFen(board, longCastleWhite, shortCastleWhite, longCastleBlack, shortCastleBlack, enPassant)}
-      {(user && (!opponent || opponent.id === 'computer')) &&
+      {(user && (!game.opponent || game.opponent.id === 'computer')) &&
         <Button onClick={playComputer}>Play against computer</Button>
       }
         <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-          { opponent &&
+          { game.opponent &&
             <Label image>
               <img src='https://react.semantic-ui.com/images/avatar/small/joe.jpg' />
-              {opponent.username}
+              {game.opponent.username}
             </Label>
           }
           <Clock time={opponentsClock}/>
         </div>
         <Board 
-          board={board} 
-          movePiece={movePiece}
           attackedSquares={attackedSquares}
           gameSettings={gameSettings}
           moveMade={moveMade}
-          makeAMove={handleMoveMaking}
+          clock={clock}
         />
         <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
           { user &&
@@ -624,7 +456,7 @@ const Game = ({ user }) => {
       <Button circular inverted icon='setting' onClick={()=>setSettingsModalOpen(true)}/>
       <div style={{ backgroundColor: 'white'}}>
         <Menu attached='top' inverted>
-          { opponent &&
+          { game.opponent &&
             <Menu.Item
               name='Game'
               active={activeMenuItem === 'game'}
