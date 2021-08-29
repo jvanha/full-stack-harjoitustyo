@@ -143,7 +143,7 @@ const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
         opponentsClockRunning: gameState.opponentsClockRunning ? gameState.opponentsClock-Math.floor((Date.now()-gameState.timeStamp) / 1000) : gameState.opponentsClock
       }))
       //dispatch(setGameState(gameState))
-      setClockRunning(gameState.clockRunning)
+      //setClockRunning(gameState.clockRunning)
       setOpponentsClockRunning(gameState.opponentsClockRunning)
     }
     
