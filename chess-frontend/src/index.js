@@ -15,6 +15,7 @@ import gameReducer from './reducers/gameReducer';
 import userReducer from './reducers/userReducer';
 import replayReducer from './reducers/replayReducer';
 import challengeReducer from './reducers/challengeReducer';
+import boardReducer from './reducers/boardReducer';
 
 
 
@@ -60,6 +61,7 @@ const reducer = combineReducers({
   user: userReducer,
   replay: replayReducer,
   challenge: challengeReducer,
+  board: boardReducer,
 })
 const store = createStore(reducer);
 

@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { MAKE_A_MOVE } from '../graphql/mutations'
+import { setMovingPiece } from '../reducers/boardReducer'
 import { movePieceRedux } from '../reducers/gameReducer'
 import { legalMoves } from '../utilFunctions'
 import MySquare from './MySquare'
@@ -32,13 +33,14 @@ const Board = ({ clock, attackedSquares, gameSettings, ...props}) => {
   const dispatch = useDispatch()
   const game = useSelector(state => state.game)
   const user = useSelector(state => state.user.user)
+  const movingPiece = useSelector(state => state.board.movingPiece)
   const { board, myColor, enPassant, playerToMove } = game
   const [ selectedSquare, setSelectedSquare ] = useState(null)
   const [ validMoves, setValidMoves ] = useState([])
   const [ promotionPortalOpen, setPromotionPortalOpen ] = useState(false)
   const [ tempSquare, setTempSquare ] = useState(null)
   const [ promotion, setPromotion ] = useState(null)
-  const [ movingPiece, setMovingPiece ] = useState(null)
+  //const [ movingPiece, setMovingPiece ] = useState(null)
   const [ dragging, setDragging ] = useState(null)
   
   const dragObject = useRef()
@@ -58,11 +60,12 @@ const Board = ({ clock, attackedSquares, gameSettings, ...props}) => {
   
   useEffect(() => {
     if(promotion && tempSquare && selectedSquare) {
-      setMovingPiece({ from: selectedSquare[0], to: tempSquare[0] })
+      //setMovingPiece({ from: selectedSquare[0], to: tempSquare[0] })
     }
   }, [promotion])
 
   useEffect(() => {
+    console.log('useEffect')
     if (tempSquare && movingPiece) {
       const from = selectedSquare[0]
       const to = tempSquare[0]
@@ -74,10 +77,10 @@ const Board = ({ clock, attackedSquares, gameSettings, ...props}) => {
         time: clock,
         promotion: promoted ? promotion : null, 
       }})
-
+      console.log('setTimeout')
       setTimeout(() => {
         //movePiece(selectedSquare[0], tempSquare[0], promotion?promotion:'Q')
-        setMovingPiece(null)
+        dispatch(setMovingPiece(null))
         setPromotion(null)
         setTempSquare(null)
         setSelectedSquare(null)
@@ -86,7 +89,7 @@ const Board = ({ clock, attackedSquares, gameSettings, ...props}) => {
           to: tempSquare[0],
           promotion: promotion?promotion:'Q'
         }))
-      },0)
+      },1)
     }
     
   }, [movingPiece])
@@ -96,12 +99,9 @@ const Board = ({ clock, attackedSquares, gameSettings, ...props}) => {
     if (props.moveMade) {
       const {from, to, promotion} = props.moveMade
       if (from && to) {
-        setMovingPiece({from, to})
         setTimeout(() => {
           //movePiece(from,to,promotion)
-          setMovingPiece(null)
           setPromotion(null)
-
           dispatch(movePieceRedux({ from, to, promotion}))    //REDUX
         },0)
       }
@@ -125,8 +125,17 @@ const Board = ({ clock, attackedSquares, gameSettings, ...props}) => {
         return
       }
       console.log('setting movingPiece')
+      console.log('square')
       setTempSquare(square)
-      setMovingPiece({ from: selectedSquare[0], to: index })
+      const from = selectedSquare[0]
+      const to = square[0]
+      dispatch(setMovingPiece({ from, to }))
+      //setTimeout(() => {
+        //movePiece(from,to,promotion)
+        //setPromotion(null)
+        //dispatch(movePieceRedux({ from, to, promotion: promotion?promotion:'Q'}))    //REDUX
+      //},0)
+      //setMovingPiece({ from: selectedSquare[0], to: index })
     }
     else {
       setSelectedSquare(null)

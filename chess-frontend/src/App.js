@@ -16,7 +16,7 @@ import ReplayBoard from './components/ReplayBoard'
 import UserDetails from './components/UserDetails'
 import { ACCEPT_CHALLENGE, CREATE_GAME, DECLINE_CHALLENGE, LOGOUT } from './graphql/mutations'
 import { ALL_MESSAGES, ALL_USERS, ME } from './graphql/queries'
-import { CHALLENGE_ACCEPTED, CHALLENGE_DECLINED, CHALLENGE_ISSUED, MESSAGE_ADDED, MOVE_MADE, USER_LOGGED_IN, USER_LOGGED_OUT } from './graphql/subscriptions'
+import { CHALLENGE_ACCEPTED, CHALLENGE_DECLINED, CHALLENGE_ISSUED, MESSAGE_ADDED, MOVE_MADE, OPPONENT_RESIGNED, USER_LOGGED_IN, USER_LOGGED_OUT } from './graphql/subscriptions'
 import { deleteGameState } from './localStorageService'
 import { clearChallenge } from './reducers/challengeReducer'
 import { endGame, initGame, movePieceRedux } from './reducers/gameReducer'
@@ -25,7 +25,7 @@ import { clearUser, setUserRedux } from './reducers/userReducer'
 const App = () => {
   const dispatch = useDispatch()
   const game = useSelector(state => state.game)
-  const reduxuser = useSelector(state => state.user.user)
+  const user = useSelector(state => state.user.user)
   const pendingChallenge = useSelector(state => state.challenge)
 
   const history = useHistory()
@@ -33,9 +33,8 @@ const App = () => {
   const [registryModalOpen, setRegistryModalOpen] = useState(false)
   const [clock, setClock] = useState(300)
   const [opponentsClock, setOpponentsClock] = useState(300)
-
   const [token, setToken] = useState(null)
-  //const [user, setUser] = useState(null)
+
   const client = useApolloClient()
 
   const [getUser, meResult] = useLazyQuery(ME, { fetchPolicy: 'network-only' }) 
@@ -45,6 +44,7 @@ const App = () => {
   const [ createGame, createGameResult ] = useMutation(CREATE_GAME, {
     refetchQueries: [  {query: ME} ],
   })
+
   /*
   useEffect(() => {
     localStorage.clear()
@@ -94,7 +94,7 @@ useSubscription(MESSAGE_ADDED, {
   })
 
   useSubscription(CHALLENGE_ISSUED, {
-    variables: { playerId: reduxuser ? reduxuser.id : ''},
+    variables: { playerId: user ? user.id : ''},
     onSubscriptionData: ({ subscriptionData }) => {
       console.log('App CHALLENGE ISSUED',subscriptionData)
       const challenger = subscriptionData.data.challengeIssued.opponents.challenger
@@ -107,6 +107,7 @@ useSubscription(MESSAGE_ADDED, {
       if (window.confirm(`(App) ${message}`)) {
         console.log('challenger', challenger)
         acceptChallenge({ variables: { username: challenger.username, id: challenger.id, timeControl, color }})
+        history.push('/play')
       } else {
         declineChallenge({ variables: { username: challenger.username, id: challenger.id }})
         console.log('YOU DECLINED THE CHALLENGE')
@@ -115,7 +116,7 @@ useSubscription(MESSAGE_ADDED, {
   })
 
   useSubscription(CHALLENGE_ACCEPTED, {
-    variables: { playerId: reduxuser ? reduxuser.id : ''},
+    variables: { playerId: user ? user.id : ''},
     onSubscriptionData: ({ subscriptionData }) => {
       console.log('subscriptionData', subscriptionData)
       const challenge = subscriptionData.data.challengeAccepted
@@ -134,12 +135,13 @@ useSubscription(MESSAGE_ADDED, {
           opponentsClockRunning: !myTurn,
           playerToMove: 'white'
         }))
+        history.push('/play')
       }
     }
   })
   
   useSubscription(CHALLENGE_DECLINED, {
-    variables: { playerId: reduxuser ? reduxuser.id : ''},
+    variables: { playerId: user ? user.id : ''},
     onSubscriptionData: ({ subscriptionData }) => {
       console.log('(App) CHALLENGE DECLINED',subscriptionData)
       alert("(App) Your challenge has been declined")
@@ -150,12 +152,13 @@ useSubscription(MESSAGE_ADDED, {
   useSubscription(MOVE_MADE, {
     variables: { opponentId: game.opponent ? game.opponent.id : ''},
     onSubscriptionData: ({ subscriptionData }) => {
+      if (!game.gameOn) return 
       console.log('(App) MOVE MADE', subscriptionData)
       const { from, to, time, promotion } = subscriptionData.data.moveMade.move  
       const { myColor, moves, opponent } = game 
       if (time === 0) {
-        const whiteId = myColor === 'white' ? reduxuser.id : opponent.id
-        const blackId = myColor === 'black' ? reduxuser.id : opponent.id
+        const whiteId = myColor === 'white' ? user.id : opponent.id
+        const blackId = myColor === 'black' ? user.id : opponent.id
         const winner = myColor
         
         //only the winner creates a new game
@@ -174,11 +177,11 @@ useSubscription(MESSAGE_ADDED, {
     variables: { opponentId: game.opponent ? game.opponent.id : ''},
     onSubscriptionData: ({ subscriptionData }) => {
       console.log('OPPONENT RESIGNED',subscriptionData)
-      const whiteId = myColor === 'white' ? user.id : opponent.id
-      const blackId = myColor === 'black' ? user.id : opponent.id
-      const winner = myColor
+      const whiteId = game.myColor === 'white' ? user.id : game.opponent.id
+      const blackId = game.myColor === 'black' ? user.id : game.opponent.id
+      const winner = game.myColor
       //only the winner creates a new game
-      createGame({ variables: { input: { whiteId, blackId, winner, moves} }})
+      createGame({ variables: { input: { whiteId, blackId, winner, moves: game.moves} }})
       dispatch(endGame())
       alert("You won by resignation")
       deleteGameState()
@@ -268,7 +271,6 @@ useSubscription(MESSAGE_ADDED, {
           vertical
           visible
           width='thin'
-          
         >
           <Menu.Item as='a' onClick={() => history.push('/home')}>
             <Icon name='home'/>
@@ -278,7 +280,7 @@ useSubscription(MESSAGE_ADDED, {
             <Icon name='chess'/>
             Play
           </Menu.Item>
-          {reduxuser && 
+          {user && 
             <Menu.Item as='a' onClick={() => history.push('/rules')}>
               <Icon name='chess board'/>
               Rules
@@ -290,7 +292,7 @@ useSubscription(MESSAGE_ADDED, {
           </Menu.Item>
           <Divider />
           <div>
-            {reduxuser
+            {user
               ? <Button inverted onClick={logout}>Logout</Button>
               : <Button.Group compact>
                   <Button inverted onClick={() => setLoginModalOpen(true)}>login</Button>
@@ -299,21 +301,18 @@ useSubscription(MESSAGE_ADDED, {
                 </Button.Group>
             }
           </div> 
-        
         </Sidebar>
-        
         <Sidebar.Pusher>
           <div style={{minHeight: '100vh', backgroundColor: '#0e140c'}}>
             <div style={{color: 'white'}}>{date.toDateString()}</div>
             <Switch>
               <Route path='/rules'>
                 <div style={{ color: 'white' }}>työn alla</div>
-                <ChallengeForm />
               </Route>
               <Route path='/home'>
-                {reduxuser 
+                {user 
                   ? 
-                  <UserDetails user={reduxuser}/>
+                  <UserDetails user={user}/>
                   :
                   <Segment inverted>
                     <Header>tervetuloa</Header>
@@ -323,7 +322,7 @@ useSubscription(MESSAGE_ADDED, {
               </Route>
               <Route path='/play'>
                 <Game
-                  user={reduxuser}
+                  user={user}
                   clock={clock}
                   opponentsClock={opponentsClock}
                   setClock={setClock}
@@ -341,7 +340,6 @@ useSubscription(MESSAGE_ADDED, {
             </Switch>
           </div>
         </Sidebar.Pusher>
-        
         <LoginModal
             setToken={setToken}
             modalOpen={loginModalOpen}
@@ -351,11 +349,8 @@ useSubscription(MESSAGE_ADDED, {
             modalOpen={registryModalOpen}
             close={() => setRegistryModalOpen(false)}
           />
-          
     </Sidebar.Pushable>
   )
 }
 
 export default withRouter(App)
-
-//backgroundColor: '#0e140c'

@@ -1,3 +1,6 @@
+import { deleteGameState } from "../localStorageService"
+import { setMovingPiece } from "./boardReducer"
+
 let initBoard = Array(64)
 for (let i=0; i<64; i++) {
   initBoard[i] = [i, null]
@@ -89,7 +92,12 @@ const gameReducer = (state = initialState, action) => {
   console.log('gameReducer',action)
   switch (action.type) {
     case 'INIT_GAME': {
-      return {...initialState, ...action.data, gameOn: true }
+      return {
+        ...initialState,
+        playerToMove: 'white',
+        ...action.data,
+        gameOn: true
+      }
     }
     case 'SET_GAME':
       return action.data
@@ -202,6 +210,7 @@ const gameReducer = (state = initialState, action) => {
         playerToMove: null,
         clockRunning: false,
         opponentsClockRunning: false,
+        gameOn: false,
         ...action.data
       }
     }
@@ -237,6 +246,7 @@ export const setBoard = (board) => {
   }
 }
 export const movePieceRedux = (move) => {
+  
   return {
     type: 'MOVE_PIECE',
     data: move,
@@ -250,6 +260,7 @@ export const decrementClock = () => {
 }
 
 export const endGame = (data) => {
+  deleteGameState()
   return {
     type: 'END_GAME',
     data

@@ -31,6 +31,7 @@ const getbestmove = (id) => {
       let move
       const bestMove = bestMoves.find(bestMove => bestMove.id == id)
       console.log('BEST MOVE', bestMove)
+      console.log('BEST MOVES', bestMoves)
       if (bestMove && bestMove.bestMove) {
         move = bestMove.bestMove
         bestMoves = bestMoves.map(bestMove => bestMove.id == id ? {bestMove: null, ...bestMove} : bestMove)

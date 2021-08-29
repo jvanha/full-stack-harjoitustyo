@@ -17,7 +17,7 @@ const pieceStyle = {
   justifyContent: 'center',
   height: '100%',
   width: '100%',
-  transitionDuration: '100ms',
+  transitionDuration: '1000ms',
   transitionTimingFunction: 'ease-out',
   transitionProperty: 'transform'
 }
@@ -32,6 +32,7 @@ const Piece = ({ piece, moving, reversedBoard, handleDragStart, position, draggi
   if (moving) {
     y = -((Math.floor(moving.from/8)-Math.floor(moving.to/8))*63)
     x = -(moving.from%8-moving.to%8)*63
+    console.log('moving', x, y, '=====================================')
   }
   if (reversedBoard) {
     y = -y
