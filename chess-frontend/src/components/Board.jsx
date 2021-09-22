@@ -59,7 +59,9 @@ const Board = ({ clock, attackedSquares, gameSettings, ...props}) => {
   },[selectedSquare, board])
   
   useEffect(() => {
+    console.log('USE_EFFECT ',promotion, tempSquare, selectedSquare)
     if(promotion && tempSquare && selectedSquare) {
+      dispatch(setMovingPiece({ from: selectedSquare[0], to: tempSquare[0] }))
       //setMovingPiece({ from: selectedSquare[0], to: tempSquare[0] })
     }
   }, [promotion])
@@ -79,12 +81,11 @@ const Board = ({ clock, attackedSquares, gameSettings, ...props}) => {
       }})
       console.log('setTimeout')
       setTimeout(() => {
-        //movePiece(selectedSquare[0], tempSquare[0], promotion?promotion:'Q')
         dispatch(setMovingPiece(null))
         setPromotion(null)
         setTempSquare(null)
         setSelectedSquare(null)
-        dispatch(movePieceRedux({                   //REDUX
+        dispatch(movePieceRedux({
           from: selectedSquare[0],
           to: tempSquare[0],
           promotion: promotion?promotion:'Q'
@@ -100,9 +101,8 @@ const Board = ({ clock, attackedSquares, gameSettings, ...props}) => {
       const {from, to, promotion} = props.moveMade
       if (from && to) {
         setTimeout(() => {
-          //movePiece(from,to,promotion)
           setPromotion(null)
-          dispatch(movePieceRedux({ from, to, promotion}))    //REDUX
+          dispatch(movePieceRedux({ from, to, promotion }))
         },0)
       }
     }

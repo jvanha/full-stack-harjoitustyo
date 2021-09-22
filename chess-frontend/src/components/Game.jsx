@@ -25,8 +25,7 @@ const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
   const [ gameSettings, setGameSettings ] = useState({ autoQueen: false, showLegalMoves: false}) 
   const [ moveMade, setMoveMade ] = useState(null)
 
-  const [ makeAMove, makeAMoveResult ] = useMutation(MAKE_A_MOVE)
-  
+  const [ makeAMove ] = useMutation(MAKE_A_MOVE)
   const [ resign ] = useMutation(RESIGN)
   const [ getComputerMove, getComputerMoveResult ] = useMutation(GET_COMPUTER_MOVE)
 
@@ -45,12 +44,11 @@ const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
     if (settings) {
       setGameSettings(settings)
     }
-    console.log('gameSettings', gameSettings)
   },[])
 
   useEffect(() => {
-    if (clock < 0) {
-      makeAMove({ variables: { userId: user.id, from: 0, to: 0, time: 0 } })
+    if (game.gameOn && clock <= 0) {
+      if (game.opponent.id != 'computer') makeAMove({ variables: { userId: user.id, from: 0, to: 0, time: 0 } })
       alert('you lost by timeout')
       setClock(0)
       dispatch(endGame())
@@ -127,7 +125,6 @@ const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
     }
   }
   const handleResignation = () => {
-
     if (game.opponent && game.opponent.id !== 'computer') {
       console.log('resign', user.id)
       resign({ variables: { userId: user.id}})
@@ -144,6 +141,8 @@ const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
       opponentsClockRunning: true,
       myColor: 'black',
     }))
+    setClock(300)
+    setOpponentsClock(300)
   }
 
   return (
@@ -185,7 +184,7 @@ const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
       <Button circular inverted icon='setting' onClick={()=>setSettingsModalOpen(true)}/>
       <div style={{ backgroundColor: 'white'}}>
         <Menu attached='top' inverted>
-          { game.opponent &&
+          { game.gameOn &&
             <Menu.Item
               name='Game'
               active={activeMenuItem === 'game'}

@@ -18,14 +18,14 @@ const MySquare = ({
   validMoves,
   attackedSquares,
   settings,
-  //movingPiece,
+  movingPiece,
   reversed,
   handleDragStart,
   handleDragEnter,
   handleDrop,
   dragging }) => {
   
-  const movingPiece = useSelector(state => state.board.movingPiece)
+  
   const index = content[0]
   let color = ((index + Math.floor(index/8))%2)===0 ? '#f58a42' : '#52170d'
 

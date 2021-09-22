@@ -56,47 +56,55 @@ const initialState = {
   opponentsClockRunning: false,
   moves: [],
 }
-const checkIfCastled = (to, board, longCastleBlack, longCastleWhite, shortCastleBlack, shortCastleWhite) => {
-  if (longCastleWhite && to === 58) {
-    return board.map(square => {
-      if (square[0] === 59) return [59, { type: 'R', color: 'white'}]
-      if (square[0] === 56) return [56, null]
-      return square
-    })
+const checkIfCastled = (playerToMove, to, board, longCastleBlack, longCastleWhite, shortCastleBlack, shortCastleWhite) => {
+  if (playerToMove === 'white') {
+    if (longCastleWhite && to === 58) {
+      return board.map(square => {
+        if (square[0] === 59) return [59, { type: 'R', color: 'white'}]
+        if (square[0] === 56) return [56, null]
+        return square
+      })
+    }
+    if (shortCastleWhite && to === 62) {
+      return board.map(square => {
+        if (square[0] === 61) return [61, { type: 'R', color: 'white'}]
+        if (square[0] === 63) return [63, null]
+        return square
+      })
+    }
   }
-  if (shortCastleWhite && to === 62) {
-    return board.map(square => {
-      if (square[0] === 61) return [61, { type: 'R', color: 'white'}]
-      if (square[0] === 63) return [63, null]
-      return square
-    })
-  }
-  if (longCastleBlack && to === 2) {
-    return board.map(square => {
-      if (square[0] === 3) return [3, { type: 'R', color: 'black'}]
-      if (square[0] === 0) return [0, null]
-      return square
-    }) 
-  }
-  if (shortCastleBlack && to === 6) {
-    return board.map(square => {
-      if (square[0] === 5) return [5, { type: 'R', color: 'black'}]
-      if (square[0] === 7) return [7, null]
-      return square
-    })
+  if (playerToMove === 'black') {
+    if (longCastleBlack && to === 2) {
+      return board.map(square => {
+        if (square[0] === 3) return [3, { type: 'R', color: 'black'}]
+        if (square[0] === 0) return [0, null]
+        return square
+      }) 
+    }
+    if (shortCastleBlack && to === 6) {
+      return board.map(square => {
+        if (square[0] === 5) return [5, { type: 'R', color: 'black'}]
+        if (square[0] === 7) return [7, null]
+        return square
+      })
+    }
   }
   return board
 }
-
+const checkEnPassant = (to, from) => {
+  console.log('check en passant', Math.abs(to-from))
+  if (Math.abs(to-from) == 16) return Math.abs((to+from)/2)
+  return null
+}
 const gameReducer = (state = initialState, action) => {
   console.log('gameReducer',action)
   switch (action.type) {
     case 'INIT_GAME': {
       return {
         ...initialState,
-        playerToMove: 'white',
         ...action.data,
-        gameOn: true
+        gameOn: true,
+        playerToMove: 'white',
       }
     }
     case 'SET_GAME':
@@ -111,8 +119,6 @@ const gameReducer = (state = initialState, action) => {
     case 'MOVE_PIECE': {
       const {
         board,
-        clock,
-        opponentsClock,
         playerToMove,
         myColor,
         enPassant,
@@ -172,7 +178,7 @@ const gameReducer = (state = initialState, action) => {
             ...state.moves,
             newMove,
           ],
-          board: checkIfCastled(playerToMove, to, newBoard, longCastleBlack, longCastleWhite, shortCastleBlack, shortCastleWhite),
+          board: newBoard,
           longCastleBlack: playerToMove === 'black' && squareFrom[0] === 0 ? false : longCastleBlack,
           shortCastleBlack: playerToMove === 'black' && squareFrom[0] === 7 ? false : shortCastleBlack,
           longCastleWhite: playerToMove === 'white' && squareFrom[0] === 56 ? false : longCastleBlack,
@@ -191,11 +197,12 @@ const gameReducer = (state = initialState, action) => {
           ...state.moves,
           {
             ...action.data,
-            time,   //What if the clocks are not in sync at this point?
+            time,
             promotion: promoted ? promotion : null, 
             takenPiece: board[to][1]
           }
         ],
+        enPassant: type === 'P' ? checkEnPassant(to, from) : null,
         opponentsClockRunning: myTurn,
         clockRunning: !myTurn,
         playerToMove: nextPlayerToMove,
