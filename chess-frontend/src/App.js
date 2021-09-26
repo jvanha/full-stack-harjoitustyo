@@ -18,6 +18,7 @@ import { ACCEPT_CHALLENGE, CREATE_GAME, DECLINE_CHALLENGE, LOGOUT } from './grap
 import { ALL_MESSAGES, ALL_USERS, ME } from './graphql/queries'
 import { CHALLENGE_ACCEPTED, CHALLENGE_DECLINED, CHALLENGE_ISSUED, MESSAGE_ADDED, MOVE_MADE, OPPONENT_RESIGNED, USER_LOGGED_IN, USER_LOGGED_OUT } from './graphql/subscriptions'
 import { deleteGameState } from './localStorageService'
+import { setMovingPiece } from './reducers/boardReducer'
 import { clearChallenge } from './reducers/challengeReducer'
 import { endGame, initGame, movePieceRedux } from './reducers/gameReducer'
 import { clearUser, setUserRedux } from './reducers/userReducer'
@@ -168,7 +169,11 @@ useSubscription(MESSAGE_ADDED, {
         deleteGameState()
 
       } else {
-        dispatch(movePieceRedux({ from, to, promotion }))
+        dispatch(setMovingPiece({from, to}))
+        setTimeout(() => {
+          dispatch(setMovingPiece(null))
+          dispatch(movePieceRedux({ from, to, promotion }))
+        },0)
       }
     } 
   })

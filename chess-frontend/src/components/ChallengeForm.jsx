@@ -18,9 +18,9 @@ const colorOptions = [
   { key: 1, text: 'White', value: 'white' },
   { key: 2, text: 'Random', value: 'random'},
 ]
-const ChallengeForm = ({ opponent, close }) => {
+const ChallengeForm = ({ opponent, close, playComputer }) => {
   const [ timeControl, setTimeControl ] = useState(300)
-  const [ color, setColor ] = useState('white') 
+  const [ myColor, setMyColor ] = useState('white') 
   const [ challenge, challengeResult ] = useMutation(CHALLENGE)
 
   const dispatch = useDispatch()
@@ -36,12 +36,17 @@ const ChallengeForm = ({ opponent, close }) => {
 
   const submit = (event) => {
     event.preventDefault()
+    const color = myColor === 'random' ? ['black','white'][Math.floor(Math.random() * 2)] : myColor
+    if (opponent.id === 'computer') {
+      playComputer(timeControl, color)
+      return
+    }
     challenge({
      variables: {
        id: opponent.id,
        username: opponent.username,
        timeControl,
-       color: color === 'random' ? ['black','white'][Math.floor(Math.random() * 2)] : color,
+       color,
       } 
     })
   }
@@ -60,8 +65,8 @@ const ChallengeForm = ({ opponent, close }) => {
         fluid
         options={colorOptions}
         placeholder='White'
-        value={color}
-        onChange={(e, { value }) => setColor(value)}/>
+        value={myColor}
+        onChange={(e, { value }) => setMyColor(value)}/>
       <Button 
         type='submit'
         color='green'

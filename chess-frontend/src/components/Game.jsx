@@ -1,10 +1,9 @@
-import { useMutation, useSubscription } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 import React, { useEffect, useState } from 'react';
 import Board from './Board'
 import Clock from './Clock';
 import Users from './Users';
-import { ACCEPT_CHALLENGE, MAKE_A_MOVE, DECLINE_CHALLENGE, CREATE_GAME, RESIGN, GET_COMPUTER_MOVE } from './../graphql/mutations';
-import { CHALLENGE_ACCEPTED, CHALLENGE_CANCELLED, CHALLENGE_DECLINED, CHALLENGE_ISSUED, MOVE_MADE, OPPONENT_RESIGNED } from './../graphql/subscriptions';
+import { MAKE_A_MOVE, RESIGN, GET_COMPUTER_MOVE } from './../graphql/mutations';
 import { getAttackedSquares, isCheckMated, isDrawByInsufficientMaterial, isDrawByLackOflegalMoves, isInCheck } from './../utilFunctions'
 import { Button, Label, Menu} from 'semantic-ui-react';
 import Chat from './Chat';
@@ -13,6 +12,8 @@ import SettingsModal from './SettingsModal';
 import { toFen } from '../fen';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateGame, initGame, endGame, movePieceRedux } from '../reducers/gameReducer';
+import { setMovingPiece } from '../reducers/boardReducer';
+import ChallengeModal from './ChallengeModal';
 
 
 const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
@@ -24,6 +25,7 @@ const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
   const [ settingsModalOpen, setSettingsModalOpen ] = useState(false)
   const [ gameSettings, setGameSettings ] = useState({ autoQueen: false, showLegalMoves: false}) 
   const [ moveMade, setMoveMade ] = useState(null)
+  const [ challengeComputerModalOpen, setChallengeComputerModalOpen ] = useState(false)
 
   const [ makeAMove ] = useMutation(MAKE_A_MOVE)
   const [ resign ] = useMutation(RESIGN)
@@ -48,7 +50,7 @@ const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
 
   useEffect(() => {
     if (game.gameOn && clock <= 0) {
-      if (game.opponent.id != 'computer') makeAMove({ variables: { userId: user.id, from: 0, to: 0, time: 0 } })
+      if (game.opponent && game.opponent.id != 'computer') makeAMove({ variables: { userId: user.id, from: 0, to: 0, time: 0 } })
       alert('you lost by timeout')
       setClock(0)
       dispatch(endGame())
@@ -111,8 +113,12 @@ const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
       const move = getComputerMoveResult.data.getComputerMove
       console.log('move', move)
       if (game.opponent && game.opponent.id === 'computer' && game.playerToMove === 'white') {
-        setMoveMade({ ...move, promotion: 'Q'})
-        dispatch(updateGame(movePieceRedux({move, promotion: 'Q', time: opponentsClock})))                                   //VIIIIIIIIRRRRRRRHE
+        //setMoveMade({ ...move, promotion: 'Q'})
+        dispatch(setMovingPiece(move))
+        setTimeout(() => {
+          dispatch(setMovingPiece(null))
+          dispatch(movePieceRedux({...move, promotion: 'Q', time: opponentsClock}))
+        },0)
       }
     }
   }, [getComputerMoveResult.data])
@@ -133,23 +139,23 @@ const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
     dispatch(endGame())
     deleteGameState()
   }
-  const playComputer = () => {
+  const playComputer = (timeControl, myColor) => {
+    console.log('MY COLOR',myColor)
     dispatch(initGame({                                               //REDUX
       opponent: { username: 'Computer', id: 'computer'},
-      clock: 300,
-      opponentsClock: 300,
-      opponentsClockRunning: true,
-      myColor: 'black',
+      clockRunning: myColor === 'black',
+      opponentsClockRunning: myColor === 'white',
+      myColor
     }))
-    setClock(300)
-    setOpponentsClock(300)
+    setClock(timeControl)
+    setOpponentsClock(timeControl)
   }
 
   return (
     <div style={{ padding: 30, display: 'flex', flexDirection: 'row'}}>
       <div style={{ padding: 30}}>
       {(user && !game.gameOn) &&
-        <Button onClick={playComputer}>Play against computer</Button>
+        <Button onClick={() => setChallengeComputerModalOpen(true)}>Play against computer</Button>
       }
         <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
           { game.opponent &&
@@ -220,6 +226,12 @@ const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
         settings={gameSettings}
         setSettings={setGameSettings}
       />
+      <ChallengeModal
+        modalOpen={challengeComputerModalOpen}
+        close={() => setChallengeComputerModalOpen(false)}
+        opponent={{ id: 'computer', username: 'Computer' }}
+        playComputer={playComputer}
+      /> 
     </div>
   );
 }

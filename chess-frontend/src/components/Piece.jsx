@@ -30,6 +30,7 @@ const Piece = ({ piece, moving, reversedBoard, handleDragStart, position, draggi
   let x = 0
   let y = 0
   if (moving) {
+    console.log('MOVING')
     y = -((Math.floor(moving.from/8)-Math.floor(moving.to/8))*63)
     x = -(moving.from%8-moving.to%8)*63
     console.log('moving', x, y, '=====================================')
