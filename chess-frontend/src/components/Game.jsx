@@ -95,7 +95,7 @@ const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
         saveGameState(gameState)
       }
     }
-    if (game.opponent && game.opponent.id === 'computer' && game.playerToMove === 'white') {
+    if (game.opponent && game.opponent.id === 'computer' && game.playerToMove !== game.myColor) {
       const fen = toFen(game.board, game.playerToMove, game.longCastleWhite, game.shortCastleWhite, game.longCastleBlack, game.shortCastleBlack, game.enPassant)
       console.log('fen',fen)
       if (fen) {
@@ -112,7 +112,7 @@ const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
     if (getComputerMoveResult.called && !getComputerMoveResult.loading) {
       const move = getComputerMoveResult.data.getComputerMove
       console.log('move', move)
-      if (game.opponent && game.opponent.id === 'computer' && game.playerToMove === 'white') {
+      if (game.opponent && game.opponent.id === 'computer') {
         //setMoveMade({ ...move, promotion: 'Q'})
         dispatch(setMovingPiece(move))
         setTimeout(() => {
@@ -140,8 +140,7 @@ const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
     deleteGameState()
   }
   const playComputer = (timeControl, myColor) => {
-    console.log('MY COLOR',myColor)
-    dispatch(initGame({                                               //REDUX
+    dispatch(initGame({
       opponent: { username: 'Computer', id: 'computer'},
       clockRunning: myColor === 'black',
       opponentsClockRunning: myColor === 'white',
@@ -154,9 +153,7 @@ const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
   return (
     <div style={{ padding: 30, display: 'flex', flexDirection: 'row'}}>
       <div style={{ padding: 30}}>
-      {(user && !game.gameOn) &&
-        <Button onClick={() => setChallengeComputerModalOpen(true)}>Play against computer</Button>
-      }
+      
         <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
           { game.opponent &&
             <Label image>
@@ -181,11 +178,14 @@ const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
           }
           <Clock time={clock}/>
         </div>
-        
-        {!attackedSquares && <button onClick={() => handleShow('black')}>show black's attack</button>}
-        {!attackedSquares && <button onClick={() => handleShow('white')}>show white's attack</button>}
-        {attackedSquares && <button onClick={() => handleShow('')}>hide attack</button>}
-        <button onClick={() => isInCheck('black', game.board)}>is black in check</button>
+        {false && 
+        <div>
+          {!attackedSquares && <button onClick={() => handleShow('black')}>show black's attack</button>}
+          {!attackedSquares && <button onClick={() => handleShow('white')}>show white's attack</button>}
+          {attackedSquares && <button onClick={() => handleShow('')}>hide attack</button>}
+          <button onClick={() => isInCheck('black', game.board)}>is black in check</button>
+        </div>
+        }
         </div>
       <Button circular inverted icon='setting' onClick={()=>setSettingsModalOpen(true)}/>
       <div style={{ backgroundColor: 'white'}}>
@@ -218,7 +218,10 @@ const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
         }
         {activeMenuItem === 'game' && user
           && <Button onClick={handleResignation}>Resign</Button>
-        } 
+        }
+        {(user && !game.gameOn) &&
+        <Button onClick={() => setChallengeComputerModalOpen(true)}>Play against computer</Button>
+        }
       </div>
       <SettingsModal
         modalOpen={settingsModalOpen}

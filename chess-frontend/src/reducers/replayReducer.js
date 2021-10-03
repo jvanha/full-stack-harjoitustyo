@@ -42,14 +42,14 @@ const initialState = {
   blackClock: 0,
   board: initBoard,
   opponent: null,
-  moves: [
+  /*moves: [
     {from: 48, to: 40, time: 10, promotion: null, takenPiece: null},
     {from: 1, to: 18, time: 11, promotion: null, takenPiece: null},
     {from: 40, to: 32, time: 12, promotion: null, takenPiece: null},
     {from: 0, to: 1, time: 13, promotion: null, takenPiece: null},
     {from: 32, to: 24, time: 15, promotion: null, takenPiece: null},
     {from: 18, to: 24, time: 11, promotion: null, takenPiece: { type: 'P', color: 'white' }},
-  ],
+  ],*/
   counter: 0
 }
 

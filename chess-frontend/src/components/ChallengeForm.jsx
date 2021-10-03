@@ -39,6 +39,7 @@ const ChallengeForm = ({ opponent, close, playComputer }) => {
     const color = myColor === 'random' ? ['black','white'][Math.floor(Math.random() * 2)] : myColor
     if (opponent.id === 'computer') {
       playComputer(timeControl, color)
+      close()
       return
     }
     challenge({
