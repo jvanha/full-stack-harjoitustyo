@@ -82,6 +82,11 @@ const ReplayBoard = () => {
             content={element}
             movingPiece={movingPiece}
             reversed={reversed}
+            handleDragStart = {() => (null)}
+            dragging={null}
+            handleDragEnter={() => (null)}
+            handleDrop={() => (null)}
+
           />   
         ))}
       </div>}

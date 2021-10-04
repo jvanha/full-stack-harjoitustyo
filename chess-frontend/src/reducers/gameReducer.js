@@ -139,7 +139,8 @@ const gameReducer = (state = initialState, action) => {
         ...action.data,
         time,
         promotion: promoted ? promotion : null, 
-        takenPiece: board[to][1]
+        takenPiece: to === enPassant ? board[Math.floor(from/8)*8 + to%8][1] : board[to][1],
+        enPassant: to === enPassant
       }
       const newBoard = board.map(square => {
         if (square[0] === to) {
@@ -195,12 +196,7 @@ const gameReducer = (state = initialState, action) => {
         board: newBoard,
         moves: [
           ...state.moves,
-          {
-            ...action.data,
-            time,
-            promotion: promoted ? promotion : null, 
-            takenPiece: board[to][1]
-          }
+          newMove
         ],
         enPassant: type === 'P' ? checkEnPassant(to, from) : null,
         opponentsClockRunning: myTurn,

@@ -66,15 +66,18 @@ const replayReducer = (state = initialState, action) => {
     case 'NEXT': {
       const { board, color, moves, counter, ...rest } = state
       if (!moves || counter === moves.length) return state
-      const { from, to, time, promotion } = moves[counter]
+      const { from, to, time, promotion, enPassant } = moves[counter]
       const squareFrom = board[from]
       console.log('squareFrom', squareFrom)
+      console.log('enPassant', enPassant)
       const newBoard = board.map(square => {
         if (square[0] === from) return [square[0], null]
         if (square[0] === to) {
           if (promotion) return [square[0], { type: promotion, color}]
           return [square[0], {type: squareFrom[1].type, color}]
         }
+        if (enPassant && square[0] === Math.floor(from/8)*8 + to%8)
+          return [square[0], null]
         return square
       })
       console.log('newBoard', newBoard)
@@ -89,12 +92,13 @@ const replayReducer = (state = initialState, action) => {
     case 'PREVIOUS': {
       const { board, color, moves, counter, ...rest } = state
       if (!moves || counter === 0) return state
-      const { from, to, time, promotion, takenPiece } = moves[counter - 1]
+      const { from, to, time, promotion, takenPiece, enPassant } = moves[counter - 1]
       const activeColor = color==='white' ? 'black': 'white'
       const squareTo = board[to]
       console.log('squareTo', squareTo)
       const newBoard = board.map(square => {
-        if (square[0] === to) return [square[0], takenPiece]
+        if (enPassant && square[0] === Math.floor(from/8)*8 + to%8) return [square[0], takenPiece]
+        if (square[0] === to) return [square[0], enPassant?null:takenPiece]
         if (square[0] === from) {
           if (promotion) return [square[0], { type: 'P', color: activeColor}]
           return [square[0], { type: squareTo[1].type, color: activeColor}]

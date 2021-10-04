@@ -96,6 +96,7 @@ const typeDefs = gql`
     time: Int
     promotion: String
     takenPiece: Piece
+    enPassant: Boolean
   }
   type MoveUnit {
     userId: String
@@ -199,6 +200,7 @@ const typeDefs = gql`
     time: Int
     promotion: String
     takenPiece: PieceInput
+    enPassant: Boolean
 
   }
   input PieceInput {

@@ -36,6 +36,7 @@ export const ME = gql`
           to
           promotion
           takenPiece {type color}
+          enPassant
         }
         date
       }
