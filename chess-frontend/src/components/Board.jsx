@@ -68,16 +68,18 @@ const Board = ({ clock, attackedSquares, gameSettings, ...props}) => {
 
   useEffect(() => {
     console.log('useEffect')
-    if (tempSquare && movingPiece) {
+    if (game.playerToMove === game.myColor && tempSquare && movingPiece) {
       const from = selectedSquare[0]
       const to = tempSquare[0]
       const promoted = game.board[from][1].type === 'P' && (Math.floor(to/8) === 0 || Math.floor(to/8) === 7)
+      console.log('PROMOTED', promoted)
+      console.log('Promotion',)
       makeAMove({ variables: {
         userId: user.id,
         from,
         to,
         time: clock,
-        promotion: promoted ? promotion : null, 
+        promotion: promoted ? (promotion?promotion:'Q') : null, 
       }})
       console.log('setTimeout')
       setTimeout(() => {
@@ -160,9 +162,10 @@ const Board = ({ clock, attackedSquares, gameSettings, ...props}) => {
     console.log('drag end')
     dragObject.current.removeEventListener('dragend', handleDragEnd)
     setDragging(null)
-    setSelectedSquare(null)
+    //setSelectedSquare(null)
   }
   const handleDrop = (event, position) => {
+    console.log('handle drop')
     handleSelection(board[position])
   } 
   
