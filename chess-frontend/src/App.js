@@ -285,12 +285,6 @@ useSubscription(MESSAGE_ADDED, {
             <Icon name='chess'/>
             Play
           </Menu.Item>
-          {user && 
-            <Menu.Item as='a' onClick={() => history.push('/rules')}>
-              <Icon name='chess board'/>
-              Rules
-            </Menu.Item>
-          }
           <Menu.Item as='a' onClick={() => history.push('/replay')}>
             <Icon name='chess'/>
             Replay
@@ -320,7 +314,7 @@ useSubscription(MESSAGE_ADDED, {
                   <UserDetails user={user}/>
                   :
                   <Segment inverted>
-                    <Header>tervetuloa</Header>
+                    <Header>Tervetuloa</Header>
                     Login to play or register first if you haven't already.
                   </Segment>
                 }
@@ -339,7 +333,8 @@ useSubscription(MESSAGE_ADDED, {
               </Route>
               <Route path='/'>
                 <Segment inverted>
-                  <Header>tervetuloo</Header>
+                  <Header>Tervetuloa</Header>
+                    Login to play or register first if you haven't already.
                 </Segment>
               </Route>
             </Switch>

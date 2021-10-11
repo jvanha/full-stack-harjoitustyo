@@ -26,6 +26,7 @@ export const ME = gql`
     me {
       username
       id
+      registrationDate
       games {
         id
         black {username}

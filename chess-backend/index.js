@@ -556,6 +556,7 @@ const server = new ApolloServer({
         currentUser: {
           username: currentUser.username,
           id: currentUser._id.toString(),
+          registrationDate: currentUser.registrationDate,
           games: currentUser.games
         }
       }
