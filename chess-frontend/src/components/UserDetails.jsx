@@ -15,7 +15,6 @@ const UserDetails = ({ user }) => {
     history.push('/replay')
     
   }
-  console.log(user)
   
   return (
     <div style={{ color: 'white' }}>
