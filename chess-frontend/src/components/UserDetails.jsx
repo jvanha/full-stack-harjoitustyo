@@ -35,7 +35,7 @@ const UserDetails = ({ user }) => {
           {user.games.map(game => (
             <Table.Row key={game.id} onClick={()=>console.log('click!')}>
               <Table.Cell><div>{game.white.username}</div><div>{game.black.username}</div></Table.Cell>
-              <Table.Cell><div>{game.winner==='white'?1:0}</div><div>{game.winner==='black'?1:0}</div></Table.Cell>
+              <Table.Cell><div>{game.winner===''?'1/2':(game.winner==='white'?1:0)}</div><div>{game.winner===''?'1/2':(game.winner==='black'?1:0)}</div></Table.Cell>
               <Table.Cell>{game.moves.length}</Table.Cell>
               <Table.Cell>{game.date}</Table.Cell>
               <Table.Cell as='a' onClick={() => handleShow(game)}>show</Table.Cell>

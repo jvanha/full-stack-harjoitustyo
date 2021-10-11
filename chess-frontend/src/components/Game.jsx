@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Board from './Board'
 import Clock from './Clock';
 import Users from './Users';
-import { MAKE_A_MOVE, RESIGN, GET_COMPUTER_MOVE } from './../graphql/mutations';
+import { MAKE_A_MOVE, RESIGN, GET_COMPUTER_MOVE, CREATE_GAME } from './../graphql/mutations';
 import { getAttackedSquares, isCheckMated, isDrawByInsufficientMaterial, isDrawByLackOflegalMoves, isInCheck } from './../utilFunctions'
 import { Button, Label, Menu} from 'semantic-ui-react';
 import Chat from './Chat';
@@ -14,6 +14,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { updateGame, initGame, endGame, movePieceRedux } from '../reducers/gameReducer';
 import { setMovingPiece } from '../reducers/boardReducer';
 import ChallengeModal from './ChallengeModal';
+import { ME } from '../graphql/queries';
 
 
 const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
@@ -24,12 +25,15 @@ const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
   const [ attackedSquares, setAttackedSquares ] = useState(null)
   const [ settingsModalOpen, setSettingsModalOpen ] = useState(false)
   const [ gameSettings, setGameSettings ] = useState({ autoQueen: false, showLegalMoves: false}) 
-  const [ moveMade, setMoveMade ] = useState(null)
+
   const [ challengeComputerModalOpen, setChallengeComputerModalOpen ] = useState(false)
 
   const [ makeAMove ] = useMutation(MAKE_A_MOVE)
   const [ resign ] = useMutation(RESIGN)
   const [ getComputerMove, getComputerMoveResult ] = useMutation(GET_COMPUTER_MOVE)
+  const [ createGame ] = useMutation(CREATE_GAME, {
+    refetchQueries: [  {query: ME} ],
+  })
 
   useEffect(() => {
     const gameState = loadGameState()
@@ -59,18 +63,23 @@ const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
   }, [clock])
 
   useEffect(() => {
-    if (game.myColor && game.playerToMove) {
-      //DRAWN GAMES ARE NOT BEING STORED YET? 
+    if (game.gameOn) {
+      // only white creates drawn games
       if (isDrawByLackOflegalMoves(game.playerToMove, game.board, game.enPassant)) {
+        if (game.myColor === 'white' && game.opponent && game.opponent.id != 'computer') 
+          createGame({ variables: { input: { whiteId: user.id, blackId: game.opponent.id, winner: '', moves: game.moves } }})
         alert('Draw')
         dispatch(endGame())
         deleteGameState()
       } else if (isDrawByInsufficientMaterial(game.board)) {
+        if (game.myColor === 'white' && game.opponent && game.opponent.id != 'computer') 
+          createGame({ variables: { input: { whiteId: user.id, blackId: game.opponent.id, winner: '', moves: game.moves } }})
         alert('Draw! Insufficient material')
         dispatch(endGame())
         deleteGameState()
       } else if (isCheckMated(game.playerToMove, game.board, game.enPassant)) {
         if (game.playerToMove === game.myColor) {
+          alert('You lost')
           dispatch(endGame())
           deleteGameState()
         }
@@ -80,7 +89,7 @@ const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
           const winner = game.myColor
           //only the winner creates a new game
           if (game.opponent.id !== 'computer') {
-            //createGame({ variables: { input: { whiteId, blackId, winner, moves: game.moves } }})
+            createGame({ variables: { input: { whiteId, blackId, winner, moves: game.moves } }})
           }
           dispatch(endGame())
           alert('You won')
@@ -93,18 +102,17 @@ const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
           timeStamp: Date.now(),
         }
         saveGameState(gameState)
+        if (game.opponent && game.opponent.id === 'computer' && game.playerToMove !== game.myColor) {
+          const fen = toFen(game.board, game.playerToMove, game.longCastleWhite, game.shortCastleWhite, game.longCastleBlack, game.shortCastleBlack, game.enPassant)
+          console.log('fen',fen)
+          if (fen) {
+            const variables = { fen }
+            console.log('variables',variables)
+            getComputerMove({ variables })
+          }
+        }
       }
     }
-    if (game.opponent && game.opponent.id === 'computer' && game.playerToMove !== game.myColor) {
-      const fen = toFen(game.board, game.playerToMove, game.longCastleWhite, game.shortCastleWhite, game.longCastleBlack, game.shortCastleBlack, game.enPassant)
-      console.log('fen',fen)
-      if (fen) {
-        const variables = { fen }
-        console.log('variables',variables)
-        getComputerMove({ variables })
-      }
-    }
- 
   }, [game.board, game.gameOn])
 
   useEffect(() => {
@@ -117,7 +125,7 @@ const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
         dispatch(setMovingPiece(move))
         setTimeout(() => {
           dispatch(setMovingPiece(null))
-          dispatch(movePieceRedux({...move, promotion: 'Q', time: opponentsClock}))
+          dispatch(movePieceRedux({...move, promotion: 'Q', time: opponentsClock}))                    //??????????????
         },0)
       }
     }
@@ -142,8 +150,8 @@ const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
   const playComputer = (timeControl, myColor) => {
     dispatch(initGame({
       opponent: { username: 'Computer', id: 'computer'},
-      clockRunning: myColor === 'black',
-      opponentsClockRunning: myColor === 'white',
+      clockRunning: myColor === 'white',
+      opponentsClockRunning: myColor === 'black',
       myColor
     }))
     setClock(timeControl)
@@ -166,7 +174,6 @@ const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
         <Board 
           attackedSquares={attackedSquares}
           gameSettings={gameSettings}
-          moveMade={moveMade}
           clock={clock}
         />
         <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>

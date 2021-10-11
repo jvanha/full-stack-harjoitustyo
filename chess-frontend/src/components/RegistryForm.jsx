@@ -13,6 +13,7 @@ const RegistryForm = ({ close }) => {
     console.log('registry for password', password)
     createUser({ variables: { username, password }})
     setUsername('')
+    setPassword('')
     close()
   }
 

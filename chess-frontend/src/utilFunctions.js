@@ -289,7 +289,7 @@ export const isDrawByInsufficientMaterial = (board) => {
   const pieces = board.filter(square => square[1] && square[1].type !== 'K')
   if (pieces.length === 0) return true
   else if (pieces.length === 1) {
-    if (pieces.type[0][1] === 'N' || pieces[0][1].type === 'B') return true
+    if (pieces[0][1].type === 'N' || pieces[0][1].type === 'B') return true
   }
   else if (pieces.length === 2) {
     if (pieces[0][1].color !== pieces[1][1].color) {

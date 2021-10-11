@@ -41,8 +41,8 @@ const App = () => {
   const [getUser, meResult] = useLazyQuery(ME, { fetchPolicy: 'network-only' }) 
   const [ logout, logoutResult ] = useMutation(LOGOUT)
   const [ acceptChallenge, acceptChallengeResult ] = useMutation(ACCEPT_CHALLENGE)
-  const [ declineChallenge, declineChallengeResult ] = useMutation(DECLINE_CHALLENGE)
-  const [ createGame, createGameResult ] = useMutation(CREATE_GAME, {
+  const [ declineChallenge ] = useMutation(DECLINE_CHALLENGE)
+  const [ createGame ] = useMutation(CREATE_GAME, {
     refetchQueries: [  {query: ME} ],
   })
 
@@ -243,7 +243,7 @@ useSubscription(MESSAGE_ADDED, {
         playerToMove: 'white',
         myColor: challenge.color==='white' ? 'black' : 'white',
       }))
-      setClock(timeControl)                                         //TRY TO MOVE TO REDUX 
+      setClock(timeControl)
       setOpponentsClock(timeControl)
     }
   }, [acceptChallengeResult.data])

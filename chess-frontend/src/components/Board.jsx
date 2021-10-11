@@ -59,7 +59,7 @@ const Board = ({ clock, attackedSquares, gameSettings, ...props}) => {
   },[selectedSquare, board])
   
   useEffect(() => {
-    console.log('USE_EFFECT ',promotion, tempSquare, selectedSquare)
+    //console.log('USE_EFFECT ',promotion, tempSquare, selectedSquare)
     if(promotion && tempSquare && selectedSquare) {
       dispatch(setMovingPiece({ from: selectedSquare[0], to: tempSquare[0] }))
       //setMovingPiece({ from: selectedSquare[0], to: tempSquare[0] })

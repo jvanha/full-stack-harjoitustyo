@@ -191,7 +191,7 @@ const typeDefs = gql`
   input CreateGameInput {
     whiteId: String!
     blackId: String!
-    winner: String!
+    winner: String
     moves: [MoveInput]!
   }
   input MoveInput {
@@ -219,12 +219,10 @@ const resolvers = {
       return usersLoggedIn
     },
     me: async (root, args, context) => {
-      console.log('context.currentUser',context.currentUser)
       return context.currentUser
     },
     allMessages: async () => {
       const messages = await Message.find().sort({_id:-1}).limit(10).populate('writer')
-      console.log('messages',messages)
       return messages.reverse()
     },
     game: async (root, args) => {
@@ -243,6 +241,7 @@ const resolvers = {
   },
   Mutation: {
     createUser: async (root, args) => {
+      console.log('create user args', args)
       const passwordHash = await bcrypt.hash(args.password, 10)
       const date = new Date
       const user = new User({
@@ -254,11 +253,10 @@ const resolvers = {
     },
     createGame: async (root, args) => {
       console.log('createGame args', args)
+      console.log()
       const { blackId, whiteId, winner, moves } = args.input
       const white = await User.findById(whiteId)
       const black = await User.findById(blackId)
-      console.log('black', black)
-      console.log('white', white)
       const date = new Date
       const newGame = {
         black: blackId,
@@ -267,17 +265,12 @@ const resolvers = {
         moves,
         date: date.toDateString()
       }
-      console.log('newGame', newGame)
       const game = new Game({ ...newGame })
-      console.log('game', game)
-      console.log('white.games', white.games)
       white.games = white.games.concat(game._id)
       await white.save()
-      console.log('black.games', black.games)
       black.games = black.games.concat(game._id)
       await black.save()
       const savedGame = await game.save()
-      console.log('savedGame', savedGame)
       return savedGame
     },
     login: async (root, args) => {
@@ -336,14 +329,11 @@ const resolvers = {
         return engine.id != currentUser.id
       })
       console.log('engines', engines)
-      //usersLoggedIn.filter(user => user.id !== currentUser.id)
       pubsub.publish('USER_LOGGED_OUT', { userLoggedOut: currentUser})
-      //console.log('usersLoggedIn', usersLoggedIn.map(user => user.username))
       return currentUser
     },
     challenge: (root, args, context) => {
       console.log('challenge resolver')
-      console.log('context.currentUser', context.currentUser)
       console.log('args',args)
       const currentUser = context.currentUser
       const challenger = {
@@ -365,7 +355,6 @@ const resolvers = {
     },
     cancelChallenge: (rootm, args, context) => {
       console.log('cancelChallenge resolver')
-      console.log('context.currentUser', context.currentUser)
       console.log('args',args)
       console.log()
       const payload = {
@@ -380,7 +369,6 @@ const resolvers = {
     },
     acceptChallenge: (root, args, context) => {
       console.log('acceptChallenge resolver')
-      console.log('context.currentUser',context.currentUser)
       console.log('args', args)
       console.log()
       const currentUser = context.currentUser
@@ -404,7 +392,6 @@ const resolvers = {
     },
     declineChallenge: (root, args, context) => {
       console.log('declineChallenge resolver')
-      console.log('context.currentUser',context.currentUser)
       console.log('args', args)
       console.log()
       const payload = { 
@@ -427,11 +414,11 @@ const resolvers = {
       return move
     },
     resign: (root, args) => {
-      console.log('resign args', args)
       console.log(args, 'resigned')
       const opponentId = args.userId
       const payload = { opponentResigned: opponentId }
       console.log('resign payload', payload)
+      console.log()
       pubsub.publish('OPPONENT_RESIGNED',payload)
       return args.userId
     },
@@ -492,7 +479,6 @@ const resolvers = {
         console.log('challenge issued')
         console.log('payload', payload)
         console.log('variables', variables)
-        console.log(payload.challengeIssued.opponents.challenged.id === variables.playerId)
         console.log()
         return payload.challengeIssued.opponents.challenged.id === variables.playerId
       })
@@ -502,7 +488,6 @@ const resolvers = {
         console.log('challenge cancelled')
         console.log('payload', payload)
         console.log('variables', variables)
-        console.log(payload.challengeCancelled.challenged.id === variables.playerId)
         console.log()
         return payload.challengeCancelled.challenged.id === variables.playerId
       })
