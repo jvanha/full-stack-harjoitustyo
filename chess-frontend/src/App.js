@@ -16,7 +16,7 @@ import ReplayBoard from './components/ReplayBoard'
 import UserDetails from './components/UserDetails'
 import { ACCEPT_CHALLENGE, CREATE_GAME, DECLINE_CHALLENGE, LOGOUT } from './graphql/mutations'
 import { ALL_MESSAGES, ALL_USERS, ME } from './graphql/queries'
-import { CHALLENGE_ACCEPTED, CHALLENGE_DECLINED, CHALLENGE_ISSUED, MESSAGE_ADDED, MOVE_MADE, OPPONENT_RESIGNED, USER_LOGGED_IN, USER_LOGGED_OUT } from './graphql/subscriptions'
+import { CHALLENGE_ACCEPTED, CHALLENGE_DECLINED, CHALLENGE_ISSUED, GAME_CREATED, MESSAGE_ADDED, MOVE_MADE, OPPONENT_RESIGNED, USER_LOGGED_IN, USER_LOGGED_OUT } from './graphql/subscriptions'
 import { deleteGameState } from './localStorageService'
 import { setMovingPiece } from './reducers/boardReducer'
 import { clearChallenge } from './reducers/challengeReducer'
@@ -178,6 +178,24 @@ useSubscription(MESSAGE_ADDED, {
     } 
   })
 
+  useSubscription(GAME_CREATED, {
+    variables: { playerId: user ? user.id : ''},
+    onSubscriptionData: ({ subscriptionData }) => {
+      console.log('subscriptionData', subscriptionData)
+      const createdGame = subscriptionData.data.createdGame
+      const userInStorage = client.readQuery({ query: ME })
+      console.log('userInStorage', userInStorage)
+      /*
+    if (!messagesInStorage.allMessages.map(message => message.id).includes(addedMessage.id)) {
+      client.writeQuery({
+        query: ALL_MESSAGES,
+        data: { allMessages: messagesInStorage.allMessages.concat(addedMessage)}
+      })
+    }*/
+
+    }
+  })
+
   useSubscription(OPPONENT_RESIGNED, {
     variables: { opponentId: game.opponent ? game.opponent.id : ''},
     onSubscriptionData: ({ subscriptionData }) => {
@@ -321,7 +339,6 @@ useSubscription(MESSAGE_ADDED, {
               </Route>
               <Route path='/play'>
                 <Game
-                  user={user}
                   clock={clock}
                   opponentsClock={opponentsClock}
                   setClock={setClock}

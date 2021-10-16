@@ -186,6 +186,7 @@ const typeDefs = gql`
     challengeDeclined(playerId: String): Opponents
     messageAdded: Message
     opponentResigned(opponentId: String): String
+    gameCreated(playerId: String): Game
   }
 
   input CreateGameInput {
@@ -271,6 +272,10 @@ const resolvers = {
       black.games = black.games.concat(game._id)
       await black.save()
       const savedGame = await game.save()
+      const populatedGame = await Game.findById(game._id).populate(['black', 'white'])
+      const payload = { gameCreated: populatedGame }
+      pubsub.publish('GAME_CREATED', payload)
+
       return savedGame
     },
     login: async (root, args) => {
@@ -302,11 +307,14 @@ const resolvers = {
 
       newEngine.onmessage = (message) => onMessage(engine,message)
       newEngine.postMessage('uci')
+      engines.filter(engine => engine.id !== user._id) 
       engines.push(engine)
+      
       const bestMove = {
         id: user._id,
         bestMove: null
       }
+      bestMoves.filter(bestMove => bestMove.id !== user._id)
       bestMoves.push(bestMove)
       const token = { 
         value: jwt.sign(userForToken, JWT_SECRET),
@@ -323,12 +331,11 @@ const resolvers = {
       const currentEngine = engines.find(engine => engine.id == currentUser.id)
       console.log('currentEngine', currentEngine)
       if (currentEngine) currentEngine.engine.postMessage("quit")
-      engines =  engines.filter(engine => {
-        console.log(engine)
-        console.log(engine.id, currentUser.id)
-        return engine.id != currentUser.id
-      })
+      engines =  engines.filter(engine => engine.id.toString() !== currentUser.id)
+      bestMoves = bestMoves.filter(bestMove => bestMove.id.toString() !== currentUser.id)
       console.log('engines', engines)
+      console.log('bestMoves', bestMoves)
+      console.log()
       pubsub.publish('USER_LOGGED_OUT', { userLoggedOut: currentUser})
       return currentUser
     },
@@ -530,6 +537,18 @@ const resolvers = {
         console.log('variables', variables)
         console.log()
         return payload.opponentResigned === variables.opponentId
+      })
+    },
+    gameCreated: {
+      subscribe: withFilter(() => pubsub.asyncIterator(['GAME_CREATED']), (payload, variables) => {
+        console.log('game created')
+        console.log('payload', payload)
+        console.log('variables', variables)
+        console.log()
+        const { black, white, winner } = payload.gameCreated
+        const opponent = winner === '' ? black : (winner==='white'?black:white)
+        console.log('opponent', opponent.toString())
+        return opponent._id.toString() === variables.playerId
       })
     }
   }

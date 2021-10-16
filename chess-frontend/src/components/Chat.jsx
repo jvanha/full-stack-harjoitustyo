@@ -1,5 +1,5 @@
-import { useApolloClient, useMutation, useQuery } from '@apollo/client'
-import React, { useEffect, useState } from 'react'
+import {  useMutation, useQuery } from '@apollo/client'
+import React, { useState } from 'react'
 import { Button, Comment, Form } from 'semantic-ui-react'
 import { ADD_MESSAGE } from '../graphql/mutations'
 import { ALL_MESSAGES } from '../graphql/queries'

@@ -1,6 +1,5 @@
 import { useQuery } from '@apollo/client'
 import React from 'react'
-import { useSelector } from 'react-redux'
 import { List } from 'semantic-ui-react'
 import { ALL_USERS } from '../graphql/queries'
 import User from './User'

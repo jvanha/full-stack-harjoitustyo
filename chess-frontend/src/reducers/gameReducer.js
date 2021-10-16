@@ -1,5 +1,4 @@
 import { deleteGameState } from "../localStorageService"
-import { setMovingPiece } from "./boardReducer"
 
 let testBoard = Array(64)
 for (let i=0; i<64; i++) {
@@ -54,8 +53,8 @@ const initialState = {
   playerToMove: null,
   clock: 0,
   opponentsClock: 0,
-  //board: initBoard,
-  board: testBoard,
+  board: initBoard,
+  //board: testBoard,
   opponent: null,
   longCastleBlack: true,
   longCastleWhite: true,

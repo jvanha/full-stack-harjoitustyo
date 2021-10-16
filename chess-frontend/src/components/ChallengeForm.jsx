@@ -2,7 +2,7 @@ import { useMutation } from '@apollo/client'
 import React, { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { Button, Dropdown, Form } from 'semantic-ui-react'
-import { CANCEL_CHALLENGE, CHALLENGE } from '../graphql/mutations'
+import { CHALLENGE } from '../graphql/mutations'
 import { setChallengePending } from '../reducers/challengeReducer'
 
 const timeOptions = [

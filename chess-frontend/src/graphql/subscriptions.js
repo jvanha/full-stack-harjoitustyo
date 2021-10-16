@@ -94,3 +94,22 @@ export const OPPONENT_RESIGNED = gql`
     
   }
 `
+export const GAME_CREATED = gql`
+  subscription gameCreated($playerId: String!) {
+    gameCreated(playerId: $playerId) {
+      white {username}
+      black {username}
+      winner
+      
+    }
+  }
+`
+
+/*moves {
+        from
+        to
+        promotion
+        takenPiece {type color}
+        enPassant
+      }
+      date*/

@@ -1,6 +1,5 @@
 import React from 'react'
 import { Portal, Segment } from 'semantic-ui-react'
-import Piece from './Piece'
 
 const imgStyle = {
   marginTop: 5, 

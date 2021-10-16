@@ -1,7 +1,7 @@
 import React from 'react'
 import { useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
-import { Container, Header, Table } from 'semantic-ui-react'
+import { Container, Table } from 'semantic-ui-react'
 import { setReplayState } from '../reducers/replayReducer'
 
 const UserDetails = ({ user }) => {
@@ -15,7 +15,7 @@ const UserDetails = ({ user }) => {
     history.push('/replay')
     
   }
-  
+
   return (
     <div style={{ color: 'white' }}>
       <Container>

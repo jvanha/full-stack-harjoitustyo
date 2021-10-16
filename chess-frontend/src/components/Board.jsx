@@ -40,7 +40,6 @@ const Board = ({ clock, attackedSquares, gameSettings, ...props}) => {
   const [ promotionPortalOpen, setPromotionPortalOpen ] = useState(false)
   const [ tempSquare, setTempSquare ] = useState(null)
   const [ promotion, setPromotion ] = useState(null)
-  //const [ movingPiece, setMovingPiece ] = useState(null)
   const [ dragging, setDragging ] = useState(null)
   
   const dragObject = useRef()
@@ -59,21 +58,17 @@ const Board = ({ clock, attackedSquares, gameSettings, ...props}) => {
   },[selectedSquare, board])
   
   useEffect(() => {
-    //console.log('USE_EFFECT ',promotion, tempSquare, selectedSquare)
     if(promotion && tempSquare && selectedSquare) {
       dispatch(setMovingPiece({ from: selectedSquare[0], to: tempSquare[0] }))
-      //setMovingPiece({ from: selectedSquare[0], to: tempSquare[0] })
     }
   }, [promotion])
 
   useEffect(() => {
-    console.log('useEffect')
     if (game.playerToMove === game.myColor && tempSquare && movingPiece) {
       const from = selectedSquare[0]
       const to = tempSquare[0]
       const promoted = game.board[from][1].type === 'P' && (Math.floor(to/8) === 0 || Math.floor(to/8) === 7)
-      console.log('PROMOTED', promoted)
-      console.log('Promotion',)
+
       makeAMove({ variables: {
         userId: user.id,
         from,
@@ -81,7 +76,7 @@ const Board = ({ clock, attackedSquares, gameSettings, ...props}) => {
         time: clock,
         promotion: promoted ? (promotion?promotion:'Q') : null, 
       }})
-      console.log('setTimeout')
+
       setTimeout(() => {
         dispatch(setMovingPiece(null))
         setPromotion(null)
@@ -92,24 +87,10 @@ const Board = ({ clock, attackedSquares, gameSettings, ...props}) => {
           to: tempSquare[0],
           promotion: promotion?promotion:'Q'
         }))
-      },1)
+      },0)
     }
     
   }, [movingPiece])
-  
-  useEffect(() => {
-    console.log('props.moveMade',props.moveMade)
-    if (props.moveMade) {
-      const {from, to, promotion} = props.moveMade
-      if (from && to) {
-        setTimeout(() => {
-          setPromotion(null)
-          dispatch(movePieceRedux({ from, to, promotion }))
-        },0)
-      }
-    }
-    
-  },[props.moveMade])
   
   const handleSelection = (square) => {
     if (myColor !== playerToMove) return
@@ -126,18 +107,10 @@ const Board = ({ clock, attackedSquares, gameSettings, ...props}) => {
         setPromotionPortalOpen(true)
         return
       }
-      console.log('setting movingPiece')
-      console.log('square')
       setTempSquare(square)
       const from = selectedSquare[0]
       const to = square[0]
       dispatch(setMovingPiece({ from, to }))
-      //setTimeout(() => {
-        //movePiece(from,to,promotion)
-        //setPromotion(null)
-        //dispatch(movePieceRedux({ from, to, promotion: promotion?promotion:'Q'}))    //REDUX
-      //},0)
-      //setMovingPiece({ from: selectedSquare[0], to: index })
     }
     else {
       setSelectedSquare(null)

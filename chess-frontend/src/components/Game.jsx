@@ -17,10 +17,11 @@ import ChallengeModal from './ChallengeModal';
 import { ME } from '../graphql/queries';
 
 
-const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
+const Game = ({ clock, opponentsClock, setClock, setOpponentsClock }) => {
   const dispatch = useDispatch()
   const game = useSelector(state => state.game)
-
+  const pendingChallenge = useSelector(state => state.challenge)
+  const user = useSelector(state => state.user.user)
   const [ activeMenuItem, setActiveMenuItem ] = useState("players")
   const [ attackedSquares, setAttackedSquares ] = useState(null)
   const [ settingsModalOpen, setSettingsModalOpen ] = useState(false)
@@ -121,7 +122,6 @@ const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
       const move = getComputerMoveResult.data.getComputerMove
       console.log('move', move)
       if (game.opponent && game.opponent.id === 'computer') {
-        //setMoveMade({ ...move, promotion: 'Q'})
         dispatch(setMovingPiece(move))
         setTimeout(() => {
           dispatch(setMovingPiece(null))
@@ -130,6 +130,12 @@ const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
       }
     }
   }, [getComputerMoveResult.data])
+
+  useEffect(() => {
+    console.log('game.gameOn',game.gameOn)
+    if (game.gameOn) setActiveMenuItem('game')
+    else setActiveMenuItem('players') 
+  }, [game.gameOn])
 
   const handleShow = (color) => {
     if (attackedSquares == null) {
@@ -204,32 +210,36 @@ const Game = ({ user, clock, opponentsClock, setClock, setOpponentsClock }) => {
               onClick={() => setActiveMenuItem('game')}
             />
           }
-          <Menu.Item
-            name='players'
-            active={activeMenuItem === 'players'}
-            onClick={() => setActiveMenuItem('players')}
-          />
+          {!game.gameOn && 
+            <Menu.Item
+              name='players'
+              active={activeMenuItem === 'players'}
+              onClick={() => setActiveMenuItem('players')}
+            />
+          }
           <Menu.Item
             name='chat'
             active={activeMenuItem === 'chat'}
             onClick={() => setActiveMenuItem('chat')}
           />
         </Menu>
-        {activeMenuItem === 'players'
-          && <Users 
-          me={user}
-          /> 
+        {activeMenuItem === 'players' && !game.gameOn
+          && <div> 
+            <Users me={user} />
+            {(user && !pendingChallenge) &&
+              <Button onClick={() => setChallengeComputerModalOpen(true)}>Play against computer</Button>
+            }
+          </div> 
         }
         {activeMenuItem === 'chat' && user
           && <Chat/>
         }
-        {activeMenuItem === 'game' && user
+        {activeMenuItem === 'game' && game.gameOn
           && <Button onClick={handleResignation}>Resign</Button>
         }
-        {(user && !game.gameOn) &&
-        <Button onClick={() => setChallengeComputerModalOpen(true)}>Play against computer</Button>
-        }
+        
       </div>
+      
       <SettingsModal
         modalOpen={settingsModalOpen}
         close={() => setSettingsModalOpen(false)}
