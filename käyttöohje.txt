@@ -1,0 +1,10 @@
+Rekisteröidy aluksi käyttäjäksi ja kirjaudu sisään. 
+Paina vasemmalla sijaitsevasta valikosta 'Play'.
+Nyt voit pelata shakkia muita sisäänkirjautuneita vastaan.
+Todennäköisesti olet ainoa käyttäjä, joten lohdutukseksi voit pelata tietokonetta vastaan. Sopiva nappi löytyy laudan oikealta puolelta.
+Omia peliasetuksia voi hivenen säätää laudan välittömässä läheisyydessä olevasta venähtäneestä nappulasta.
+Jos muita käyttäjiä ilmaantuu, heidät voi nähdä Players-välilehdellä, ja voit haastaa heitä halutessasi.
+Chat-lehdeltä löytyy kaikille yhteinen chatti.  
+Kun pelit on pelattu, voi omia pelejä tarkastella painamalla vasemmalla sijaitsevasta valikosta 'Home'.
+Jokaisen pelin yhteydessä on nappi 'show', jota painamalla voi peliä selailla siirto kerrallaan.
+
