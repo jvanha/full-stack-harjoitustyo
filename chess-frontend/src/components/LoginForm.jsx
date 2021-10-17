@@ -21,7 +21,7 @@ const LoginForm = ({ setToken, close }) => {
       const token = result.data.login
       localStorage.setItem('chess-user-token', token.value)
       setToken(token)
-      history.push('/')
+      history.push('/home')
       close()
     }
   }, [result.data])

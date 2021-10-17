@@ -121,7 +121,7 @@ const Game = ({ clock, opponentsClock, setClock, setOpponentsClock }) => {
     if (getComputerMoveResult.called && !getComputerMoveResult.loading) {
       const move = getComputerMoveResult.data.getComputerMove
       console.log('move', move)
-      if (game.opponent && game.opponent.id === 'computer') {
+      if (game.gameOn && game.opponent && game.opponent.id === 'computer') {
         dispatch(setMovingPiece(move))
         setTimeout(() => {
           dispatch(setMovingPiece(null))

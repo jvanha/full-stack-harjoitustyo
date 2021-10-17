@@ -182,17 +182,17 @@ useSubscription(MESSAGE_ADDED, {
     variables: { playerId: user ? user.id : ''},
     onSubscriptionData: ({ subscriptionData }) => {
       console.log('subscriptionData', subscriptionData)
-      const createdGame = subscriptionData.data.createdGame
+      const createdGame = subscriptionData.data.gameCreated
       const userInStorage = client.readQuery({ query: ME })
       console.log('userInStorage', userInStorage)
-      /*
-    if (!messagesInStorage.allMessages.map(message => message.id).includes(addedMessage.id)) {
-      client.writeQuery({
-        query: ALL_MESSAGES,
-        data: { allMessages: messagesInStorage.allMessages.concat(addedMessage)}
-      })
-    }*/
-
+      if (!userInStorage.me.games.map(game => game.id).includes(createdGame.id)) {
+        console.log('writing query')
+        client.writeQuery({
+          query: ME,
+          data: { 
+            me: {...userInStorage.me, games: userInStorage.me.games.concat(createdGame)}}
+        })
+      }
     }
   })
 
@@ -303,10 +303,12 @@ useSubscription(MESSAGE_ADDED, {
             <Icon name='chess'/>
             Play
           </Menu.Item>
+          {false &&
           <Menu.Item as='a' onClick={() => history.push('/replay')}>
             <Icon name='chess'/>
             Replay
           </Menu.Item>
+          }
           <Divider />
           <div>
             {user
@@ -323,9 +325,6 @@ useSubscription(MESSAGE_ADDED, {
           <div style={{minHeight: '100vh', backgroundColor: '#0e140c'}}>
             <div style={{color: 'white'}}>{date.toDateString()}</div>
             <Switch>
-              <Route path='/rules'>
-                <div style={{ color: 'white' }}>työn alla</div>
-              </Route>
               <Route path='/home'>
                 {user 
                   ? 
@@ -345,9 +344,9 @@ useSubscription(MESSAGE_ADDED, {
                   setOpponentsClock={setOpponentsClock}
                  />
               </Route>
-              <Route path='/replay'>
-                <ReplayBoard/>
-              </Route>
+                <Route path='/replay'>
+                  <ReplayBoard/>
+                </Route>
               <Route path='/'>
                 <Segment inverted>
                   <Header>Tervetuloa</Header>

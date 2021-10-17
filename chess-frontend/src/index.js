@@ -17,7 +17,7 @@ import replayReducer from './reducers/replayReducer';
 import challengeReducer from './reducers/challengeReducer';
 import boardReducer from './reducers/boardReducer';
 
-
+console.log = () => {}
 
 const authLink = setContext((_, { headers }) => {
   const token = localStorage.getItem('chess-user-token')

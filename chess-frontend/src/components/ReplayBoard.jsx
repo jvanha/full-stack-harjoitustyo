@@ -26,35 +26,20 @@ const boardStyleReversed = {
 
 const ReplayBoard = () => {
   const [ reversed, setReversed ] = useState(false)
-  const [ tempSquare, setTempSquare ] = useState(null)
-  const [ promotion, setPromotion ] = useState(null)
+
   const [ movingPiece, setMovingPiece ] = useState(null)
   const { board, moves, counter, ...rest } = useSelector(state => state.replay)
   console.log('board',board)
   const dispatch = useDispatch()
-  
-  useEffect(() => {
-    console.log('useEffect on movingPiece', movingPiece)
-    if (tempSquare && movingPiece) {
-      setTimeout(() => {
-        setMovingPiece(null)
-        setPromotion(null)
-        setTempSquare(null)
-      },0)
-    }
-    
-  }, [movingPiece])
 
   const nextPosition = () => {
     console.log('next position')
-    
     if (counter < moves.length) {
       const {from, to, promotion} = moves[counter]
       setMovingPiece({from, to})
       setTimeout(() => {
         dispatch(nextPos())
         setMovingPiece(null)
-        setPromotion(null)
       },0)
     }
   }
@@ -67,7 +52,6 @@ const ReplayBoard = () => {
       setTimeout(() => {
         dispatch(prevPos())
         setMovingPiece(null)
-        setPromotion(null)
       },0)
     }
   }

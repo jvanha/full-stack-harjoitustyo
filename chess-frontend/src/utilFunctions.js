@@ -33,7 +33,7 @@ const pawnAttackSquares = (squareId, pieceColor, board) =>  {
     if (squareId%8 < 7 && squareNotOccupied(squareId-8+1)) 
       squares.push(squareId-8+1)
   }
-  if (pieceColor === 'black' && squareId < 53) {
+  if (pieceColor === 'black' && squareId < 56) {
     if (squareId%8 > 0 && squareNotOccupied(squareId+8-1))
       squares.push(squareId+8-1)
     if (squareId%8 < 7 && squareNotOccupied(squareId+8+1))

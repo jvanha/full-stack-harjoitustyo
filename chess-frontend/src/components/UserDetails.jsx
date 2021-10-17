@@ -1,7 +1,7 @@
 import React from 'react'
 import { useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
-import { Container, Table } from 'semantic-ui-react'
+import { Button, Container, Table } from 'semantic-ui-react'
 import { setReplayState } from '../reducers/replayReducer'
 
 const UserDetails = ({ user }) => {
@@ -18,10 +18,10 @@ const UserDetails = ({ user }) => {
 
   return (
     <div style={{ color: 'white' }}>
-      <Container>
+      <Container >
         <h1>{user.username}</h1>
         <p>Joined {user.registrationDate}</p>
-        <Table selectable compact inverted>
+        <Table selectable compact inverted celled>
           <Table.Header>
             My Games
             <Table.Row>
@@ -38,7 +38,7 @@ const UserDetails = ({ user }) => {
                 <Table.Cell><div>{game.winner===''?'1/2':(game.winner==='white'?1:0)}</div><div>{game.winner===''?'1/2':(game.winner==='black'?1:0)}</div></Table.Cell>
                 <Table.Cell>{game.moves.length}</Table.Cell>
                 <Table.Cell>{game.date}</Table.Cell>
-                <Table.Cell as='a' onClick={() => handleShow(game)}>show</Table.Cell>
+                <Table.Cell ><Button onClick={() => handleShow(game)}>show</Button></Table.Cell>
               </Table.Row>
             ))}
           </Table.Body>
